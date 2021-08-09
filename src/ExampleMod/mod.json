@@ -1,0 +1,10 @@
+{
+  "Id": "ExampleMod",
+  "DisplayName": "Terrain Patcher Example Mod",
+  "Author": "Esper89",
+  "Version": "0.1",
+  "Enable": true,
+  "Game": "Subnautica",
+  "AssemblyName": "TerrainPatcher.ExampleMod.dll",
+  "Dependencies": [ "TerrainPatcher" ],
+}

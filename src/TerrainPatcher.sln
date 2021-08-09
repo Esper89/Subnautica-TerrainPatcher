@@ -1,0 +1,34 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrainPatcher", "TerrainPatcher\TerrainPatcher.csproj", "{BF972C7D-7B97-4B18-B241-A172AB5FF4D8}"
+EndProject
+Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "", "..\.mdproj", "{D13DFF9F-AA72-44C9-AD16-BD46F75A2511}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleMod", "ExampleMod\ExampleMod.csproj", "{850882DB-12E0-4793-BCC7-C6099D7B81BE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Default|Any CPU = Default|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF972C7D-7B97-4B18-B241-A172AB5FF4D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF972C7D-7B97-4B18-B241-A172AB5FF4D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF972C7D-7B97-4B18-B241-A172AB5FF4D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF972C7D-7B97-4B18-B241-A172AB5FF4D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D13DFF9F-AA72-44C9-AD16-BD46F75A2511}.Debug|Any CPU.ActiveCfg = Default|Any CPU
+		{D13DFF9F-AA72-44C9-AD16-BD46F75A2511}.Debug|Any CPU.Build.0 = Default|Any CPU
+		{D13DFF9F-AA72-44C9-AD16-BD46F75A2511}.Release|Any CPU.ActiveCfg = Default|Any CPU
+		{D13DFF9F-AA72-44C9-AD16-BD46F75A2511}.Release|Any CPU.Build.0 = Default|Any CPU
+		{850882DB-12E0-4793-BCC7-C6099D7B81BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{850882DB-12E0-4793-BCC7-C6099D7B81BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{850882DB-12E0-4793-BCC7-C6099D7B81BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{850882DB-12E0-4793-BCC7-C6099D7B81BE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.StandardHeader = $1
+	EndGlobalSection
+EndGlobal

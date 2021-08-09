@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BF972C7D-7B97-4B18-B241-A172AB5FF4D8}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>TerrainPatcher</RootNamespace>
+    <AssemblyName>TerrainPatcher</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <LangVersion>8.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <DefineConstants>RELEASE;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DocumentationFile>bin\Release\TerrainPatcher.xml</DocumentationFile>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="0Harmony">
+      <HintPath>..\..\build\refasm\0Harmony.refasm.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\build\refasm\Assembly-CSharp_publicized.refasm.dll</HintPath>
+    </Reference>
+    <Reference Include="QModInstaller">
+      <HintPath>..\..\build\refasm\QModInstaller.refasm.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\..\build\refasm\Assembly-CSharp-firstpass_publicized.refasm.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\build\refasm\UnityEngine.CoreModule.refasm.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="EntryPoint.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TerrainRegistry.cs" />
+    <Compile Include="Patches\TerrainFiles.cs">
+      <DependentUpon>TerrainFiles</DependentUpon>
+    </Compile>
+    <Compile Include="Extensions\StreamExtensions.cs" />
+    <Compile Include="TerrainPatching.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="TempBatchStorage.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Patches\">
+    </Folder>
+    <Folder Include="Extensions\">
+    </Folder>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="mod.json" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <StandardHeader IncludeInNewFiles="True" Text="Copyright (c) ${Year} ${CopyrightHolder}&#xA;&#xA;This file is part of TerrainPatcher.&#xA;&#xA;TerrainPatcher is free software: you can redistribute it and/or modify&#xA;it under the terms of the GNU General Public License as published by&#xA;the Free Software Foundation, either version 3 of the License, or&#xA;(at your option) any later version.&#xA;&#xA;TerrainPatcher is distributed in the hope that it will be useful,&#xA;but WITHOUT ANY WARRANTY; without even the implied warranty of&#xA;MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the&#xA;GNU General Public License for more details.&#xA;&#xA;You should have received a copy of the GNU General Public License&#xA;along with TerrainPatcher.  If not, see &lt;https://www.gnu.org/licenses/&gt;." />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+  <!-- -->
+  <PropertyGroup>
+    <BuildDir>..\..\build</BuildDir>
+  </PropertyGroup>
+  <Target Name="CopyOutputToModsDir" AfterTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
+    <ReadLinesFromFile File="$(BuildDir)\mods-dir">
+      <Output TaskParameter="Lines" PropertyName="ModsDir" />
+    </ReadLinesFromFile>
+    <MakeDir Directories="$(ModsDir)\$(ProjectName)" />
+    <Copy SourceFiles="$(TargetPath);$(ProjectDir)\mod.json" DestinationFolder="$(ModsDir)\$(ProjectName)" />
+  </Target>
+  <Target Name="CopyOutputToTargetDir" AfterTargets="Build" Condition=" '$(Configuration)' == 'Release' ">
+    <MakeDir Directories="$(BuildDir)\target\$(ProjectName)" />
+    <Copy SourceFiles="$(TargetPath);$(ProjectDir)\mod.json;$(DocumentationFile)" DestinationFolder="$(BuildDir)\target\$(ProjectName)" />
+    <Copy SourceFiles="..\..\COPYING" DestinationFolder="$(BuildDir)\target\$(ProjectName)" />
+    <Copy SourceFiles="$(BuildDir)\dist-readme.md" DestinationFiles="$(BuildDir)\target\$(ProjectName)\README.md" />
+  </Target>
+  <!-- -->
+</Project>

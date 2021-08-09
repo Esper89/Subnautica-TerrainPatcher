@@ -1,0 +1,17 @@
+{
+  "Id": "TerrainPatcher",
+  "DisplayName": "Terrain Patcher",
+  "Author": "Esper89",
+  "Version": "0.1",
+  "Enable": true,
+  "Game": "Subnautica",
+  "AssemblyName": "TerrainPatcher.dll",
+  "NexusId":
+  {
+    "Subnautica": "823"
+  },
+  "VersionChecker":
+  {
+    "LatestVersionURL": "https://github.com/Esper89/Subnautica-TerrainPatcher/raw/master/src/TerrainPatcher/mod.json"
+  }
+}
