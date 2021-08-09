@@ -34,7 +34,8 @@ namespace TerrainPatcher
         {
             foreach (string path in Directory.EnumerateFiles(PATH))
             {
-                if (Path.GetExtension(path) == ".optoctrees") File.Delete(path);
+                if (Path.GetExtension(path) == ".optoctrees" && !TerrainRegistry.patchedBatches.ContainsValue(path))
+                    File.Delete(path);
             }
         }
     }
