@@ -36,5 +36,12 @@ namespace TerrainPatcher
 
         // The mod's directory.
         internal static readonly string MOD_DIR = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+        // Directories to search for vanilla batches.
+        internal static readonly string[] ORIG_BATCH_DIRS =
+        {
+            "Build18",
+            "Expansion"
+        };
     }
 }

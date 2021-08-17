@@ -50,7 +50,7 @@ namespace TerrainPatcher
             if (version != Constants.PATCH_VERSION)
             {
                 throw new InvalidDataException(
-                    "Provided patch file does not have the correct version." +
+                    "Provided patch file does not have the correct version. " +
                     $"The correct version is {Constants.PATCH_VERSION}, this patch file has version {version}."
                 );
             }
@@ -89,52 +89,57 @@ namespace TerrainPatcher
         }
 
         // Creates a new tempfile for a batch and stores it in patchedBatches.
-        // Copies the original batch if possible.
+        // Copies the original batch to the tempfile if it exists.
         private static void RegisterNewBatch(Int3 batchId)
         {
             string newPath = Path.Combine(
                 TempBatchStorage.PATH,
                 $"tmp-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
             );
-
             Directory.CreateDirectory(TempBatchStorage.PATH); // Just in case.
 
-            string origPath = Path.Combine(
-                SNUtils.InsideUnmanaged("Build18"),
-                "CompiledOctreesCache",
-                $"compiled-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
-            );
+            string GetPath(string origDir)
+                => Path.Combine(
+                    SNUtils.InsideUnmanaged(origDir),
+                    "CompiledOctreesCache",
+                    $"compiled-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
+                );
 
-            bool fillWithEmptyBatch = true;
-
-            if (File.Exists(origPath))
+            // Search each directory.
+            string[] dirs = Constants.ORIG_BATCH_DIRS;
+            for (int i = 0; i < dirs.Length; i++)
             {
-                using (FileStream file = File.OpenRead(origPath))
+                string origPath = GetPath(dirs[i]);
+
+                if (File.Exists(origPath))
                 {
-                    if (file.ReadUInt() == Constants.BATCH_VERSION)
+                    using (FileStream file = File.OpenRead(origPath))
                     {
-                        fillWithEmptyBatch = false;
-                        File.Copy(origPath, newPath, overwrite: true);
+                        if (file.ReadUInt() == Constants.BATCH_VERSION)
+                        {
+                            File.Copy(origPath, newPath, overwrite: true);
+
+                            patchedBatches[batchId] = newPath;
+                            return;
+                        }
                     }
                 }
             }
 
-            if (fillWithEmptyBatch)
+            // Vanilla file was not found, creating empty batch.
+            using (FileStream file = File.Open(newPath, FileMode.Create))
             {
-                using (FileStream file = File.Open(newPath, FileMode.Create))
+                file.WriteUInt(Constants.BATCH_VERSION);
+
+                for (int i = 0; i < Constants.OCTREES_PER_BATCH; i++)
                 {
-                    file.WriteUInt(Constants.BATCH_VERSION);
-
-                    for (int i = 0; i < Constants.OCTREES_PER_BATCH; i++)
-                    {
-                        // Single-node empty octree.
-                        file.WriteUShort(1);
-                        file.WriteUInt(0);
-                    }
+                    // Single-node empty octree.
+                    file.WriteUShort(1);
+                    file.WriteUInt(0);
                 }
-            }
 
-            patchedBatches[batchId] = newPath;
+                patchedBatches[batchId] = newPath;
+            }
         }
 
         // Patches the contents of a batch, assuming it's already in patchedBatches.
