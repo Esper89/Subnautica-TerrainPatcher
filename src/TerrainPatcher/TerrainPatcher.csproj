@@ -61,6 +61,7 @@
     <Compile Include="TerrainPatching.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="TempBatchStorage.cs" />
+    <Compile Include="Debug.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Patches\">

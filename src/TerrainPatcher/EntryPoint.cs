@@ -37,7 +37,7 @@ namespace TerrainPatcher
         // Apply harmony patches.
         private static void Harmony()
         {
-            var harmony = new Harmony("TerrainPatcher");
+            var harmony = new Harmony(nameof(TerrainPatcher));
             harmony.PatchAll();
         }
 
@@ -69,14 +69,12 @@ namespace TerrainPatcher
                         TerrainRegistry.PatchTerrain(file);
                     }
 
-                    Console.WriteLine($"Loaded terrain patch '{patchName}'.");
+                    Debug.Log($"Loaded '{patchName}'");
                 }
                 catch (Exception ex)
                 {
-                    ErrorMessage.AddError($"Could not load terrain patch '{patchName}'.");
-
-                    Console.WriteLine($"Problem loading terrain patch '{patchName}' — '{ex.Message}'.");
-                    Console.WriteLine(ex.StackTrace);
+                    Debug.LogError($"Problem loading '{patchName}'", ex);
+                    Debug.ErrorMessage($"Could not load '{patchName}'");
                 }
             }
         }
