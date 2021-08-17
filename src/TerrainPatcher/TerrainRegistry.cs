@@ -97,6 +97,8 @@ namespace TerrainPatcher
                 $"tmp-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
             );
 
+            Directory.CreateDirectory(TempBatchStorage.PATH); // Just in case.
+
             string origPath = Path.Combine(
                 SNUtils.InsideUnmanaged("Build18"),
                 "CompiledOctreesCache",
@@ -119,7 +121,7 @@ namespace TerrainPatcher
 
             if (fillWithEmptyBatch)
             {
-                using (FileStream file = File.Open(origPath, FileMode.Create))
+                using (FileStream file = File.Open(newPath, FileMode.Create))
                 {
                     file.WriteUInt(Constants.BATCH_VERSION);
 
