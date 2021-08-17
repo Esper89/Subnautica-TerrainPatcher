@@ -68,11 +68,16 @@
     <BuildDir>..\..\build</BuildDir>
   </PropertyGroup>
   <Target Name="CopyOutputToModsDir" AfterTargets="Build" Condition=" '$(Configuration)' == 'Debug' ">
-    <ReadLinesFromFile File="$(BuildDir)\mods-dir">
-      <Output TaskParameter="Lines" PropertyName="ModsDir" />
+    <ReadLinesFromFile File="$(BuildDir)\sn-mods-dir">
+      <Output TaskParameter="Lines" PropertyName="SNModsDir" />
     </ReadLinesFromFile>
-    <MakeDir Directories="$(ModsDir)\$(ProjectName)" />
-    <Copy SourceFiles="$(TargetPath);$(ProjectDir)\mod.json" DestinationFolder="$(ModsDir)\$(ProjectName)" />
+    <ReadLinesFromFile File="$(BuildDir)\bz-mods-dir">
+      <Output TaskParameter="Lines" PropertyName="BZModsDir" />
+    </ReadLinesFromFile>
+    <MakeDir Directories="$(SNModsDir)\$(ProjectName)" />
+    <Copy SourceFiles="$(TargetPath);$(ProjectDir)\mod.json" DestinationFolder="$(SNModsDir)\$(ProjectName)" />
+    <MakeDir Directories="$(BZModsDir)\$(ProjectName)" />
+    <Copy SourceFiles="$(TargetPath);$(ProjectDir)\mod.json" DestinationFolder="$(BZModsDir)\$(ProjectName)" />
   </Target>
   <Target Name="CopyOutputToTargetDir" AfterTargets="Build" Condition=" '$(Configuration)' == 'Release' ">
     <MakeDir Directories="$(BuildDir)\target\$(ProjectName)" />

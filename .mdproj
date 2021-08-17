@@ -24,14 +24,17 @@
     <None Include=".github\ISSUE_TEMPLATE\feature-request.md" />
     <None Include="docs\Subnautica Terrain Patch Format.pdf" />
     <None Include="docs\src\Subnautica Terrain Patch Format.odt" />
-    <None Include="build\mods-dir">
-      <DependentUpon>mods-dir</DependentUpon>
+    <None Include="build\sn-mods-dir">
+      <DependentUpon>sn-mods-dir</DependentUpon>
     </None>
     <None Include="build\dist-readme.md" />
     <None Include="build\README.md" />
     <None Include="README.md" />
     <None Include="Makefile">
       <DependentUpon>Makefile</DependentUpon>
+    </None>
+    <None Include="build\bz-mods-dir">
+      <DependentUpon>bz-mods-dir</DependentUpon>
     </None>
   </ItemGroup>
 </Project>

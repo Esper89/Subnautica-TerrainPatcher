@@ -13,7 +13,8 @@ bin
 obj
 
 # Mods dir store
-build/mods-dir
+build/sn-mods-dir
+build/bz-mods-dir
 
 # Blobs
 *.blob
