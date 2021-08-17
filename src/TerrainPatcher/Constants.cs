@@ -25,6 +25,9 @@ namespace TerrainPatcher
         // The current version number of the optoctreepatch format.
         internal const uint PATCH_VERSION = 0;
 
+        // The current file extension for the optoctreepatch format.
+        internal static readonly string PATCH_EXTENSION = ".optoctreepatch";
+
         // The current version number of the game's batch format.
         internal const uint BATCH_VERSION = 4;
 

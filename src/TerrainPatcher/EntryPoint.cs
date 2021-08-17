@@ -49,24 +49,33 @@ namespace TerrainPatcher
 
             string[] patchFiles = Directory.GetFiles(
                 searchDir,
-                "*.optoctreepatch",
+                "*" + Constants.PATCH_EXTENSION,
                 SearchOption.AllDirectories
             );
 
             for (int i = 0; i < patchFiles.Length; i++)
             {
+                LoadPatch(patchFiles[i]);
+            }
+
+            static void LoadPatch(string filepath)
+            {
+                string patchName = Path.GetFileNameWithoutExtension(filepath);
+
                 try
                 {
-                    using (FileStream file = File.OpenRead(patchFiles[i]))
+                    using (FileStream file = File.OpenRead(filepath))
                     {
                         TerrainRegistry.PatchTerrain(file);
                     }
 
-                    Console.WriteLine($"Loaded terrain patch '{Path.GetFileName(patchFiles[i])}' from disk.");
+                    Console.WriteLine($"Loaded terrain patch '{patchName}'.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Problem loading terrain patch '{Path.GetFileName(patchFiles[i])}' from disk — '{ex.Message}'.");
+                    ErrorMessage.AddError($"Could not load terrain patch '{patchName}'.");
+
+                    Console.WriteLine($"Problem loading terrain patch '{patchName}' — '{ex.Message}'.");
                     Console.WriteLine(ex.StackTrace);
                 }
             }
