@@ -1,18 +1,20 @@
 # TerrainPatcher
 
-TerrainPatcher is a Subnautica library mod that allows modders and players to modify the game's terrain.
+TerrainPatcher is a Subnautica and Below Zero library mod that allows modders and players to modify the game's terrain.
 
 ## Usage
 
 ### End Users
 
-If you want to use a mod that requires TerrainPatcher, just extract the zip file and place the TerrainPatcher folder into your Subnautica QMods folder.
+If you want to use a mod that requires TerrainPatcher, just extract the zip file and place the TerrainPatcher folder into your QMods folder.
 
-To install a `.optoctreepatch` file, just place it anywhere in your Subnautica QMods folder or any subfolder.
+To install a `.optoctreepatch` file, just place it anywhere in your QMods folder or any subfolder.
 
 #### Releases
 
-You can download TerrainPatcher from the [releases page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the changelog) or from [the Nexus page](https://www.nexusmods.com/subnautica/mods/823) (in the "FILES" tab).
+You can download TerrainPatcher from the [releases page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the changelog).
+
+You can also download TerrainPatcher from the [Subnautica Nexus](https://www.nexusmods.com/subnautica/mods/823?tab=files) page or the [Below Zero Nexus](https://www.nexusmods.com/subnauticabelowzero/mods/236?tab=files) page.
 
 ### Modders
 
@@ -41,7 +43,7 @@ Regardless of which method you use, you'll need to add TerrainPatcher to your mo
 ```json
 {
   "Id": "MyModName",
-  "DisplayName": "My Mod Display Name",
+  "DisplayName": "My Mod's Display Name",
   "Author": "Esper89",
   "Version": "1.0",
   "Enable": true,
@@ -55,7 +57,7 @@ If your mod can function without TerrainPatcher (despite using terrain patches) 
 
 #### Nexus
 
-If your mod uses TerrainPatcher and you publish your mod on nexus, it is recommended to add [TerrainPatcher](https://www.nexusmods.com/subnautica/mods/823) as a required mod (in the "Requirements and mirrors" tab of the mod creation page), the same way you would add QModManager. This will notify people downloading your mod that they need to download this mod as well.
+If your mod uses TerrainPatcher and you publish your mod on nexus, it is recommended to add TerrainPatcher as a required mod (in the "Requirements and mirrors" tab of the mod creation page), the same way you would add QModManager. This will notify people downloading your mod that they need to download this mod as well.
 
 ## Patch Format
 
@@ -74,6 +76,8 @@ Patch files can be generated using [Reef Editor](https://www.nexusmods.com/subna
  - No actual changes to game files; uses temporary files to store patched terrain.
 
  - Multiple patches can modify the same batch without causing problems.
+
+ - Support for Subnautica and Below Zero.
 
  - Cool rocks.
  
@@ -113,4 +117,3 @@ See [`build/README.md`](./build/README.md) for building TerrainPatcher.
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-

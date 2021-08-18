@@ -8,7 +8,7 @@ SHELL = /bin/sh
 
 BUILD = mdtool build src/$(NAME).sln
 
-.PHONY: all release debug dist
+.PHONY: release example debug dist
 
 release:
 	msbuild src/TerrainPatcher -property:Configuration=Release

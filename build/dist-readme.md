@@ -1,6 +1,6 @@
 # TerrainPatcher
 
-TerrainPatcher is a Subnautica library mod that allows modders and players to modify the game's terrain.
+TerrainPatcher is a Subnautica and Below Zero library mod that allows modders and players to modify the game's terrain.
 
 ## Repo
 
@@ -22,5 +22,3 @@ TerrainPatcher's source code and documentation can be found on the [GitHub repo]
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
