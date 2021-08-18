@@ -2,7 +2,7 @@
   "Id": "ExampleMod",
   "DisplayName": "Terrain Patcher Example Mod",
   "Author": "Esper89",
-  "Version": "0.1",
+  "Version": "0.2",
   "Enable": true,
   "Game": "Both",
   "AssemblyName": "TerrainPatcher.ExampleMod.dll",

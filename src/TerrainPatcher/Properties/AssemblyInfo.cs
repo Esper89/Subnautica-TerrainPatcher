@@ -20,7 +20,7 @@ using System.Reflection;
 [assembly: AssemblyTitle("TerrainPatcher")]
 [assembly: AssemblyDescription("A library mod for patching the game's terrain.")]
 [assembly: AssemblyCopyright("Esper Thomson")]
-[assembly: AssemblyVersion("0.1.*")]
+[assembly: AssemblyVersion("0.2.*")]
 
 #if DEBUG
 [assembly: AssemblyConfiguration("DEBUG")]
