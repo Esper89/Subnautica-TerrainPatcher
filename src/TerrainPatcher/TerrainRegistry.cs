@@ -25,6 +25,16 @@ namespace TerrainPatcher
     /// <summary> The global registry of terrain patches. </summary>
     public static class TerrainRegistry
     {
+        /// <summary> Applies any number of terrain patches to the game's terrain. </summary>
+        /// <param name="patches"> The patch files to apply. </param>
+        public static void PatchTerrain(params Stream[] patches)
+        {
+            for (int i = 0; i < patches.Length; i++)
+            {
+                PatchTerrain(patches[i]);
+            }
+        }
+
         /// <summary> Applies a terrain patch file to the game's terrain. </summary>
         /// <param name="patchFile"> The patch file to apply. </param>
         public static void PatchTerrain(Stream patchFile)

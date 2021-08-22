@@ -43,9 +43,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="example.optoctreepatch" />
+    <EmbeddedResource Include="cooler-example.optoctreepatch" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.json" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TerrainPatcher\TerrainPatcher.csproj">

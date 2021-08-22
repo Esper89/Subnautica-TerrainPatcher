@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with TerrainPatcher.  If not, see<https://www.gnu.org/licenses/>.
 
-using System.Reflection;
 using QModManager.API.ModLoading;
 using TerrainPatcher;
 
@@ -28,13 +27,15 @@ namespace ExampleMod
         public static void Initialize()
         {
             // Get the currently running assembly.
-            var asm = Assembly.GetExecutingAssembly();
+            var asm = System.Reflection.Assembly.GetExecutingAssembly();
 
-            // Get the patch file stream from the assembly.
-            var patch = asm.GetManifestResourceStream("ExampleMod.example.optoctreepatch");
+            // Get patch file streams from the assembly.
+            var examplePatch = asm.GetManifestResourceStream("ExampleMod.example.optoctreepatch");
+            var coolerPatch = asm.GetManifestResourceStream("ExampleMod.cooler-example.optoctreepatch");
 
-            // Apply that patch file.
-            TerrainRegistry.PatchTerrain(patch);
+            // Apply the patch files.
+            // Patches are applied in the order they are provided in.
+            TerrainRegistry.PatchTerrain(coolerPatch, examplePatch);
         }
     }
 }
