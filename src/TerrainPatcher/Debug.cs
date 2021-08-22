@@ -16,6 +16,10 @@
 // along with TerrainPatcher.  If not, see <https://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
+using QModManager.API;
+
+// TODO Check if we should write some of this stuff to stderr instead of stdout.
 
 namespace TerrainPatcher
 {
@@ -23,17 +27,16 @@ namespace TerrainPatcher
     internal static class Debug
     {
         // Logs a message.
+        [Conditional("DEBUG")]
         public static void Log(string message)
         {
-            Console.WriteLine($"{nameof(TerrainPatcher)}: {message}");
+            Console.WriteLine($"[{nameof(TerrainPatcher)} DEBUG]: {message}");
         }
 
         // Logs an error, with an optional exception.
         public static void LogError(string message, Exception? ex = null)
         {
-            // TODO Check if we should write stuff to stderr instead.
-
-            Console.WriteLine($"{nameof(TerrainPatcher)} ERROR: {message}");
+            Console.WriteLine($"[{nameof(TerrainPatcher)} ERROR]: {message}");
 
             if (ex is object)
             {
@@ -45,7 +48,34 @@ namespace TerrainPatcher
         // Shows an error message on the screen.
         public static void ErrorMessage(string message)
         {
-            global::ErrorMessage.AddError($"{nameof(TerrainPatcher)}: {message}");
+            QModServices.Main.AddCriticalMessage(message);
+        }
+
+        // A multi-line message.
+        public class Multiline
+        {
+            public Multiline(string? firstLine = null)
+            {
+                this.contents = (firstLine ?? "") + Environment.NewLine;
+            }
+
+            private string contents;
+
+            public void AddLine(string? line = null)
+            {
+                this.contents += "\t" + (line ?? "") + Environment.NewLine;
+            }
+
+            [Conditional("DEBUG")]
+            public void WriteDebug()
+            {
+                Console.Write($"[{nameof(TerrainPatcher)} DEBUG]: {this.contents}");
+            }
+
+            public void WriteError()
+            {
+                Console.Write($"[{nameof(TerrainPatcher)} ERROR]: {this.contents}");
+            }
         }
     }
 }
