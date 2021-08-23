@@ -6,8 +6,6 @@
 
 SHELL = /bin/sh
 
-BUILD = mdtool build src/$(NAME).sln
-
 .PHONY: release example debug dist
 
 release:

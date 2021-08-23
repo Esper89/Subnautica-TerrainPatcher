@@ -10,6 +10,8 @@ If you want to use a mod that requires TerrainPatcher, just extract the zip file
 
 To install a `.optoctreepatch` file, just place it anywhere in your QMods folder or any subfolder.
 
+You can specify a custom load order for `.optoctreepatch` files by writing the file names (without the extensions) into the `load-order` file.
+
 #### Releases
 
 You can download TerrainPatcher from the [releases page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the changelog).
@@ -79,6 +81,10 @@ Patch files can be generated using [Reef Editor](https://www.nexusmods.com/subna
 
  - Support for Subnautica and Below Zero.
 
+ - Easily load patches without making a mod, or have more control by using a mod.
+
+ - Custom load order.
+
  - Cool rocks.
  
 ### Planned Features
@@ -95,11 +101,11 @@ Contributions of any kind - issues, pull requests, feature requests - are all we
 
 TerrainPatcher's scope is not necessarily limited to terrain; as mentioned above, hopefully custom biomes and entities could be added as well.
 
-TerrainPatcher is a library mod, so it shouldn't change the game unless the player or another mod tells it to.
+TerrainPatcher is a library mod, so it shouldn't change the game unless the user or another mod tells it to.
 
 ### Building
 
-See [`build/README.md`](./build/README.md) for building TerrainPatcher.
+See [`build`](./build) for building TerrainPatcher.
 
 ## License
 
