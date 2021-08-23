@@ -33,8 +33,8 @@ One method is just distributing a `.optoctreepatch` file along with your mod and
 The other method is to add your `.optoctreepatch` file to your project, and set it as an embedded resource. You can then use `Assembly.GetManifestResourceStream` (as demonstrated in [`src/ExampleMod/EntryPoint.cs`](./src/ExampleMod/EntryPoint.cs)) to load the resource. If you pass this stream to `TerrainRegistry.PatchTerrain`, TerrainPatcher will apply your patch file. Below is an example of how to do this.
 
 ```cs
-Assembly asm = System.Reflection.Assembly.GetExecutingAssembly();
-Stream patch = asm.GetManifestResourceStream("MyModName.my-file-name.optoctreepatch");
+var asm = System.Reflection.Assembly.GetExecutingAssembly();
+var patch = asm.GetManifestResourceStream("MyModName.my-file-name.optoctreepatch");
 TerrainPatcher.TerrainRegistry.PatchTerrain(patch);
 ```
 
@@ -51,7 +51,7 @@ Regardless of which method you use, you'll need to add TerrainPatcher to your mo
   "Enable": true,
   "Game": "Subnautica",
   "AssemblyName": "MyModAssembly.dll",
-  "Dependencies": [ "TerrainPatcher" ],
+  "Dependencies": [ "TerrainPatcher" ]
 }
 ```
 
