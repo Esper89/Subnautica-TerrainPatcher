@@ -29,9 +29,9 @@ namespace TerrainPatcher.Patches
         [HarmonyPatch(typeof(LargeWorldStreamer), nameof(LargeWorldStreamer.GetCompiledOctreesCachePath))]
         internal static class LargeWorldStreamer_GetCompiledOctreesCachePath_Patch
         {
-            // Matches the name of a batch file. Supports negative batch numbers.
+            // Matches a batch file. Supports negative batch numbers.
             private static readonly Regex pattern
-                = new Regex("compiled-batch-(?<x>-?\\d+)-(?<y>-?\\d+)-(?<z>-?[\\d]+)\\.optoctrees");
+                = new Regex($@"^(?:[^\0]*(?:\/|\\))?(compiled-batch-(?<x>-?\d+)-(?<y>-?\d+)-(?<z>-?\d+)\.optoctrees)$");
 
             private static bool Prefix(string filename, ref string __result, bool __runOriginal)
             {
@@ -45,9 +45,9 @@ namespace TerrainPatcher.Patches
                     int parse(string g) => int.Parse(match.Groups[g].Value);
                     batchId = new Int3(parse("x"), parse("y"), parse("z"));
                 }
-                catch (FormatException)
+                catch (FormatException ex)
                 {
-                    Console.WriteLine($"Game accessed batch file with invalid filename '{filename}'.");
+                    Debug.LogError($"Game accessed batch file with invalid filename '{filename}'", ex);
                     return false;
                 }
 
