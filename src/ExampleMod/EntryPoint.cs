@@ -29,13 +29,11 @@ namespace ExampleMod
             // Get the currently running assembly.
             var asm = System.Reflection.Assembly.GetExecutingAssembly();
 
-            // Get patch file streams from the assembly.
+            // Get patch file stream from the assembly.
             var examplePatch = asm.GetManifestResourceStream("ExampleMod.example.optoctreepatch");
-            var coolerPatch = asm.GetManifestResourceStream("ExampleMod.cooler-example.optoctreepatch");
 
-            // Apply the patch files.
-            // Patches are applied in the order they are provided in.
-            TerrainRegistry.PatchTerrain(coolerPatch, examplePatch);
+            // Apply the patch file.
+            TerrainRegistry.PatchTerrain(examplePatch);
         }
     }
 }
