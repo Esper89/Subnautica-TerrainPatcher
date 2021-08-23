@@ -2,7 +2,7 @@
   "Id": "TerrainPatcher",
   "DisplayName": "Terrain Patcher",
   "Author": "Esper89",
-  "Version": "0.2",
+  "Version": "0.3",
   "Enable": true,
   "Game": "Both",
   "AssemblyName": "TerrainPatcher.dll",
