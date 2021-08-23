@@ -27,6 +27,7 @@ namespace TerrainPatcher
     {
         /// <summary> Applies any number of terrain patches to the game's terrain. </summary>
         /// <param name="patches"> The patch files to apply. </param>
+        /// <exception cref="InvalidDataException"> Thrown if one of the patches is invalid. </exception>
         public static void PatchTerrain(params Stream[] patches)
         {
             for (int i = 0; i < patches.Length; i++)
@@ -37,6 +38,7 @@ namespace TerrainPatcher
 
         /// <summary> Applies a terrain patch file to the game's terrain. </summary>
         /// <param name="patchFile"> The patch file to apply. </param>
+        /// <exception cref="InvalidDataException"> Thrown when the provided patch file is invalid. </exception>
         public static void PatchTerrain(Stream patchFile)
         {
             if (patchFile is null)
@@ -46,34 +48,65 @@ namespace TerrainPatcher
                 );
             }
 
-            uint version;
+            lock (patchFile)
+            {
+                uint version;
 
-            try
-            {
-                version = patchFile.ReadUInt();
-            }
-            catch (EndOfStreamException)
-            {
-                throw new InvalidDataException("Provided patch file is not large enough.");
-            }
-
-            if (version != Constants.PATCH_VERSION)
-            {
-                throw new InvalidDataException(
-                    "Provided patch file does not have the correct version. " +
-                    $"The correct version is {Constants.PATCH_VERSION}, this patch file has version {version}."
-                );
-            }
-
-            while (true)
-            {
                 try
                 {
-                    ApplyBatchPatch(patchFile);
+                    version = patchFile.ReadUInt();
                 }
                 catch (EndOfStreamException)
                 {
-                    break;
+                    throw new InvalidDataException("Provided patch file is not large enough.");
+                }
+
+                if (version != Constants.PATCH_VERSION)
+                {
+                    throw new InvalidDataException(
+                        "Provided patch file does not have the correct version. " +
+                        $"The correct version is {Constants.PATCH_VERSION}, this patch file has version {version}."
+                    );
+                }
+
+                while (true)
+                {
+                    try
+                    {
+                        Int3? batchId = ReadBatchId(patchFile);
+                        if (batchId is null) break;
+                        Int3 id = batchId.Value;
+
+                        // Lists all batches as they are patched. Causes a lot of noise in the log.
+                        Debug.Log($"Patching batch {id.x} {id.y} {id.z}");
+
+                        ApplyBatchPatch(patchFile, id);
+                    }
+                    catch (EndOfStreamException ex)
+                    {
+                        throw new InvalidDataException("File ended too early.", ex);
+                    }
+                }
+
+                // Returns the batch ID of the next batch, or null if at EOF.
+                static Int3? ReadBatchId(Stream patch)
+                {
+                    int first = patch.ReadByte();
+
+                    return (first < 0) ? (Int3?)null : new Int3(
+                        Combine((byte)first, Read()),
+                        Combine(Read(), Read()),
+                        Combine(Read(), Read())
+                    );
+
+                    static short Combine(byte first, byte second) => (short)(first + (second << 8));
+
+                    byte Read()
+                    {
+                        int result = patch.ReadByte();
+                        if (result < 0) throw new EndOfStreamException("Patch file ended while reading next batch ID.");
+                        return (byte)result;
+                    }
                 }
             }
         }
@@ -83,10 +116,8 @@ namespace TerrainPatcher
         internal static readonly Dictionary<Int3, string> patchedBatches = new Dictionary<Int3, string> { };
 
         // Loads a batch into patchedBatches if necessary, then applies the patch.
-        private static void ApplyBatchPatch(Stream patch)
+        private static void ApplyBatchPatch(Stream patch, Int3 batchId)
         {
-            var batchId = new Int3(patch.ReadShort(), patch.ReadShort(), patch.ReadShort());
-
             lock (patchedBatches)
             {
                 if (!patchedBatches.ContainsKey(batchId))

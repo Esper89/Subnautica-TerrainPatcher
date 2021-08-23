@@ -30,8 +30,8 @@ namespace TerrainPatcher.Extensions
         private static byte CheckReadByte(this Stream stream)
         {
             int result = stream.ReadByte();
-
-            if (result == -1) throw new EndOfStreamException(); else return (byte)result;
+            if (result < 0) throw new EndOfStreamException("Stream ended early.");
+            return (byte)result;
         }
 
         public static sbyte ReadSByte(this Stream stream)
