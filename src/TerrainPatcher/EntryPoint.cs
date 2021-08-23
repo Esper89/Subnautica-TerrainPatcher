@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with TerrainPatcher.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.IO;
 using HarmonyLib;
 using QModManager.API.ModLoading;
 
@@ -31,7 +29,7 @@ namespace TerrainPatcher
         public static void Initialize()
         {
             Harmony();
-            LoadPatchFiles();
+            FileLoading.FindAndLoadPatches();
         }
 
         // Apply harmony patches.
@@ -39,44 +37,6 @@ namespace TerrainPatcher
         {
             var harmony = new Harmony(nameof(TerrainPatcher));
             harmony.PatchAll();
-        }
-
-        // Search for and load terrain patch files.
-        private static void LoadPatchFiles()
-        {
-            string searchDir = Directory.GetParent(Constants.MOD_DIR).FullName;
-            Directory.CreateDirectory(searchDir);
-
-            string[] patchFiles = Directory.GetFiles(
-                searchDir,
-                "*" + Constants.PATCH_EXTENSION,
-                SearchOption.AllDirectories
-            );
-
-            for (int i = 0; i < patchFiles.Length; i++)
-            {
-                LoadPatch(patchFiles[i]);
-            }
-
-            static void LoadPatch(string filepath)
-            {
-                string patchName = Path.GetFileNameWithoutExtension(filepath);
-
-                try
-                {
-                    using (FileStream file = File.OpenRead(filepath))
-                    {
-                        TerrainRegistry.PatchTerrain(file);
-                    }
-
-                    Debug.Log($"Loaded '{patchName}'");
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"Problem loading '{patchName}'", ex);
-                    Debug.ErrorMessage($"Could not load '{patchName}'");
-                }
-            }
         }
     }
 }

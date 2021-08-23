@@ -62,6 +62,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="TempBatchStorage.cs" />
     <Compile Include="Debug.cs" />
+    <Compile Include="FileLoading.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Patches\">
