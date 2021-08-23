@@ -104,6 +104,7 @@
     <Copy SourceFiles="$(TargetPath);$(ProjectDir)\mod.json;$(DocumentationFile)" DestinationFolder="$(BuildDir)\target\$(ProjectName)" />
     <Copy SourceFiles="..\..\COPYING" DestinationFolder="$(BuildDir)\target\$(ProjectName)" />
     <Copy SourceFiles="$(BuildDir)\dist-readme.md" DestinationFiles="$(BuildDir)\target\$(ProjectName)\README.md" />
+    <WriteLinesToFile File="$(BuildDir)\target\$(ProjectName)\load-order" Overwrite="True" />
   </Target>
   <!-- -->
 </Project>
