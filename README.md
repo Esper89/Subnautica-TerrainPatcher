@@ -16,7 +16,7 @@ You can specify a custom load order for `.optoctreepatch` files by writing the f
 
 You can download TerrainPatcher from the [releases page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the changelog).
 
-You can also download TerrainPatcher from the [Subnautica Nexus](https://www.nexusmods.com/subnautica/mods/823?tab=files) page or the [Below Zero Nexus](https://www.nexusmods.com/subnauticabelowzero/mods/236?tab=files) page.
+You can also download TerrainPatcher from the [Subnautica Nexus](https://www.nexusmods.com/subnautica/mods/823?tab=files) page or the [Below Zero Nexus](https://www.nexusmods.com/subnauticabelowzero/mods/237?tab=files) page.
 
 ### Modders
 
