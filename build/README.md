@@ -2,7 +2,7 @@
 
 Bleeding-edge builds can be downloaded from [GitHub actions](https://github.com/Esper89/Subnautica-TerrainPatcher/actions), or built yourself.
 
-TerrainPatcher's build system uses `msbuild` and `make`. If you do not have `make` installed, you can check [`Makefile`](./MakeFile) to see which `msbuild` commands correspond to which `make` targets.
+TerrainPatcher's build system uses `msbuild` and `make`. If you do not have `make` installed, you can check [`Makefile`](../Makefile) to see which `msbuild` commands correspond to which `make` targets.
 
 To build TerrainPatcher normally, run
 
@@ -16,7 +16,7 @@ or
 make release
 ```
 
-The result will be in [`build/target`](./build/target).
+The result will be in [`build/target`](./target).
 
 To build TerrainPatcher and ExampleMod, run
 
@@ -24,7 +24,7 @@ To build TerrainPatcher and ExampleMod, run
 make example
 ```
 
-To build TerrainPatcher and ExampleMod in debug mode, you first need to type the full path to your Subnautica QMods folder into a new text file at [`build/sn-mods-dir`](./build/sn-mods-dir), and the path to your Below Zero QMods folder into [`build/bz-mods-dir`](./build/bz-mods-dir).
+To build TerrainPatcher and ExampleMod in debug mode, you first need to type the full path to your Subnautica QMods folder into a new text file at [`build/sn-mods-dir`](./sn-mods-dir), and the path to your Below Zero QMods folder into [`build/bz-mods-dir`](./bz-mods-dir).
 
 Then, run
 
