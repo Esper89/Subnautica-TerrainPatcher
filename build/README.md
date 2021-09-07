@@ -4,6 +4,14 @@ Bleeding-edge builds can be downloaded from [GitHub actions](https://github.com/
 
 TerrainPatcher's build system uses `msbuild` and `make`. If you do not have `make` installed, you can check [`Makefile`](../Makefile) to see which `msbuild` commands correspond to which `make` targets.
 
+There is no need to copy any Subnautica assemblies, or to change the project's references. The necessary reference assemblies are in [`build/refasm`](./refasm).
+
+First, clone the repository.
+```bash
+git clone https://github.com/Esper89/Subnautica-TerrainPatcher.git
+cd Subnautica-TerrainPatcher
+```
+
 To build TerrainPatcher normally, run
 
 ```bash
