@@ -19,7 +19,7 @@
     <None Include="build\refasm\README.md" />
     <None Include="build\refasm\UnityEngine.CoreModule.refasm.dll" />
     <None Include="build\refasm\Assembly-CSharp-firstpass_publicized.refasm.dll" />
-    <None Include=".github\workflows\mono.yml" />
+    <None Include=".github\workflows\build.yml" />
     <None Include=".github\ISSUE_TEMPLATE\bug-report.md" />
     <None Include=".github\ISSUE_TEMPLATE\feature-request.md" />
     <None Include="docs\Subnautica Terrain Patch Format.pdf" />
