@@ -22,8 +22,8 @@
     <None Include=".github\workflows\build.yml" />
     <None Include=".github\ISSUE_TEMPLATE\bug-report.md" />
     <None Include=".github\ISSUE_TEMPLATE\feature-request.md" />
-    <None Include="docs\Subnautica Terrain Patch Format.pdf" />
-    <None Include="docs\src\Subnautica Terrain Patch Format.odt" />
+    <None Include="doc\Subnautica Terrain Patch Format.pdf" />
+    <None Include="doc\src\Subnautica Terrain Patch Format.odt" />
     <None Include="build\sn-mods-dir">
       <DependentUpon>sn-mods-dir</DependentUpon>
     </None>
