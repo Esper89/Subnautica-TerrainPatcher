@@ -30,13 +30,13 @@ namespace TerrainPatcher
         [Conditional("DEBUG")]
         public static void Log(string message)
         {
-            Console.WriteLine($"[{nameof(TerrainPatcher)} DEBUG]: {message}");
+            Console.WriteLine($"[{nameof(TerrainPatcher)}:DEBUG] {message}");
         }
 
         // Logs an error, with an optional exception.
         public static void LogError(string message, Exception? ex = null)
         {
-            Console.WriteLine($"[{nameof(TerrainPatcher)} ERROR]: {message}");
+            Console.WriteLine($"[{nameof(TerrainPatcher)}:ERROR] {message}");
 
             if (ex is object)
             {
@@ -56,7 +56,7 @@ namespace TerrainPatcher
         {
             public Multiline(string? firstLine = null)
             {
-                this.contents = (firstLine ?? "") + Environment.NewLine;
+                this.contents = ((firstLine is null) ? "" : " " + firstLine) + Environment.NewLine;
             }
 
             private string contents;
@@ -69,12 +69,12 @@ namespace TerrainPatcher
             [Conditional("DEBUG")]
             public void WriteDebug()
             {
-                Console.Write($"[{nameof(TerrainPatcher)} DEBUG]: {this.contents}");
+                Console.Write($"[{nameof(TerrainPatcher)}:DEBUG] {this.contents}");
             }
 
             public void WriteError()
             {
-                Console.Write($"[{nameof(TerrainPatcher)} ERROR]: {this.contents}");
+                Console.Write($"[{nameof(TerrainPatcher)}:ERROR] {this.contents}");
             }
         }
     }
