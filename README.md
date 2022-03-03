@@ -57,7 +57,7 @@ If your mod can function without TerrainPatcher (despite using terrain patches) 
 
 The Subnautica Terrain Patch Format (the `optoctreepatch` format) is documented at [`doc/Subnautica Terrain Patch Format.pdf`](./doc/Subnautica%20Terrain%20Patch%20Format.pdf). The format is designed to be as similar to the game's native terrain format as possible, while still allowing for proper patching of terrain. The patch format also allows as much data as necessary to be stored in one file, for easier distribution.
 
-Patch files can be generated using [Reef Editor](https://www.nexusmods.com/subnautica/mods/728), but any files conforming to the specification will work.
+Patch files can be generated using [Reef Editor](https://github.com/eternaight/sn-terrain-edit), but any files conforming to the specification will work.
 
 ## Features
 
