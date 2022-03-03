@@ -14,8 +14,6 @@ You can specify a custom load order for `.optoctreepatch` files by writing the f
 
 You can download TerrainPatcher from the [releases page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the changelog).
 
-You can also download TerrainPatcher from the [Subnautica Nexus](https://www.nexusmods.com/subnautica/mods/823?tab=files) page or the [Below Zero Nexus](https://www.nexusmods.com/subnauticabelowzero/mods/237?tab=files) page.
-
 ## Usage (Library)
 
 The following is for modders who want to use TerrainPatcher in your mod. Keep in mind that if your mod uses TerrainPatcher, anyone using your mod needs to have TerrainPatcher installed.
@@ -54,10 +52,6 @@ Regardless of which method you use, you'll need to add TerrainPatcher to your mo
 ```
 
 If your mod can function without TerrainPatcher (despite using terrain patches) then you don't need to add it as a dependency.
-
-### Nexus
-
-If your mod uses TerrainPatcher and you publish your mod on nexus, it is recommended to add TerrainPatcher as a required mod (in the "Requirements and mirrors" tab of the mod creation page), the same way you would add QModManager. This will notify people downloading your mod that they need to download this mod as well.
 
 ## Patch Format
 

@@ -6,11 +6,6 @@
   "Enable": true,
   "Game": "Both",
   "AssemblyName": "TerrainPatcher.dll",
-  "NexusId":
-  {
-    "Subnautica": "823",
-    "BelowZero": "237"
-  },
   "VersionChecker":
   {
     "LatestVersionURL": "https://github.com/Esper89/Subnautica-TerrainPatcher/raw/master/src/TerrainPatcher/mod.json"
