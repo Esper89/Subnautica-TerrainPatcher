@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Please complete the following version information:**
  - Subnautica/Below Zero: Update 87
- - TerrainPatcher: v0.3
+ - TerrainPatcher: v0.4
  - Other mods...?
 
 **Additional context**
