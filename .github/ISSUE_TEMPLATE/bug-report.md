@@ -23,6 +23,9 @@ A clear and concise description of what you expected to happen.
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
+**Log File**
+Please upload your `qmodmanager_log-Subnautica.txt` or `qmodmanager_log-SubnauticaZero.txt` file, located in the same folder as your `Subnautica.exe`.
+
 **Please complete the following version information:**
  - Subnautica/Below Zero: Update 87
  - TerrainPatcher: v0.4
