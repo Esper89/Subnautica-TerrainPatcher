@@ -67,7 +67,7 @@ for proper patching of terrain. The patch format also allows as much data as nec
 in one file, for easier distribution.
 
 An example `optoctreepatch` file is included at
-[`example.optoctreepatch](./examples/example.optoctreepatch).
+[`example.optoctreepatch`](./examples/example.optoctreepatch).
 
 Patch files can be generated using [Reef Editor](https://github.com/eternaight/sn-terrain-edit), but
 any files conforming to the specification will work.
