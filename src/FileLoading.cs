@@ -1,20 +1,3 @@
-// Copyright (c) 2021 Esper Thomson
-//
-// This file is part of TerrainPatcher.
-//
-// TerrainPatcher is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// TerrainPatcher is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with TerrainPatcher.  If not, see <https://www.gnu.org/licenses/>.
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,11 +17,10 @@ namespace TerrainPatcher
         private static string[] GetPatchFiles()
         {
             string searchDir = Directory.GetParent(Constants.MOD_DIR).FullName;
-            Directory.CreateDirectory(searchDir);
 
             string[] paths = Directory.GetFiles(
                 searchDir,
-                "*" + Constants.PATCH_EXTENSION,
+                $"*{Constants.PATCH_EXTENSION}",
                 SearchOption.AllDirectories
             );
 
@@ -53,7 +35,7 @@ namespace TerrainPatcher
                     names[i] = Path.GetFileNameWithoutExtension(paths[i]);
                 }
 
-                var message = new Debug.Multiline("Patch load order:");
+                Mod.LogInfo("Patch load order:");
 
                 var sorted = new List<string> { };
 
@@ -66,7 +48,7 @@ namespace TerrainPatcher
                         if (loadOrder[i] == names[j])
                         {
                             sorted.Add(paths[j]);
-                            message.AddLine($"{names[j]}: '{paths[j]}'");
+                            Mod.LogInfo($"- {names[j]}: '{paths[j]}'");
 
                             names[j] = null; // Remove the name from the list.
                         }
@@ -79,11 +61,9 @@ namespace TerrainPatcher
                     if (names[i] is object)
                     {
                         sorted.Add(paths[i]);
-                        message.AddLine($"{names[i]}: '{paths[i]}'");
+                        Mod.LogInfo($"- {names[i]}: '{paths[i]}'");
                     }
                 }
-
-                message.WriteDebug();
 
                 return sorted.ToArray();
             }
@@ -100,7 +80,7 @@ namespace TerrainPatcher
                 {
                     try
                     {
-                        Debug.Log("Found load order file");
+                        Mod.LogInfo("Found load order file");
 
                         using (FileStream file = File.OpenRead(path))
                         {
@@ -117,28 +97,26 @@ namespace TerrainPatcher
                             }
                         }
                     }
-                    catch (IOException) { Debug.Log("Could not open load order file"); }
+                    catch (IOException) { Mod.LogWarning("Could not open load order file"); }
                 }
-                else { Debug.Log("Did not find load order file"); }
+                else { Mod.LogWarning("Could not find load order file"); }
 
                 return loadOrder.ToArray();
             }
         }
 
         // The name of the load order config file.
-        private static readonly string CONFIG_FILE = "load-order";
+        private static readonly string CONFIG_FILE = "load-order.txt";
 
         // Load terrain patch files.
         private static void LoadPatchFiles(string[] patchFiles)
         {
-            Debug.Log("Loading patch files.");
+            Mod.LogInfo("Loading patch files");
 
             for (int i = 0; i < patchFiles.Length; i++)
             {
                 LoadPatch(patchFiles[i]);
             }
-
-            Debug.Log("Done loading patch files.");
 
             static void LoadPatch(string filepath)
             {
@@ -146,21 +124,16 @@ namespace TerrainPatcher
 
                 try
                 {
-                    Debug.Log($"Loading '{patchName}'");
+                    Mod.LogInfo($"Loading '{patchName}'");
 
                     using (FileStream file = File.OpenRead(filepath))
                     {
-                        TerrainRegistry.PatchTerrain(file);
+                        TerrainRegistry.ApplyPatchFile(file);
                     }
-
-                    Debug.Log($"Done loading '{patchName}'");
                 }
                 catch (Exception ex)
                 {
-                    string msg = $"Problem loading '{patchName}'";
-
-                    Debug.LogError(msg, ex);
-                    Debug.ErrorMessage(msg);
+                    Mod.LogError($"Problem loading '{patchName}': {ex}");
                 }
             }
         }

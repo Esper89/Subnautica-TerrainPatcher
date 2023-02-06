@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+        <LangVersion>8.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <WarningLevel>4</WarningLevel>
+        <OutputPath>bin/$(Configuration)</OutputPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <Optimize>false</Optimize>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <Optimize>true</Optimize>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <DocumentationFile>bin/Release/TerrainPatcher.xml</DocumentationFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="System"/>
+        <Reference Include="BepInEx">
+            <HintPath>references/BepInEx.refasm.dll</HintPath>
+        </Reference>
+        <Reference Include="0Harmony">
+            <HintPath>references/0Harmony.refasm.dll</HintPath>
+        </Reference>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>references/Assembly-CSharp-publicized.refasm.dll</HintPath>
+        </Reference>
+        <Reference Include="Assembly-CSharp-firstpass">
+            <HintPath>references/Assembly-CSharp-firstpass-publicized.refasm.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine">
+            <HintPath>references/UnityEngine.refasm.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>references/UnityEngine.CoreModule.refasm.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="src/Mod.cs"/>
+        <Compile Include="src/Terrain.cs"/>
+        <Compile Include="src/FileLoading.cs"/>
+        <Compile Include="src/Patches.cs"/>
+    </ItemGroup>
+    <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets"/>
+    <Target Name="CopyToTargetDir" AfterTargets="Build">
+        <Copy SourceFiles="$(TargetPath);LICENSE;$(DocumentationFile)" DestinationFolder="target/$(Configuration)"/>
+        <Copy SourceFiles="dist-readme.md" DestinationFiles="target/$(Configuration)/README.md"/>
+        <WriteLinesToFile File="target/$(Configuration)/load-order.txt" Overwrite="True"/>
+        <MakeDir Directories="target/$(Configuration)/patches"/>
+    </Target>
+    <Target Name="CopyToModsDir" AfterTargets="CopyToTargetDir" Condition="'$(Configuration)' == 'Debug' And Exists('game-dirs.txt')">
+        <ReadLinesFromFile File="game-dirs.txt">
+            <Output TaskParameter="Lines" ItemName="GameDirs"/>
+        </ReadLinesFromFile>
+        <CreateItem Include="target/$(Configuration)/*">
+            <Output TaskParameter="Include" ItemName="TargetFiles"/>
+        </CreateItem>
+        <CreateProperty Value="BepInEx/plugins/$(ProjectName)">
+            <Output TaskParameter="Value" PropertyName="PluginDir"/>
+        </CreateProperty>
+        <Copy SourceFiles="@(TargetFiles)" DestinationFolder="%(GameDirs.Identity)/$(PluginDir)"/>
+        <MakeDir Directories="%(GameDirs.Identity)/$(PluginDir)/patches"/>
+    </Target>
+    <Target Name="ZipDist" AfterTargets="CopyToTargetDir" Condition="'$(Configuration)' == 'Release'">
+        <ZipDirectory SourceDirectory="target/$(Configuration)" DestinationFile="target/dist.zip" Overwrite="True"/>
+    </Target>
+</Project>

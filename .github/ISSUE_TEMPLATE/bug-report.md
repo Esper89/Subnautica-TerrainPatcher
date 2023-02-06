@@ -4,7 +4,6 @@ about: Create a bug report to help this project improve.
 title: ''
 labels: bug
 assignees: ''
-
 ---
 
 **Describe the bug**
@@ -24,11 +23,11 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Log File**
-Please upload your `qmodmanager_log-Subnautica.txt` or `qmodmanager_log-SubnauticaZero.txt` file, located in the same folder as your `Subnautica.exe`.
+Please upload your `LogOutput.log` file, located in the `BepInEx` folder.
 
 **Please complete the following version information:**
- - Subnautica/Below Zero: Update 87
- - TerrainPatcher: v0.4
+ - Subnautica/Below Zero: Living Large Update/What the Dock Update
+ - TerrainPatcher: v1.0.0
  - Other mods...?
 
 **Additional context**
