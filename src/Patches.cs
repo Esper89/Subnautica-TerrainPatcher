@@ -66,14 +66,23 @@ namespace TerrainPatcher
             }
         }
 
-        [HarmonyPatch(typeof(Player), nameof(Player.SetPosition), new Type[] { typeof(Vector3) })]
+        [HarmonyPatch(typeof(Player))]
         internal static class Player_SetPosition_Patch
         {
+            [HarmonyPatch(nameof(Player.SetPosition), new Type[] { typeof(Vector3) })]
+            [HarmonyPrefix]
             private static bool Prefix(ref Vector3 wsPos)
             {
-                // TODO doesn't work. fix
-                wsPos += MoveWorld.GLOBAL_OFFSET;
+                // TODO only works when very far from 0,0,0. fix
+                wsPos -= MoveWorld.CurrentOffset;
                 return true;
+            }
+
+            [HarmonyPatch(nameof(Player.Awake))]
+            [HarmonyPostfix]
+            private static void Postfix(Player __instance)
+            {
+                __instance.gameObject.AddComponent<MoveWorld>().ReferenceObject = __instance.transform;
             }
         }
 

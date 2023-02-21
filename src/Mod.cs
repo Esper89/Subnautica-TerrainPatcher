@@ -13,8 +13,9 @@ namespace TerrainPatcher
         // Initializes the mod.
         private void Awake()
         {
-            new Harmony("Esper89/TerrainPatcher").PatchAll();
+            var harmony = new Harmony("Esper89/TerrainPatcher");
             LOGGER = this.Logger;
+            harmony.PatchAll();
             FileLoading.FindAndLoadPatches();
 
             LogInfo("Done loading!");
@@ -22,13 +23,7 @@ namespace TerrainPatcher
 
         private static ManualLogSource? LOGGER;
 
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.F9))
-            {
-                MoveWorld.Move(new Vector3(100.0f, 0.0f, 100.0f));
-            }
-        }
+        
 
         internal static void LogInfo(string message) => LOGGER!.LogInfo(message);
         internal static void LogWarning(string message) => LOGGER!.LogWarning(message);
