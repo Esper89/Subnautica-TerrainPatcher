@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using HarmonyLib;
 using UnityEngine;
@@ -86,6 +87,20 @@ namespace TerrainPatcher
             }
         }
 
+        [HarmonyPatch(typeof(LargeWorldEntity))]
+        internal static class LargeWorldEntity_Patch
+        {
+            [HarmonyPatch(nameof(LargeWorldEntity.Awake))]
+            [HarmonyPrefix]
+            private static void Prefix(LargeWorldEntity __instance)
+            {
+                __instance.transform.position -= MoveWorld.CurrentOffset;
+            }
+        }
+
+        
+        }
+
         /*
         [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Getter)]
         internal static class Transform_position_get_Patch
@@ -112,4 +127,3 @@ namespace TerrainPatcher
         }
         */
     }
-}

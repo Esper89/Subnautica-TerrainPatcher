@@ -39,7 +39,7 @@ internal class MoveWorld : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.F9))
         {
-            CurrentOffset = referencePosition;
+            CurrentOffset += referencePosition;
             var velocity = Player.main.gameObject.GetComponent<Rigidbody>().velocity;
             var pos = Player.main.transform.position;
             MoveRootTransforms(referencePosition);
