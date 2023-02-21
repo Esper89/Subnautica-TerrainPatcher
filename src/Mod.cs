@@ -3,6 +3,7 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using UnityEngine;
 
 namespace TerrainPatcher
 {
@@ -15,9 +16,19 @@ namespace TerrainPatcher
             new Harmony("Esper89/TerrainPatcher").PatchAll();
             LOGGER = this.Logger;
             FileLoading.FindAndLoadPatches();
+
+            LogInfo("Done loading!");
         }
 
         private static ManualLogSource? LOGGER;
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F9))
+            {
+                MoveWorld.Move(new Vector3(100.0f, 0.0f, 100.0f));
+            }
+        }
 
         internal static void LogInfo(string message) => LOGGER!.LogInfo(message);
         internal static void LogWarning(string message) => LOGGER!.LogWarning(message);

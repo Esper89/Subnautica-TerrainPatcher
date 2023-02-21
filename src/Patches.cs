@@ -1,6 +1,7 @@
 using System;
 using System.Text.RegularExpressions;
 using HarmonyLib;
+using UnityEngine;
 using WorldStreaming;
 
 namespace TerrainPatcher
@@ -64,5 +65,42 @@ namespace TerrainPatcher
                 return true;
             }
         }
+
+        [HarmonyPatch(typeof(Player), nameof(Player.SetPosition), new Type[] { typeof(Vector3) })]
+        internal static class Player_SetPosition_Patch
+        {
+            private static bool Prefix(ref Vector3 wsPos)
+            {
+                // TODO doesn't work. fix
+                wsPos += MoveWorld.GLOBAL_OFFSET;
+                return true;
+            }
+        }
+
+        /*
+        [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Getter)]
+        internal static class Transform_position_get_Patch
+        {
+            private static void Postfix(ref Vector3 __result, Transform __instance)
+            {
+                if (__instance != MoveWorld.GLOBAL_ROOT!)
+                {
+                    __result -= MoveWorld.GLOBAL_ROOT!.position;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Setter)]
+        internal static class Transform_position_set_Patch
+        {
+            private static void Prefix(ref Vector3 value, Transform __instance)
+            {
+                if (__instance != MoveWorld.GLOBAL_ROOT!)
+                {
+                    value += MoveWorld.GLOBAL_ROOT!.position;
+                }
+            }
+        }
+        */
     }
 }
