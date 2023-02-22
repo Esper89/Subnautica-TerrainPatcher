@@ -3,7 +3,7 @@
     <PropertyGroup>
         <OutputType>Library</OutputType>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>default</LangVersion>
         <Nullable>enable</Nullable>
         <WarningLevel>4</WarningLevel>
         <OutputPath>bin/$(Configuration)</OutputPath>
@@ -35,6 +35,9 @@
         <Reference Include="UnityEngine">
             <HintPath>references/UnityEngine.refasm.dll</HintPath>
         </Reference>
+        <Reference Include="UnityEngine.AIModule">
+          <HintPath>..\..\.var\app\com.valvesoftware.Steam\.local\share\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.AIModule.dll</HintPath>
+        </Reference>
         <Reference Include="UnityEngine.CoreModule">
             <HintPath>references/UnityEngine.CoreModule.refasm.dll</HintPath>
         </Reference>
@@ -47,6 +50,9 @@
         <Reference Include="UnityEngine.PhysicsModule">
             <HintPath>references/UnityEngine.PhysicsModule.refasm.dll</HintPath>
         </Reference>
+        <Reference Include="UnityEngine.VFXModule">
+          <HintPath>..\..\.var\app\com.valvesoftware.Steam\.local\share\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.VFXModule.dll</HintPath>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
         <Compile Include="src/Mod.cs" />
@@ -54,6 +60,9 @@
         <Compile Include="src/FileLoading.cs" />
         <Compile Include="src/Patches.cs" />
         <Compile Include="src/MoveWorld.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="game-dirs.txt" />
     </ItemGroup>
     <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets" />
     <Target Name="CopyToTargetDir" AfterTargets="Build">

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Reflection;
 using BepInEx;
@@ -19,6 +20,14 @@ namespace TerrainPatcher
             FileLoading.FindAndLoadPatches();
 
             LogInfo("Done loading!");
+        }
+
+        public void Update()
+        {
+            if (Input.GetKeyUp(KeyCode.F9))
+            {
+                twoloop.OriginShift.Recenter();
+            }
         }
 
         private static ManualLogSource? LOGGER;

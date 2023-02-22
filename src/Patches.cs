@@ -1,4 +1,7 @@
+
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using HarmonyLib;
@@ -75,19 +78,17 @@ namespace TerrainPatcher
             private static bool Prefix(ref Vector3 wsPos)
             {
                 // TODO only works when very far from 0,0,0. fix
-                wsPos -= MoveWorld.CurrentOffset;
-                Player.main.transform.position = wsPos;
+                wsPos -= twoloop.OriginShift.LocalOffset.ToVector3();
                 return false;
             }
-
             [HarmonyPatch(nameof(Player.Awake))]
             [HarmonyPostfix]
             private static void Postfix(Player __instance)
             {
-                __instance.gameObject.AddComponent<MoveWorld>().ReferenceObject = __instance.transform;
+                __instance.gameObject.AddComponent<twoloop.OriginShift>().focus = __instance.gameObject.transform;
             }
         }
-
+        /*
         [HarmonyPatch(typeof(LargeWorldEntity))]
         internal static class LargeWorldEntity_Patch
         {
@@ -95,10 +96,9 @@ namespace TerrainPatcher
             [HarmonyPrefix]
             private static void Prefix(LargeWorldEntity __instance)
             {
-                __instance.transform.position -= MoveWorld.CurrentOffset;
+                __instance.transform.position -= twoloop.OriginShift.LocalOffset.ToVector3();
             }
         }
-
         [HarmonyPatch(typeof(LargeWorldStreamer))]
         internal static class LargeWorldStreamer_Patch
         {
@@ -106,41 +106,54 @@ namespace TerrainPatcher
             [HarmonyPrefix]
             private static void Prefix(ref Vector3 wsPos)
             {
-                wsPos -= MoveWorld.CurrentOffset;
+                wsPos -= twoloop.OriginShift.LocalOffset.ToVector3();
             }
 
             [HarmonyPatch(nameof(LargeWorldStreamer.GetBlock))]
             [HarmonyPrefix]
             private static void Prefix2(ref Vector3 wsPos)
             {
-                wsPos -= MoveWorld.CurrentOffset;
-            }
-        }
-    }
-
-        /*
-        [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Getter)]
-        internal static class Transform_position_get_Patch
-        {
-            private static void Postfix(ref Vector3 __result, Transform __instance)
-            {
-                if (__instance != MoveWorld.GLOBAL_ROOT!)
-                {
-                    __result -= MoveWorld.GLOBAL_ROOT!.position;
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Setter)]
-        internal static class Transform_position_set_Patch
-        {
-            private static void Prefix(ref Vector3 value, Transform __instance)
-            {
-                if (__instance != MoveWorld.GLOBAL_ROOT!)
-                {
-                    value += MoveWorld.GLOBAL_ROOT!.position;
-                }
+                wsPos -= twoloop.OriginShift.LocalOffset.ToVector3();
             }
         }
         */
+        [HarmonyPatch(typeof(UniqueIdentifier))]
+        internal static class UniqueIdentifier_Patch
+        {
+            [HarmonyPatch(nameof(UniqueIdentifier.Awake))]
+            [HarmonyPrefix]
+            private static void Prefix(UniqueIdentifier __instance)
+            {
+                if (__instance is not PrefabIdentifier prefabIdentifier)
+                    return;
+                if (prefabIdentifier.transform.parent != null)
+                    return;
+                prefabIdentifier.transform.position -= twoloop.OriginShift.LocalOffset.ToVector3();
+            }
+        }
     }
+
+    /*
+    [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Getter)]
+    internal static class Transform_position_get_Patch
+    {
+        private static void Postfix(ref Vector3 __result, Transform __instance)
+        {
+            if (__instance != MoveWorld.GLOBAL_ROOT!)
+            {
+                __result -= MoveWorld.GLOBAL_ROOT!.position;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Setter)]
+    internal static class Transform_position_set_Patch
+    {
+        private static void Prefix(ref Vector3 value, Transform __instance)
+        {
+            if (__instance != MoveWorld.GLOBAL_ROOT!)
+            {
+                value += MoveWorld.GLOBAL_ROOT!.position;
+            }
+        }
+        */
+        }
