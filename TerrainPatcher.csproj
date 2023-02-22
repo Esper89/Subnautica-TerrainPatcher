@@ -19,7 +19,7 @@
         <DocumentationFile>bin/Release/TerrainPatcher.xml</DocumentationFile>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="System" />
+        <Reference Include="System"/>
         <Reference Include="BepInEx">
             <HintPath>references/BepInEx.refasm.dll</HintPath>
         </Reference>
@@ -35,56 +35,53 @@
         <Reference Include="UnityEngine">
             <HintPath>references/UnityEngine.refasm.dll</HintPath>
         </Reference>
-        <Reference Include="UnityEngine.AIModule">
-          <HintPath>..\..\.var\app\com.valvesoftware.Steam\.local\share\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.AIModule.dll</HintPath>
-        </Reference>
         <Reference Include="UnityEngine.CoreModule">
             <HintPath>references/UnityEngine.CoreModule.refasm.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AIModule">
+            <HintPath>references/UnityEngine.AIModule.refasm.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.InputLegacyModule">
             <HintPath>references/UnityEngine.InputLegacyModule.refasm.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.ParticleSystemModule">
-          <HintPath>..\..\.var\app\com.valvesoftware.Steam\.local\share\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+            <HintPath>references/UnityEngine.ParticleSystemModule.refasm.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.PhysicsModule">
             <HintPath>references/UnityEngine.PhysicsModule.refasm.dll</HintPath>
         </Reference>
         <Reference Include="UnityEngine.VFXModule">
-          <HintPath>..\..\.var\app\com.valvesoftware.Steam\.local\share\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\UnityEngine.VFXModule.dll</HintPath>
+            <HintPath>references/UnityEngine.VFXModule.refasm.dll</HintPath>
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="src/Mod.cs" />
-        <Compile Include="src/Terrain.cs" />
-        <Compile Include="src/FileLoading.cs" />
-        <Compile Include="src/Patches.cs" />
-        <Compile Include="src/MoveWorld.cs" />
+        <Compile Include="src/Mod.cs"/>
+        <Compile Include="src/Terrain.cs"/>
+        <Compile Include="src/FileLoading.cs"/>
+        <Compile Include="src/Patches.cs"/>
+        <Compile Include="src/MoveWorld.cs"/>
     </ItemGroup>
-    <ItemGroup>
-      <Content Include="game-dirs.txt" />
-    </ItemGroup>
-    <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets" />
+    <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets"/>
     <Target Name="CopyToTargetDir" AfterTargets="Build">
-        <Copy SourceFiles="$(TargetPath);LICENSE;$(DocumentationFile)" DestinationFolder="target/$(Configuration)" />
-        <Copy SourceFiles="dist-readme.md" DestinationFiles="target/$(Configuration)/README.md" />
-        <WriteLinesToFile File="target/$(Configuration)/load-order.txt" Overwrite="True" />
-        <MakeDir Directories="target/$(Configuration)/patches" />
+        <Copy SourceFiles="$(TargetPath);LICENSE;$(DocumentationFile)" DestinationFolder="target/$(Configuration)"/>
+        <Copy SourceFiles="dist-readme.md" DestinationFiles="target/$(Configuration)/README.md"/>
+        <WriteLinesToFile File="target/$(Configuration)/load-order.txt" Overwrite="True"/>
+        <MakeDir Directories="target/$(Configuration)/patches"/>
     </Target>
     <Target Name="CopyToModsDir" AfterTargets="CopyToTargetDir" Condition="'$(Configuration)' == 'Debug' And Exists('game-dirs.txt')">
         <ReadLinesFromFile File="game-dirs.txt">
-            <Output TaskParameter="Lines" ItemName="GameDirs" />
+            <Output TaskParameter="Lines" ItemName="GameDirs"/>
         </ReadLinesFromFile>
         <CreateItem Include="target/$(Configuration)/*">
-            <Output TaskParameter="Include" ItemName="TargetFiles" />
+            <Output TaskParameter="Include" ItemName="TargetFiles"/>
         </CreateItem>
         <CreateProperty Value="BepInEx/plugins/$(ProjectName)">
-            <Output TaskParameter="Value" PropertyName="PluginDir" />
+            <Output TaskParameter="Value" PropertyName="PluginDir"/>
         </CreateProperty>
-        <Copy SourceFiles="@(TargetFiles)" DestinationFolder="%(GameDirs.Identity)/$(PluginDir)" />
-        <MakeDir Directories="%(GameDirs.Identity)/$(PluginDir)/patches" />
+        <Copy SourceFiles="@(TargetFiles)" DestinationFolder="%(GameDirs.Identity)/$(PluginDir)"/>
+        <MakeDir Directories="%(GameDirs.Identity)/$(PluginDir)/patches"/>
     </Target>
     <Target Name="ZipDist" AfterTargets="CopyToTargetDir" Condition="'$(Configuration)' == 'Release'">
-        <ZipDirectory SourceDirectory="target/$(Configuration)" DestinationFile="target/dist.zip" Overwrite="True" />
+        <ZipDirectory SourceDirectory="target/$(Configuration)" DestinationFile="target/dist.zip" Overwrite="True"/>
     </Target>
 </Project>
