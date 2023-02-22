@@ -76,7 +76,8 @@ namespace TerrainPatcher
             {
                 // TODO only works when very far from 0,0,0. fix
                 wsPos -= MoveWorld.CurrentOffset;
-                return true;
+                Player.main.transform.position = wsPos;
+                return false;
             }
 
             [HarmonyPatch(nameof(Player.Awake))]
@@ -98,8 +99,24 @@ namespace TerrainPatcher
             }
         }
 
-        
+        [HarmonyPatch(typeof(LargeWorldStreamer))]
+        internal static class LargeWorldStreamer_Patch
+        {
+            [HarmonyPatch(nameof(LargeWorldStreamer.GetContainingBatch))]
+            [HarmonyPrefix]
+            private static void Prefix(ref Vector3 wsPos)
+            {
+                wsPos -= MoveWorld.CurrentOffset;
+            }
+
+            [HarmonyPatch(nameof(LargeWorldStreamer.GetBlock))]
+            [HarmonyPrefix]
+            private static void Prefix2(ref Vector3 wsPos)
+            {
+                wsPos -= MoveWorld.CurrentOffset;
+            }
         }
+    }
 
         /*
         [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Getter)]
