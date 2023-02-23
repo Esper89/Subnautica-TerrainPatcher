@@ -11,7 +11,9 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using UnityEngine.VFX;
+using UWE;
 
 namespace twoloop
 {
@@ -250,7 +252,8 @@ namespace twoloop
             }
         }
 
-
+        public Vector3 playerbeforeShiftAmount;
+        public Vector3 playerbeforeShiftVelocity;
         /// <summary>
         /// How precise should client offsets be?
         ///
@@ -504,14 +507,14 @@ namespace twoloop
         private void DoRecenter(Vector3 focusPosition)
         {
             _focusPosition = focusPosition;
-            
+            var velocity = Player.main.gameObject.GetComponent<Rigidbody>().velocity;
             if (!useVerticalRecentering)
             {
                 _focusPosition.y = 0;
             }
 
             LocalOffset = Offset.Add(LocalOffset, _focusPosition);
-            
+
             // Temporarily disable interpolation so everything can recenter instantly
             var rbs = FindObjectsOfType<Rigidbody>();
             var rbInterpolationModes = new RigidbodyInterpolation[rbs.Length];
@@ -521,7 +524,7 @@ namespace twoloop
             if (disableCollidersOnRecenter)
             {
                 collidersWasEnabled = new bool[colliders.Length];
-                
+
                 // Disable all colliders
                 for (int i = 0; i < colliders.Length; i++)
                 {
@@ -536,24 +539,28 @@ namespace twoloop
                 rbInterpolationModes[i] = rbs[i].interpolation;
                 rbs[i].interpolation = RigidbodyInterpolation.None;
             }
-            
+
             var agents = FindObjectsOfType<UnityEngine.AI.NavMeshAgent>();
-            
-            // Disable all Nav Mesh Agents so it doesn't throw an error when they are off the navmesh temporarily.
+
+            // Disable all Nav Mesh Agents so it doesn't throlayer.main.rigidBody.Sleep();w an error when they are off the navmesh temporarily.
             foreach (var agent in agents)
             {
                 agent.enabled = false;
             }
-            
+
             // Move all root GameObjects
-            var rootGameObjects = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
-            foreach (var item in rootGameObjects)
+            for (var i = 0; i < SceneManager.sceneCount; i++)
             {
-                if (item.name == "MainCamera (UI)" || item.name == "MainCamera")
+                var rootGameObjects = SceneManager.GetSceneAt(i).GetRootGameObjects();
+                foreach (var item in rootGameObjects)
                 {
-                    continue;
+                    if (item.name == "MainCamera (UI)" || item.GetComponent<uGUI_BuilderMenu>() || item.name == "MainCamera")
+                    {
+                        continue;
+                    }
+
+                    item.transform.position -= _focusPosition;
                 }
-                item.transform.position -= _focusPosition;
             }
 
             // Re-enable nav mesh agents 
@@ -580,9 +587,9 @@ namespace twoloop
             MoveParticles(-_focusPosition);
             MoveLineRenderers(-_focusPosition);
             MoveTrailRenderers(-_focusPosition);
-            
+            Player.main.transform.position = focusPosition - _focusPosition;
+            Player.main.GetComponent<Rigidbody>().velocity = velocity;
             Physics.SyncTransforms();
-
             // Invoke instance event (for inspector callbacks)
             onOriginShifted.Invoke(LocalOffset.ToVector3(), -_focusPosition);
             

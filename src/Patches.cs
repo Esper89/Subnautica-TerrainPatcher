@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UWE;
 using WorldStreaming;
 
 namespace TerrainPatcher
@@ -69,7 +71,6 @@ namespace TerrainPatcher
                 return true;
             }
         }
-
         [HarmonyPatch(typeof(Player))]
         internal static class Player_SetPosition_Patch
         {
@@ -79,26 +80,30 @@ namespace TerrainPatcher
             {
                 // TODO only works when very far from 0,0,0. fix
                 wsPos -= twoloop.OriginShift.LocalOffset.ToVector3();
-                return false;
+                return true;
             }
+            
             [HarmonyPatch(nameof(Player.Awake))]
             [HarmonyPostfix]
             private static void Postfix(Player __instance)
             {
-                __instance.gameObject.AddComponent<twoloop.OriginShift>().focus = __instance.gameObject.transform;
+               var shift = __instance.gameObject.AddComponent<twoloop.OriginShift>();
+               shift.focus = __instance.gameObject.transform;
             }
         }
-        /*
+/*
         [HarmonyPatch(typeof(LargeWorldEntity))]
         internal static class LargeWorldEntity_Patch
         {
-            [HarmonyPatch(nameof(LargeWorldEntity.Awake))]
+            [HarmonyPatch("OnDe")]
             [HarmonyPrefix]
             private static void Prefix(LargeWorldEntity __instance)
             {
-                __instance.transform.position -= twoloop.OriginShift.LocalOffset.ToVector3();
+                __instance.transform.position += twoloop.OriginShift.LocalOffset.ToVector3();
             }
         }
+        */
+        /*
         [HarmonyPatch(typeof(LargeWorldStreamer))]
         internal static class LargeWorldStreamer_Patch
         {
@@ -130,18 +135,58 @@ namespace TerrainPatcher
                     return;
                 prefabIdentifier.transform.position -= twoloop.OriginShift.LocalOffset.ToVector3();
             }
-        }
-    }
 
+            [HarmonyPatch("OnDisable")]
+            [HarmonyPrefix]
+            private static void Prefix1(UniqueIdentifier __instance)
+            {
+                if (__instance is not PrefabIdentifier prefabIdentifier)
+                    return;
+                if (prefabIdentifier.transform.parent != null)
+                    return;
+                prefabIdentifier.transform.position += twoloop.OriginShift.LocalOffset.ToVector3();
+            }
+        }
+
+        [HarmonyPatch(typeof(BreakableResource))]
+        internal static class BreakableResource_Patch
+        {
+            [HarmonyPatch(nameof(BreakableResource.SpawnResourceFromPrefab),
+                new[] { typeof(AssetReferenceGameObject), typeof(Vector3), typeof(Vector3) })]
+            [HarmonyPrefix]
+            private static void Prefix(ref Vector3 position)
+            {
+                position += twoloop.OriginShift.LocalOffset.ToVector3();
+            }
+        }
+/*
+        [HarmonyPatch(typeof(ConstructionObstacle))]
+        internal static class ConstructionObstacle_Patch
+        {
+            [HarmonyPatch("Awake")]
+            [HarmonyPrefix]
+            private static bool Prefix(ConstructionObstacle __instance)
+            {
+                if (__instance.name.ToLower().Contains("nonstreaming"))
+                {
+                    __instance.gameObject.AddComponent<constructionobstacletracker>();
+                }
+
+                return false;
+            }
+
+        }
+        */
+    }
     /*
     [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Getter)]
     internal static class Transform_position_get_Patch
     {
         private static void Postfix(ref Vector3 __result, Transform __instance)
         {
-            if (__instance != MoveWorld.GLOBAL_ROOT!)
+            if (__instance.gameObject.name.ToLower() == "maincamera")
             {
-                __result -= MoveWorld.GLOBAL_ROOT!.position;
+                __result -= twoloop.OriginShift.LocalOffset.ToVector3();
             }
         }
     }
