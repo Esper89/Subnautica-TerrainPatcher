@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using DefaultNamespace;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
@@ -134,17 +135,7 @@ namespace TerrainPatcher
                 if (prefabIdentifier.transform.parent != null)
                     return;
                 prefabIdentifier.transform.position -= twoloop.OriginShift.LocalOffset.ToVector3();
-            }
-
-            [HarmonyPatch("OnDisable")]
-            [HarmonyPrefix]
-            private static void Prefix1(UniqueIdentifier __instance)
-            {
-                if (__instance is not PrefabIdentifier prefabIdentifier)
-                    return;
-                if (prefabIdentifier.transform.parent != null)
-                    return;
-                prefabIdentifier.transform.position += twoloop.OriginShift.LocalOffset.ToVector3();
+                prefabIdentifier.gameObject.AddComponent<tracker>();
             }
         }
 

@@ -63,9 +63,7 @@
         <Compile Include="src/FileLoading.cs" />
         <Compile Include="src/Patches.cs" />
         <Compile Include="src/MoveWorld.cs" />
-    </ItemGroup>
-    <ItemGroup>
-      <Content Include="BepInEx\Patchers\AddAwake.dll" />
+        <Compile Include="src\tracker.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets" />
     <Target Name="CopyToTargetDir" AfterTargets="Build">
