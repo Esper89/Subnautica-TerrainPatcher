@@ -3,6 +3,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design.Serialization;
+using System.Linq;
+using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using DefaultNamespace;
 using HarmonyLib;
@@ -72,6 +75,7 @@ namespace TerrainPatcher
                 return true;
             }
         }
+
         [HarmonyPatch(typeof(Player))]
         internal static class Player_SetPosition_Patch
         {
@@ -83,15 +87,16 @@ namespace TerrainPatcher
                 wsPos -= twoloop.OriginShift.LocalOffset.ToVector3();
                 return true;
             }
-            
+
             [HarmonyPatch(nameof(Player.Awake))]
             [HarmonyPostfix]
             private static void Postfix(Player __instance)
             {
-               var shift = __instance.gameObject.AddComponent<twoloop.OriginShift>();
-               shift.focus = __instance.gameObject.transform;
+                var shift = __instance.gameObject.AddComponent<twoloop.OriginShift>();
+                shift.focus = __instance.gameObject.transform;
             }
         }
+
 /*
         [HarmonyPatch(typeof(LargeWorldEntity))]
         internal static class LargeWorldEntity_Patch
@@ -104,25 +109,6 @@ namespace TerrainPatcher
             }
         }
         */
-        /*
-        [HarmonyPatch(typeof(LargeWorldStreamer))]
-        internal static class LargeWorldStreamer_Patch
-        {
-            [HarmonyPatch(nameof(LargeWorldStreamer.GetContainingBatch))]
-            [HarmonyPrefix]
-            private static void Prefix(ref Vector3 wsPos)
-            {
-                wsPos -= twoloop.OriginShift.LocalOffset.ToVector3();
-            }
-
-            [HarmonyPatch(nameof(LargeWorldStreamer.GetBlock))]
-            [HarmonyPrefix]
-            private static void Prefix2(ref Vector3 wsPos)
-            {
-                wsPos -= twoloop.OriginShift.LocalOffset.ToVector3();
-            }
-        }
-        */
         [HarmonyPatch(typeof(UniqueIdentifier))]
         internal static class UniqueIdentifier_Patch
         {
@@ -130,12 +116,12 @@ namespace TerrainPatcher
             [HarmonyPrefix]
             private static void Prefix(UniqueIdentifier __instance)
             {
-                if (__instance is not PrefabIdentifier prefabIdentifier)
+                if (__instance is ChildObjectIdentifier)
                     return;
-                if (prefabIdentifier.transform.parent != null)
+                if (__instance.transform.parent != null)
                     return;
-                prefabIdentifier.transform.position -= twoloop.OriginShift.LocalOffset.ToVector3();
-                prefabIdentifier.gameObject.AddComponent<tracker>();
+                __instance.transform.position -= twoloop.OriginShift.LocalOffset.ToVector3();
+                __instance.gameObject.AddComponent<tracker>();
             }
         }
 
@@ -150,6 +136,53 @@ namespace TerrainPatcher
                 position += twoloop.OriginShift.LocalOffset.ToVector3();
             }
         }
+
+        [HarmonyPatch(typeof(SeaTreader))]
+        internal static class SeaTreader_Patch
+        {
+            [HarmonyPatch(nameof(SeaTreader.FindClosestPathPoint))]
+            [HarmonyTranspiler]
+            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            {
+                List<CodeInstruction> _instructions = new(instructions);
+                for (var i = 0; i < _instructions.Count; i++)
+                {
+                    if (_instructions[i].LoadsField(typeof(SeaTreader).GetField(nameof(SeaTreader.treaderPaths))))
+                    {
+                        _instructions[i] = Transpilers.EmitDelegate<Func<SeaTreader, TreaderPath[]>>(treader =>
+                        {
+                            var toreturn = new List<TreaderPath>(treader.treaderPaths);
+                            foreach (var path in toreturn)
+                            {
+                                foreach (var point in path.pathPoints)
+                                {
+                                    point.position -= twoloop.OriginShift.LocalOffset.ToVector3();
+                                }
+                            }
+
+                            return toreturn.ToArray();
+                        });
+                    }
+                }
+
+                return _instructions.AsEnumerable();
+            }
+            
+        }
+
+        [HarmonyPatch(typeof(SignalPing))]
+        internal static class SignalPing_Patch
+        {
+            [HarmonyPatch(nameof(SignalPing.Start))]
+            [HarmonyPrefix]
+            private static void Prefix(SignalPing __instance)
+            {
+                __instance.pos -= twoloop.OriginShift.LocalOffset.ToVector3();
+            }
+        }
+    }
+}
+
 /*
         [HarmonyPatch(typeof(ConstructionObstacle))]
         internal static class ConstructionObstacle_Patch
@@ -168,28 +201,26 @@ namespace TerrainPatcher
 
         }
         */
-    }
-    /*
-    [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Getter)]
-    internal static class Transform_position_get_Patch
+/*
+[HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Getter)]
+internal static class Transform_position_get_Patch
+{
+    private static void Postfix(ref Vector3 __result, Transform __instance)
     {
-        private static void Postfix(ref Vector3 __result, Transform __instance)
+        if (__instance.gameObject.name.ToLower() == "maincamera")
         {
-            if (__instance.gameObject.name.ToLower() == "maincamera")
-            {
-                __result -= twoloop.OriginShift.LocalOffset.ToVector3();
-            }
+            __result -= twoloop.OriginShift.LocalOffset.ToVector3();
         }
     }
-    [HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Setter)]
-    internal static class Transform_position_set_Patch
+}
+[HarmonyPatch(typeof(Transform), nameof(Transform.position), MethodType.Setter)]
+internal static class Transform_position_set_Patch
+{
+    private static void Prefix(ref Vector3 value, Transform __instance)
     {
-        private static void Prefix(ref Vector3 value, Transform __instance)
+        if (__instance != MoveWorld.GLOBAL_ROOT!)
         {
-            if (__instance != MoveWorld.GLOBAL_ROOT!)
-            {
-                value += MoveWorld.GLOBAL_ROOT!.position;
-            }
+            value += MoveWorld.GLOBAL_ROOT!.position;
         }
-        */
-        }
+    }
+    */

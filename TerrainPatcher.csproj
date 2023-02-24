@@ -7,6 +7,8 @@
         <Nullable>enable</Nullable>
         <WarningLevel>4</WarningLevel>
         <OutputPath>bin/$(Configuration)</OutputPath>
+        <ProjectGuid>{CB2BA057-FC79-4FD3-A80B-90380681F75D}</ProjectGuid>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
         <Optimize>false</Optimize>
@@ -19,18 +21,18 @@
         <DocumentationFile>bin/Release/TerrainPatcher.xml</DocumentationFile>
     </PropertyGroup>
     <ItemGroup>
+        <Reference Include="Assembly-CSharp">
+          <HintPath>references\Assembly-CSharp-publicized.refasm.dll</HintPath>
+        </Reference>
+        <Reference Include="Assembly-CSharp-firstpass">
+          <HintPath>references\Assembly-CSharp-firstpass-publicized.refasm.dll</HintPath>
+        </Reference>
         <Reference Include="System" />
         <Reference Include="BepInEx">
             <HintPath>references/BepInEx.refasm.dll</HintPath>
         </Reference>
         <Reference Include="0Harmony">
             <HintPath>references/0Harmony.refasm.dll</HintPath>
-        </Reference>
-        <Reference Include="Assembly-CSharp">
-            <HintPath>references/Assembly-CSharp-publicized.refasm.dll</HintPath>
-        </Reference>
-        <Reference Include="Assembly-CSharp-firstpass">
-            <HintPath>references/Assembly-CSharp-firstpass-publicized.refasm.dll</HintPath>
         </Reference>
         <Reference Include="Unity.Addressables">
           <HintPath>..\..\.var\app\com.valvesoftware.Steam\.local\share\Steam\steamapps\common\Subnautica\Subnautica_Data\Managed\Unity.Addressables.dll</HintPath>

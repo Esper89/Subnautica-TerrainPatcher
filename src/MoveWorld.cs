@@ -9,6 +9,8 @@
 
 using System;
 using System.Collections;
+using System.Linq;
+using TerrainPatcher;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -559,6 +561,10 @@ namespace twoloop
                         continue;
                     }
 
+                    if (item.GetComponent<SignalPing>())
+                    {
+                        item.GetComponent<SignalPing>().pos -= _focusPosition;
+                    }
                     item.transform.position -= _focusPosition;
                 }
             }
@@ -589,6 +595,7 @@ namespace twoloop
             MoveTrailRenderers(-_focusPosition);
             Player.main.transform.position = focusPosition - _focusPosition;
             Player.main.GetComponent<Rigidbody>().velocity = velocity;
+            LargeWorldStreamer.main.ReloadSettings();
             Physics.SyncTransforms();
             // Invoke instance event (for inspector callbacks)
             onOriginShifted.Invoke(LocalOffset.ToVector3(), -_focusPosition);
