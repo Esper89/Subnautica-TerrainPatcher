@@ -27,6 +27,9 @@
         <Reference Include="Assembly-CSharp-firstpass">
           <HintPath>references\Assembly-CSharp-firstpass-publicized.refasm.dll</HintPath>
         </Reference>
+        <Reference Include="SMLHelper">
+          <HintPath>..\..\.var\app\com.valvesoftware.Steam\.local\share\Steam\steamapps\common\Subnautica\BepInEx\plugins\Modding Helper\SMLHelper.dll</HintPath>
+        </Reference>
         <Reference Include="System" />
         <Reference Include="BepInEx">
             <HintPath>references/BepInEx.refasm.dll</HintPath>

@@ -65,7 +65,7 @@ namespace twoloop
         
 #endif
 
-        private Offset _localOffset;
+        public Offset _localOffset;
 
         /// <summary>
         /// How much the world has moved to keep the focus Transform position near (0,0,0)
@@ -363,7 +363,6 @@ namespace twoloop
         {
             singleton._needsRecenter = true;
         }
-
         /// <summary>
         /// Transforms a position from a remote client's world space to the local client's world space.
         /// You should use this whenever you want to communicate a position from a remote client.

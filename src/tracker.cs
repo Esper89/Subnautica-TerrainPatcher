@@ -9,5 +9,17 @@ namespace DefaultNamespace
         {
             transform.position += twoloop.OriginShift.LocalOffset.ToVector3();
         }
+
+        public void GetReadyForSave()
+        {
+            ErrorMessage.AddMessage("Bracing for save!");
+            transform.position += twoloop.OriginShift.LocalOffset.ToVector3();
+        }
+
+        public void StopSave()
+        {
+            ErrorMessage.AddMessage("Saved Properly!");
+            transform.position -= twoloop.OriginShift.LocalOffset.ToVector3();
+        }
     }
 }

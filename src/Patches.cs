@@ -4,13 +4,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design.Serialization;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using DefaultNamespace;
 using HarmonyLib;
+using SMLHelper.V2.Utility;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.PostProcessing;
+using UnityEngine.SceneManagement;
 using UWE;
 using WorldStreaming;
 
@@ -81,11 +86,14 @@ namespace TerrainPatcher
         {
             [HarmonyPatch(nameof(Player.SetPosition), new Type[] { typeof(Vector3) })]
             [HarmonyPrefix]
-            private static bool Prefix(ref Vector3 wsPos)
+            private static void Prefix(ref Vector3 wsPos)
             {
                 // TODO only works when very far from 0,0,0. fix
+                var trace = new StackTrace();
+                Mod.LogInfo($"called by {trace.GetFrame(2).GetMethod().Name}");
+                if (trace.GetFrame(2).GetMethod().Name.Contains(nameof(Player.SpawnNearby)))
+                    return;
                 wsPos -= twoloop.OriginShift.LocalOffset.ToVector3();
-                return true;
             }
 
             [HarmonyPatch(nameof(Player.Awake))]
@@ -113,12 +121,12 @@ namespace TerrainPatcher
         internal static class UniqueIdentifier_Patch
         {
             [HarmonyPatch(nameof(UniqueIdentifier.Awake))]
-            [HarmonyPrefix]
-            private static void Prefix(UniqueIdentifier __instance)
+            [HarmonyPostfix]
+            private static void Postfix(UniqueIdentifier __instance)
             {
                 if (__instance is ChildObjectIdentifier)
                     return;
-                if (__instance.transform.parent != null)
+                if (__instance.transform.parent != null || __instance.gameObject.GetComponent<Crash>())
                     return;
                 __instance.transform.position -= twoloop.OriginShift.LocalOffset.ToVector3();
                 __instance.gameObject.AddComponent<tracker>();
@@ -137,39 +145,6 @@ namespace TerrainPatcher
             }
         }
 
-        [HarmonyPatch(typeof(SeaTreader))]
-        internal static class SeaTreader_Patch
-        {
-            [HarmonyPatch(nameof(SeaTreader.FindClosestPathPoint))]
-            [HarmonyTranspiler]
-            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-            {
-                List<CodeInstruction> _instructions = new(instructions);
-                for (var i = 0; i < _instructions.Count; i++)
-                {
-                    if (_instructions[i].LoadsField(typeof(SeaTreader).GetField(nameof(SeaTreader.treaderPaths))))
-                    {
-                        _instructions[i] = Transpilers.EmitDelegate<Func<SeaTreader, TreaderPath[]>>(treader =>
-                        {
-                            var toreturn = new List<TreaderPath>(treader.treaderPaths);
-                            foreach (var path in toreturn)
-                            {
-                                foreach (var point in path.pathPoints)
-                                {
-                                    point.position -= twoloop.OriginShift.LocalOffset.ToVector3();
-                                }
-                            }
-
-                            return toreturn.ToArray();
-                        });
-                    }
-                }
-
-                return _instructions.AsEnumerable();
-            }
-            
-        }
-
         [HarmonyPatch(typeof(SignalPing))]
         internal static class SignalPing_Patch
         {
@@ -179,6 +154,81 @@ namespace TerrainPatcher
             {
                 __instance.pos -= twoloop.OriginShift.LocalOffset.ToVector3();
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(SpawnOnKill))]
+    internal static class SpawnOnKill_Patch
+    {
+        [HarmonyPatch(nameof(SpawnOnKill.OnKill))]
+        [HarmonyTranspiler]
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var _instructions = new List<CodeInstruction>(instructions);
+            for (var i = 0; i < _instructions.Count; i++)
+            {
+                if (_instructions[i].Calls(typeof(Transform).GetProperty(nameof(Transform.position))?.GetGetMethod()))
+                {
+                    _instructions[i] = Transpilers.EmitDelegate<Func<Transform, Vector3>>(transform =>
+                    {
+                        return transform.position + twoloop.OriginShift.LocalOffset.ToVector3();
+                    });
+                }
+            }
+
+            return _instructions.AsEnumerable();
+        }
+    }
+
+    [HarmonyPatch(typeof(IngameMenu))]
+    internal static class IngameMenu_Patch
+    {
+        [HarmonyPatch(nameof(IngameMenu.SaveGame))]
+        [HarmonyPrefix]
+        private static void Prefix()
+        {
+            for (var i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var rootGameObjects = SceneManager.GetSceneAt(i).GetRootGameObjects();
+                foreach (var item in rootGameObjects)
+                {
+                    if(item.GetComponent<tracker>() && !item.GetComponent<Player>())
+                        item.GetComponent<tracker>().GetReadyForSave();
+                }
+            }
+        }
+
+        [HarmonyPatch(nameof(IngameMenu.SaveGame))]
+        [HarmonyPostfix]
+        private static void Postfix()
+        {
+            CoroutineHost.StartCoroutine(SaveGame_Postfix_Enumerator());
+        }
+
+        private static IEnumerator SaveGame_Postfix_Enumerator()
+        {
+            yield return WaitFor.Frames(75);
+            for (var i = 0; i < SceneManager.sceneCount; i++)
+            {
+                var rootGameObjects = SceneManager.GetSceneAt(i).GetRootGameObjects();
+                foreach (var item in rootGameObjects)
+                {
+                    if(item.GetComponent<tracker>() && !item.GetComponent<Player>())
+                        item.GetComponent<tracker>().StopSave();
+                }
+            }
+        }
+
+    }
+
+    [HarmonyPatch(typeof(ReefbackPlant))]
+    internal static class ReefbackPlant_Patch
+    {
+        [HarmonyPatch(nameof(ReefbackPlant.Start))]
+        [HarmonyPrefix]
+        private static void Prefix(ReefbackPlant __instance)
+        {
+            __instance.transform.position += twoloop.OriginShift.LocalOffset.ToVector3();
         }
     }
 }
