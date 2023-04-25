@@ -9,7 +9,8 @@ This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica).
 
 You can download Terrain Patcher from the
 [releases page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the
-changelog).
+changelog), or from the [Subnautica](https://submodica.xyz/mods/sn1/240) and
+[Below Zero](https://submodica.xyz/mods/sbz/241) Submodica pages.
 
 To install Terrain Patcher, just extract the zip file and place the `TerrainPatcher` folder into
 your `BepInEx/plugins` folder.
@@ -48,7 +49,7 @@ If your mod can function without Terrain Patcher (despite including terrain patc
 need to add it as a dependency, and you can skip this section.
 
 Regardless of which method you use to load patches, you'll need to add Terrain Patcher as a
-dependency of your mod, as shown in [`ExampleMod.cs`](./examples/ExampleMod.cs)). To do this, just
+dependency of your mod (as shown in [`ExampleMod.cs`](./examples/ExampleMod.cs)). To do this, just
 add the `[BepInDependency("Esper89.TerrainPatcher")]` attribute to your mod's entry point, below the
 `BepInPlugin` attribute, as shown here:
 
