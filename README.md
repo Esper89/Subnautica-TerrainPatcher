@@ -97,8 +97,7 @@ any files conforming to the specification will work.
 
 - Extending the current edge of the world to allow for more terrain.
 
-Patching biomes or entities is not planned for Terrain Patcher—that would be well outside it's
-scope. These features may be implemented in the future as a separate mod.
+- Patching biomes and entities.
 
 ## Contributing
 
