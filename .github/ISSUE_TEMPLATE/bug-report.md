@@ -27,7 +27,7 @@ Please upload your `LogOutput.log` file, located in the `BepInEx` folder.
 
 **Please complete the following version information:**
  - Subnautica/Below Zero: Living Large Update/What the Dock Update
- - TerrainPatcher: v1.0.0
+ - TerrainPatcher: v1.0.1
  - Other mods...?
 
 **Additional context**
