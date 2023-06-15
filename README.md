@@ -5,7 +5,8 @@ the game's terrain.
 
 ## Installation
 
-This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica).
+This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica) and
+[Nautilus](https://github.com/SubnauticaModding/Nautilus).
 
 You can download Terrain Patcher from the
 [releases page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the
@@ -19,6 +20,8 @@ To install a `.optoctreepatch` file, place it in the `TerrainPatcher/patches` fo
 
 You can specify a custom load order for `.optoctreepatch` files by writing the file names (without
 the extensions) into the `load-order.txt` file.
+
+Loading patch files can be enabled/disabled from the in-game config menu.
 
 ## Library Usage
 
@@ -83,13 +86,13 @@ any files conforming to the specification will work.
 
 - No actual changes to game files; uses temporary files to store patched terrain.
 
-- Multiple patches can modify the same batch without causing problems.
-
 - Support for Subnautica and Below Zero.
 
 - Easily load patches without making a mod, or have more control by using a mod.
 
 - Custom load order.
+
+- Enable and disable patch loading in-game.
 
 - Cool rocks.
 
