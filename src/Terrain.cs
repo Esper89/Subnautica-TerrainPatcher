@@ -112,10 +112,9 @@ namespace TerrainPatcher
         private static void RegisterNewBatch(Int3 batchId)
         {
             string newPath = Path.Combine(
-                TempBatchStorage.PATH,
-                $"tmp-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
+                PatchesDir.Path,
+                $"compiled-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
             );
-            Directory.CreateDirectory(TempBatchStorage.PATH); // Just in case.
 
             string GetPath(string origDir) => Path.Combine(
                 SNUtils.InsideUnmanaged(origDir),
@@ -186,26 +185,41 @@ namespace TerrainPatcher
         }
     }
 
-    // The directory containing temporary batch files.
-    internal static class TempBatchStorage
+    // The directory containing patched batch files.
+    internal class PatchesDir
     {
-        static TempBatchStorage()
+        private PatchesDir()
         {
-            Directory.CreateDirectory(PATH);
-            ClearTempFiles();
+            foreach (var origDirName in Constants.ORIG_BATCH_DIRS)
+            {
+                var origDir = SNUtils.InsideUnmanaged(origDirName);
+
+                if (Directory.Exists(origDir))
+                {
+                    this.path = System.IO.Path.Combine(origDir, "CompiledOctreesCache", "patches");
+                    Directory.CreateDirectory(this.path);
+
+                    foreach (string path in Directory.EnumerateFiles(this.path))
+                    {
+                        if (System.IO.Path.GetExtension(path) == ".optoctrees" &&
+                            !TerrainRegistry.patchedBatches.ContainsValue(path))
+                        {
+                            File.Delete(path);
+                        }
+                    }
+                }
+            }
         }
 
-        public static string PATH { get; } = Path.Combine(Constants.MOD_DIR, ".tmp");
+        private string? path;
 
-        private static void ClearTempFiles()
+        private static PatchesDir? instance;
+        public static string? Path
         {
-            foreach (string path in Directory.EnumerateFiles(PATH))
+            get
             {
-                if (Path.GetExtension(path) == ".optoctrees" &&
-                    !TerrainRegistry.patchedBatches.ContainsValue(path))
-                {
-                    File.Delete(path);
-                }
+                PatchesDir.instance ??= new PatchesDir();
+                return PatchesDir.instance.path;
             }
         }
     }

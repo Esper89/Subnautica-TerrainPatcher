@@ -76,6 +76,10 @@ An example `optoctreepatch` file is included at
 Patch files can be generated using [Reef Editor](https://github.com/eternaight/sn-terrain-edit), but
 any files conforming to the specification will work.
 
+Terrain Patcher places patched batches in `CompiledOctreesCache/patches`, using the same naming
+system as the game does. These patched batches can be loaded by external tools, if they wish to
+support terrain patches.
+
 ## Features
 
 - Modifying the game's terrain in a modular way.
