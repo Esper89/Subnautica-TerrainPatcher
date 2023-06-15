@@ -70,6 +70,11 @@
         <MakeDir Directories="%(GameDirs.Identity)/$(PluginDir)/patches"/>
     </Target>
     <Target Name="ZipDist" AfterTargets="CopyToTargetDir" Condition="'$(Configuration)' == 'Release'">
-        <ZipDirectory SourceDirectory="target/$(Configuration)" DestinationFile="target/dist.zip" Overwrite="True"/>
+        <CreateItem Include="target/$(Configuration)/**/*">
+            <Output TaskParameter="Include" ItemName="TargetFiles"/>
+        </CreateItem>
+        <Copy SourceFiles="@(TargetFiles)" DestinationFolder="target/dist/$(ProjectName)"/>
+        <MakeDir Directories="target/dist/$(ProjectName)/patches"/>
+        <ZipDirectory SourceDirectory="target/dist" DestinationFile="target/dist.zip" Overwrite="True"/>
     </Target>
 </Project>
