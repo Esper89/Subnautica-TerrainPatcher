@@ -8,6 +8,13 @@ namespace TerrainPatcher
     // Harmony patches that make the game open patched terrain files instead of the originals.
     internal static class Patches
     {
+        internal static void Register()
+        {
+            var harmony = new Harmony("Esper89.TerrainPatcher");
+            harmony.PatchAll(typeof(LargeWorldStreamer_GetCompiledOctreesCachePath_Patch));
+            harmony.PatchAll(typeof(BatchOctreesStreamer_GetPath_Patch));
+        }
+
         [HarmonyPatch(
             typeof(LargeWorldStreamer),
             nameof(LargeWorldStreamer.GetCompiledOctreesCachePath)
@@ -54,7 +61,9 @@ namespace TerrainPatcher
         // Sets the result of the method and skips the original if needed.
         private static bool SetResult(Int3 batchId, ref string result, bool runOriginal)
         {
-            if (TerrainRegistry.patchedBatches.ContainsKey(batchId) && runOriginal)
+            if (runOriginal &&
+                Mod.Settings.IncludePatches &&
+                TerrainRegistry.patchedBatches.ContainsKey(batchId))
             {
                 result = TerrainRegistry.patchedBatches[batchId];
                 return false;

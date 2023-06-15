@@ -38,12 +38,16 @@
         <Reference Include="UnityEngine.CoreModule">
             <HintPath>references/UnityEngine.CoreModule.refasm.dll</HintPath>
         </Reference>
+        <Reference Include="Nautilus">
+            <HintPath>references/Nautilus.refasm.dll</HintPath>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
         <Compile Include="src/Mod.cs"/>
         <Compile Include="src/Terrain.cs"/>
         <Compile Include="src/FileLoading.cs"/>
         <Compile Include="src/Patches.cs"/>
+        <Compile Include="src/Options.cs"/>
     </ItemGroup>
     <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets"/>
     <Target Name="CopyToTargetDir" AfterTargets="Build">

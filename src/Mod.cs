@@ -1,27 +1,70 @@
+using System;
 using System.IO;
 using System.Reflection;
 using BepInEx;
-using BepInEx.Logging;
-using HarmonyLib;
+using BepInEx.Bootstrap;
+using BepInEx.Configuration;
 
 namespace TerrainPatcher
 {
     [BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.0.0")]
+    [BepInDependency("com.snmodding.nautilus", BepInDependency.DependencyFlags.SoftDependency)]
     internal class Mod : BaseUnityPlugin
     {
         // Initializes the mod.
         private void Awake()
         {
-            new Harmony("Esper89/TerrainPatcher").PatchAll();
-            LOGGER = this.Logger;
+            this._settings = new Settings(base.Config);
+            Mod.Instance = this;
+
+            Patches.Register();
             FileLoading.FindAndLoadPatches();
+
+            if (Chainloader.PluginInfos.ContainsKey("com.snmodding.nautilus"))
+            {
+                Options.Register();
+            }
+            else
+            {
+                Mod.LogInfo("Nautilus is not installed, no options menu will be available.");
+            }
         }
 
-        private static ManualLogSource? LOGGER;
+        private static Mod? _instance;
+        private static Mod Instance
+        {
+            get => Mod._instance ?? throw new InvalidOperationException(
+                "Cannot call TerrainPatcher functions before it is loaded."
+            );
+            set => Mod._instance = value;
+        }
 
-        internal static void LogInfo(string message) => LOGGER!.LogInfo(message);
-        internal static void LogWarning(string message) => LOGGER!.LogWarning(message);
-        internal static void LogError(string message) => LOGGER!.LogError(message);
+        internal static void LogInfo(string message) => Mod.Instance.Logger.LogInfo(message);
+        internal static void LogWarning(string message) => Mod.Instance.Logger.LogWarning(message);
+        internal static void LogError(string message) => Mod.Instance.Logger.LogError(message);
+
+        private Settings? _settings;
+        internal static Settings Settings { get => Mod.Instance._settings!; }
+    }
+
+    internal class Settings
+    {
+        internal Settings(ConfigFile config)
+        {
+            this.includePatches = config.Bind(
+                "terrain", "include-patches", true, "Include patches when loading terrain?"
+            );
+
+            config.Save();
+        }
+
+        private ConfigEntry<bool> includePatches;
+
+        internal bool IncludePatches
+        {
+            get => this.includePatches.Value;
+            set => this.includePatches.Value = value;
+        }
     }
 
     internal static class Constants
