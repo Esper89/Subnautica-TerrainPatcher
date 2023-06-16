@@ -1,4 +1,4 @@
-# Terrain Patcher v1.0.1
+# Terrain Patcher v1.0.2
 
 Terrain Patcher is a Subnautica and Below Zero library mod that allows modders and players to modify
 the game's terrain.

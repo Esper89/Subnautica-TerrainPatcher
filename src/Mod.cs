@@ -7,7 +7,7 @@ using BepInEx.Configuration;
 
 namespace TerrainPatcher
 {
-    [BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.0.1")]
+    [BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.0.2")]
     [BepInDependency("com.snmodding.nautilus", BepInDependency.DependencyFlags.SoftDependency)]
     internal class Mod : BaseUnityPlugin
     {
