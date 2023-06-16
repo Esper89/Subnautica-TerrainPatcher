@@ -69,11 +69,15 @@ namespace TerrainPatcher
 
     internal static class Constants
     {
-        // The current version number of the optoctreepatch format.
+        // The current version number of the patch format.
         internal const uint PATCH_VERSION = 0;
 
-        // The current file extension for the optoctreepatch format.
-        internal static readonly string PATCH_EXTENSION = ".optoctreepatch";
+        // All valid file extensions for the patch format.
+        internal static readonly string[] PATCH_EXTENSIONS =
+        {
+            "optoctreepatch",
+            "optoctreepatc", // Discord shortens uploaded file extensions to 13 characters.
+        };
 
         // The current version number of the game's batch format.
         internal const uint BATCH_VERSION = 4;
