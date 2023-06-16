@@ -233,9 +233,7 @@ namespace TerrainPatcher
 
             if (patchedOctreeCount > Constants.OCTREES_PER_BATCH)
             {
-                throw new InvalidDataException(
-                    "A patch contains more octrees than the batch can contain."
-                );
+                Mod.LogWarning("Patch contains more octrees than the batch can contain.");
             }
 
             // An array of byte arrays. Each byte array is the binary node data for one octree.
@@ -263,13 +261,15 @@ namespace TerrainPatcher
                 }
                 catch (EndOfStreamException)
                 {
+                    Mod.LogWarning("Patch ended too early.");
                     break;
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    throw new InvalidDataException(
-                        "A patch contains an octree outside the bounds of the batch it applies to."
+                    Mod.LogWarning(
+                        "Patch contains an octree outside the bounds of the batch it applies to."
                     );
+                    continue;
                 }
             }
 
