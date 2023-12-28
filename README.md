@@ -6,12 +6,13 @@ the game's terrain.
 ## Installation
 
 This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica) and
-[Nautilus](https://github.com/SubnauticaModding/Nautilus).
+[Nautilus](https://github.com/SubnauticaModding/Nautilus). The Nautilus dependency is optional but
+recommended.
 
-You can download Terrain Patcher from the
-[releases page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the
-changelog), or from the [Subnautica](https://submodica.xyz/mods/sn1/240) and
-[Below Zero](https://submodica.xyz/mods/sbz/241) Submodica pages.
+You can download Terrain Patcher from the [releases
+page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the changelog),
+or from the [Subnautica](https://submodica.xyz/mods/sn1/240) and [Below
+Zero](https://submodica.xyz/mods/sbz/241) Submodica pages.
 
 To install Terrain Patcher, just extract the zip file and place the `TerrainPatcher` folder into
 your `BepInEx/plugins` folder.
@@ -21,7 +22,17 @@ To install a `.optoctreepatch` file, place it in the `TerrainPatcher/patches` fo
 You can specify a custom load order for `.optoctreepatch` files by writing the file names (without
 the extensions) into the `load-order.txt` file.
 
-Loading patch files can be enabled/disabled from the in-game config menu.
+Loading patch files can be enabled/disabled from the in-game config menu if Nautilus is installed.
+
+### Legacy Version
+
+Some mods, such as [Sea To Sea](https://reikakalseki.github.io/subnautica/mods/seatosea.html), may
+require using the legacy QModManager version of Terrain Patcher instead of the current BepInEx
+version. The legacy version can be downloaded from the [releases
+page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/tag/v0.4) (below the changelog).
+Installation and usage instructions for the legacy version can be found [in an older version of the
+repository](https://github.com/Esper89/Subnautica-TerrainPatcher/tree/b379c34). Please do not submit
+issues for bugs encountered on an old version of Terrain Patcher.
 
 ## Library Usage
 
