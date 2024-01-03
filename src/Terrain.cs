@@ -10,12 +10,18 @@ namespace TerrainPatcher
         /// <summary>Applies a terrain patch file to the game's terrain.</summary>
         /// <param name="patchName">The name of the patch file to apply.</param>
         /// <param name="patchFile">The patch file to apply.</param>
-        public static void PatchTerrain(string patchName, Stream patchFile)
+        /// <param name="forceOriginal">Force-overwrites batches in this patch, resetting them to
+        /// their original states before applying patches.</param>
+        public static void PatchTerrain(
+            string patchName,
+            Stream patchFile,
+            bool forceOriginal = false
+        )
         {
             try
             {
                 Mod.LogInfo($"Applying patch '{patchName}'");
-                ApplyPatchFile(patchFile);
+                ApplyPatchFile(patchFile, forceOriginal);
             }
             catch (Exception ex)
             {
@@ -24,7 +30,7 @@ namespace TerrainPatcher
         }
 
         // Applies a terrain patch.
-        internal static void ApplyPatchFile(Stream patchFile)
+        internal static void ApplyPatchFile(Stream patchFile, bool forceOriginal = false)
         {
             if (patchFile is null)
             {
@@ -65,7 +71,7 @@ namespace TerrainPatcher
                     // Lists all batches as they are patched.
                     Mod.LogInfo($"- Patching batch ({id.x}, {id.y}, {id.z})");
 
-                    ApplyBatchPatch(reader, id);
+                    ApplyBatchPatch(reader, id, forceOriginal);
                 }
                 catch (EndOfStreamException ex)
                 {
@@ -93,11 +99,11 @@ namespace TerrainPatcher
             new Dictionary<Int3, string> { };
 
         // Loads a batch into patchedBatches if necessary, then applies the patch.
-        private static void ApplyBatchPatch(BinaryReader patch, Int3 batchId)
+        private static void ApplyBatchPatch(BinaryReader patch, Int3 batchId, bool forceOriginal)
         {
             lock (patchedBatches)
             {
-                if (!patchedBatches.ContainsKey(batchId))
+                if (!patchedBatches.ContainsKey(batchId) || forceOriginal)
                 {
                     RegisterNewBatch(batchId);
                 }
