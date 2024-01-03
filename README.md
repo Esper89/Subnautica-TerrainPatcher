@@ -54,7 +54,7 @@ example of how to do this.
 ```cs
 var asm = System.Reflection.Assembly.GetExecutingAssembly();
 var patch = asm.GetManifestResourceStream("MyModName.my-file-name.optoctreepatch");
-TerrainPatcher.TerrainRegistry.PatchTerrain(patch);
+TerrainPatcher.TerrainRegistry.PatchTerrain("my-file-name", patch);
 ```
 
 ### Dependency Registration
@@ -72,6 +72,16 @@ add the `[BepInDependency("Esper89.TerrainPatcher")]` attribute to your mod's en
 [BepInDependency("Esper89.TerrainPatcher")]
 internal class Mod : BaseUnityPlugin { /* ... */ }
 ```
+
+### Licensing
+
+Terrain Patcher is licensed under the GNU AGPL, which says that derivative works must also be
+licensed under the GNU AGPL. If your mod directly interacts with Terrain Patcher (e.g. by
+referencing `TerrainPatcher.dll` and calling `TerrainPatcher.TerrainRegistry.PatchTerrain`), it
+might be considered a derivative work. To avoid any possible copyright issues, if your mod isn't
+licensed under the GNU AGPL, you should avoid referencing `TerrainPatcher.dll` or otherwise
+interacting with Terrain Patcher directly. Patches can still be loaded without referencing Terrain
+Patcher by distributing them alongside your mod.
 
 ## Patch Format
 
@@ -137,18 +147,14 @@ also create a `dist.zip` file in `target` for easy distribution.
 
 ## License
 
-```
-Copyright (C) 2021, 2023  Esper Thomson
+Copyright © 2021, 2023 Esper Thomson
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of version 3 of the GNU Affero General Public License
-as published by the Free Software Foundation.
+This program is free software: you can redistribute it and/or modify it under the terms of version
+3 of the GNU Affero General Public License as published by the Free Software Foundation.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero
+General Public License for more details.
 
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-```
+You should have received a copy of the GNU Affero General Public License along with this program.
+If not, see <https://www.gnu.org/licenses/>.
