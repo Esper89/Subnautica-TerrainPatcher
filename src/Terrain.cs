@@ -10,7 +10,6 @@ namespace TerrainPatcher
         /// <summary>Applies a terrain patch file to the game's terrain.</summary>
         /// <param name="patchName">The name of the patch file to apply.</param>
         /// <param name="patchFile">The patch file to apply.</param>
-        /// <exception cref="InvalidDataException">Thrown if the patch file is invalid.</exception>
         public static void PatchTerrain(string patchName, Stream patchFile)
         {
             try
