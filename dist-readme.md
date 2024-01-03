@@ -11,23 +11,19 @@ load order of patches provided by other mods, change the BepInEx load order of t
 
 ## Repo
 
-TerrainPatcher's source code and documentation can be found on the
-[GitHub repo](https://github.com/Esper89/Subnautica-TerrainPatcher).
+TerrainPatcher's source code and documentation can be found on the [GitHub
+repo](https://github.com/Esper89/Subnautica-TerrainPatcher).
 
 ## License
 
-```
-Copyright (C) 2021, 2023  Esper Thomson
+Copyright © 2021, 2023 Esper Thomson
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of version 3 of the GNU Affero General Public License
-as published by the Free Software Foundation.
+This program is free software: you can redistribute it and/or modify it under the terms of version
+3 of the GNU Affero General Public License as published by the Free Software Foundation.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero
+General Public License for more details.
 
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-```
+You should have received a copy of the GNU Affero General Public License along with this program.
+If not, see <https://www.gnu.org/licenses/>.
