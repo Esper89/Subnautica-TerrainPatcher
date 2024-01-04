@@ -85,8 +85,8 @@ Patcher by distributing them alongside your mod.
 
 ## Patch Format
 
-The Subnautica Terrain Patch Format (the `optoctreepatch` format) is documented in
-[`Subnautica Terrain Patch Format.pdf`](./doc/Subnautica%20Terrain%20Patch%20Format.pdf). The format
+The Subnautica Terrain Patch Format (the `optoctreepatch` format) is documented in [`Subnautica
+Terrain Patch Format.pdf`](./doc/Subnautica%20Terrain%20Patch%20Format.pdf). The format
 is designed to be as similar to the game's native terrain format as possible, while still allowing
 for proper patching of terrain. The patch format also allows as much data as necessary to be stored
 in one file, for easier distribution.
@@ -130,8 +130,8 @@ support terrain patches.
 ## Contributing
 
 Contributions of any kind—issues, pull requests, feature requests—are all welcome. You can submit
-suggestions and bug reports
-[as an issue](https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose), or code
+suggestions and bug reports [as an
+issue](https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose), or code
 contributions [as a pull request](https://github.com/Esper89/Subnautica-TerrainPatcher/pulls).
 
 ### Building
