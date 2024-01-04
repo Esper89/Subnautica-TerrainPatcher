@@ -11,7 +11,7 @@ load order of patches provided by other mods, change the BepInEx load order of t
 
 ## Repo
 
-TerrainPatcher's source code and documentation can be found on the [GitHub
+Terrain Patcher's source code and documentation can be found on the [GitHub
 repo](https://github.com/Esper89/Subnautica-TerrainPatcher).
 
 ## License
