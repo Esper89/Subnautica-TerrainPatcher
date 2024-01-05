@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace TerrainPatcher
 {
@@ -18,11 +19,13 @@ namespace TerrainPatcher
         {
             string searchDir = Directory.GetParent(Constants.MOD_DIR).FullName;
 
-            string[] paths = Directory.GetFiles(
-                searchDir,
-                $"*{Constants.PATCH_EXTENSION}",
-                SearchOption.AllDirectories
-            );
+            string[] paths = Constants.PATCH_EXTENSIONS
+                .SelectMany(ext => Directory.GetFiles(
+                    searchDir,
+                    $"*.{ext}",
+                    SearchOption.AllDirectories
+                ))
+                .ToArray();
 
             return SortFiles(paths, GetLoadOrder());
 

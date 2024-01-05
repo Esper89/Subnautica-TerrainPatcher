@@ -44,6 +44,9 @@
         <Reference Include="UnityEngine.PhysicsModule">
             <HintPath>references/UnityEngine.PhysicsModule.refasm.dll</HintPath>
         </Reference>
+        <Reference Include="Nautilus">
+            <HintPath>references/Nautilus.refasm.dll</HintPath>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
         <Compile Include="src/Mod.cs"/>
@@ -51,6 +54,7 @@
         <Compile Include="src/FileLoading.cs"/>
         <Compile Include="src/Patches.cs"/>
         <Compile Include="src/MoveWorld.cs"/>
+        <Compile Include="src/Options.cs"/>
     </ItemGroup>
     <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets"/>
     <Target Name="CopyToTargetDir" AfterTargets="Build">
@@ -73,6 +77,11 @@
         <MakeDir Directories="%(GameDirs.Identity)/$(PluginDir)/patches"/>
     </Target>
     <Target Name="ZipDist" AfterTargets="CopyToTargetDir" Condition="'$(Configuration)' == 'Release'">
-        <ZipDirectory SourceDirectory="target/$(Configuration)" DestinationFile="target/dist.zip" Overwrite="True"/>
+        <CreateItem Include="target/$(Configuration)/**/*">
+            <Output TaskParameter="Include" ItemName="TargetFiles"/>
+        </CreateItem>
+        <Copy SourceFiles="@(TargetFiles)" DestinationFolder="target/dist/$(ProjectName)"/>
+        <MakeDir Directories="target/dist/$(ProjectName)/patches"/>
+        <ZipDirectory SourceDirectory="target/dist" DestinationFile="target/dist.zip" Overwrite="True"/>
     </Target>
 </Project>

@@ -10,13 +10,18 @@ namespace TerrainPatcher
         /// <summary>Applies a terrain patch file to the game's terrain.</summary>
         /// <param name="patchName">The name of the patch file to apply.</param>
         /// <param name="patchFile">The patch file to apply.</param>
-        /// <exception cref="InvalidDataException">Thrown if the patch file is invalid.</exception>
-        public static void PatchTerrain(string patchName, Stream patchFile)
+        /// <param name="forceOriginal">Force-overwrites batches in this patch, resetting them to
+        /// their original states before applying patches.</param>
+        public static void PatchTerrain(
+            string patchName,
+            Stream patchFile,
+            bool forceOriginal = false
+        )
         {
             try
             {
                 Mod.LogInfo($"Applying patch '{patchName}'");
-                ApplyPatchFile(patchFile);
+                ApplyPatchFile(patchFile, forceOriginal);
             }
             catch (Exception ex)
             {
@@ -25,7 +30,7 @@ namespace TerrainPatcher
         }
 
         // Applies a terrain patch.
-        internal static void ApplyPatchFile(Stream patchFile)
+        internal static void ApplyPatchFile(Stream patchFile, bool forceOriginal = false)
         {
             if (patchFile is null)
             {
@@ -66,7 +71,7 @@ namespace TerrainPatcher
                     // Lists all batches as they are patched.
                     Mod.LogInfo($"- Patching batch ({id.x}, {id.y}, {id.z})");
 
-                    ApplyBatchPatch(reader, id);
+                    ApplyBatchPatch(reader, id, forceOriginal);
                 }
                 catch (EndOfStreamException ex)
                 {
@@ -94,11 +99,11 @@ namespace TerrainPatcher
             new Dictionary<Int3, string> { };
 
         // Loads a batch into patchedBatches if necessary, then applies the patch.
-        private static void ApplyBatchPatch(BinaryReader patch, Int3 batchId)
+        private static void ApplyBatchPatch(BinaryReader patch, Int3 batchId, bool forceOriginal)
         {
             lock (patchedBatches)
             {
-                if (!patchedBatches.ContainsKey(batchId))
+                if (!patchedBatches.ContainsKey(batchId) || forceOriginal)
                 {
                     RegisterNewBatch(batchId);
                 }
@@ -112,10 +117,9 @@ namespace TerrainPatcher
         private static void RegisterNewBatch(Int3 batchId)
         {
             string newPath = Path.Combine(
-                TempBatchStorage.PATH,
-                $"tmp-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
+                PatchesDir.Path,
+                $"compiled-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
             );
-            Directory.CreateDirectory(TempBatchStorage.PATH); // Just in case.
 
             string GetPath(string origDir) => Path.Combine(
                 SNUtils.InsideUnmanaged(origDir),
@@ -186,26 +190,41 @@ namespace TerrainPatcher
         }
     }
 
-    // The directory containing temporary batch files.
-    internal static class TempBatchStorage
+    // The directory containing patched batch files.
+    internal class PatchesDir
     {
-        static TempBatchStorage()
+        private PatchesDir()
         {
-            Directory.CreateDirectory(PATH);
-            ClearTempFiles();
+            foreach (var origDirName in Constants.ORIG_BATCH_DIRS)
+            {
+                var origDir = SNUtils.InsideUnmanaged(origDirName);
+
+                if (Directory.Exists(origDir))
+                {
+                    this.path = System.IO.Path.Combine(origDir, "CompiledOctreesCache", "patches");
+                    Directory.CreateDirectory(this.path);
+
+                    foreach (string path in Directory.EnumerateFiles(this.path))
+                    {
+                        if (System.IO.Path.GetExtension(path) == ".optoctrees" &&
+                            !TerrainRegistry.patchedBatches.ContainsValue(path))
+                        {
+                            File.Delete(path);
+                        }
+                    }
+                }
+            }
         }
 
-        public static string PATH { get; } = Path.Combine(Constants.MOD_DIR, ".tmp");
+        private string? path;
 
-        private static void ClearTempFiles()
+        private static PatchesDir? instance;
+        public static string? Path
         {
-            foreach (string path in Directory.EnumerateFiles(PATH))
+            get
             {
-                if (Path.GetExtension(path) == ".optoctrees" &&
-                    !TerrainRegistry.patchedBatches.ContainsValue(path))
-                {
-                    File.Delete(path);
-                }
+                PatchesDir.instance ??= new PatchesDir();
+                return PatchesDir.instance.path;
             }
         }
     }
@@ -219,9 +238,7 @@ namespace TerrainPatcher
 
             if (patchedOctreeCount > Constants.OCTREES_PER_BATCH)
             {
-                throw new InvalidDataException(
-                    "A patch contains more octrees than the batch can contain."
-                );
+                Mod.LogWarning("Patch contains more octrees than the batch can contain.");
             }
 
             // An array of byte arrays. Each byte array is the binary node data for one octree.
@@ -249,13 +266,15 @@ namespace TerrainPatcher
                 }
                 catch (EndOfStreamException)
                 {
+                    Mod.LogWarning("Patch ended too early.");
                     break;
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    throw new InvalidDataException(
-                        "A patch contains an octree outside the bounds of the batch it applies to."
+                    Mod.LogWarning(
+                        "Patch contains an octree outside the bounds of the batch it applies to."
                     );
+                    continue;
                 }
             }
 
