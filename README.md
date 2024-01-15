@@ -162,5 +162,5 @@ If not, see <https://www.gnu.org/licenses/>.
 Additional permission under GNU AGPL version 3 section 7
 
 If you modify this Program, or any covered work, by linking or combining it with Subnautica (or a
-modified version of that program), the licensors of this Program grant you additional permission to
-convey the resulting work.
+modified version of that program), containing parts covered by the terms of its license, the
+licensors of this Program grant you additional permission to convey the resulting work.
