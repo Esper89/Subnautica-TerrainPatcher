@@ -65,7 +65,7 @@ namespace TerrainPatcher
                 Mod.Settings.IncludePatches &&
                 TerrainRegistry.patchedBatches.ContainsKey(batchId))
             {
-                result = TerrainRegistry.patchedBatches[batchId];
+                result = TerrainRegistry.patchedBatches[batchId].fileName;
                 return false;
             }
             else

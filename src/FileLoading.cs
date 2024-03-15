@@ -127,16 +127,16 @@ namespace TerrainPatcher
 
                 try
                 {
-                    Mod.LogInfo($"Loading '{patchName}'");
+                    Mod.LogInfo($"Loading patch '{patchName}'");
 
                     using (FileStream file = File.OpenRead(filepath))
                     {
-                        TerrainRegistry.ApplyPatchFile(file);
+                        TerrainRegistry.ApplyPatchFile(patchName, file);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Mod.LogError($"Problem loading '{patchName}': {ex}");
+                    Mod.LogError($"Problem loading patch '{patchName}': {ex}");
                 }
             }
         }
