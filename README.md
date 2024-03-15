@@ -147,7 +147,7 @@ also create a `dist.zip` file in `target` for easy distribution.
 
 ## License
 
-Copyright © 2021, 2023 Esper Thomson
+Copyright © 2021, 2023–2024 Esper Thomson
 
 This program is free software: you can redistribute it and/or modify it under the terms of version
 3 of the GNU Affero General Public License as published by the Free Software Foundation.

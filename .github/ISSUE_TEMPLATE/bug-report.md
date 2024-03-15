@@ -30,7 +30,7 @@ Please upload any relevant `.optoctreepatch` files from the `BepInEx/plugins` fo
 
 **Please complete the following version information:**
  - Subnautica/Below Zero: Living Large Update/What the Dock Update
- - Terrain Patcher: 1.0.2
+ - Terrain Patcher: 1.1.0
  - Other mods...?
 
 **Additional Context**
