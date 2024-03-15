@@ -169,7 +169,7 @@ namespace TerrainPatcher
                         {
                             File.Copy(origPath, newPath, overwrite: true);
 
-                            patchedBatches.Add(batchId, new PatchedBatch(newPath));
+                            patchedBatches[batchId] = new PatchedBatch(newPath);
                             return;
                         }
                     }
@@ -190,7 +190,7 @@ namespace TerrainPatcher
                     writer.Write((uint)0);
                 }
 
-                patchedBatches.Add(batchId, new PatchedBatch(newPath));
+                patchedBatches[batchId] = new PatchedBatch(newPath);
             }
         }
 
