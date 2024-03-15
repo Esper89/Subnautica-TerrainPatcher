@@ -130,8 +130,17 @@ namespace TerrainPatcher
         {
             lock (patchedBatches)
             {
-                if (!patchedBatches.ContainsKey(batchId) || forceOriginal)
+                if (!patchedBatches.ContainsKey(batchId))
                 {
+                    RegisterNewBatch(batchId);
+                }
+                else if (forceOriginal)
+                {
+                    Mod.LogWarning(
+                        $"Patch '{patchName}' forcefully resetting batch "
+                        + "[{batchId.x}, {batchId.y}, {batchId.z}]!"
+                    );
+
                     RegisterNewBatch(batchId);
                 }
             }
