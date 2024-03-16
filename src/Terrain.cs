@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace TerrainPatcher
 {
@@ -20,49 +21,77 @@ namespace TerrainPatcher
             bool forceOriginal = false
         )
         {
+            if (patchFile is null)
+            {
+                throw new ArgumentNullException($"Argument '{nameof(patchFile)}' must not be null");
+            }
+
             try
             {
-                Mod.LogInfo($"Applying patch '{patchName}'");
+                string message = $"Applying patch '{patchName}'";
+
+                if (patchFile.CanSeek)
+                {
+                    long position = patchFile.Position;
+                    byte[] hash = MD5.Create().ComputeHash(patchFile);
+                    patchFile.Seek(position, SeekOrigin.Begin);
+
+                    string hex = BitConverter.ToString(hash).Replace("-", "");
+                    message += $" (MD5: {hex})";
+                }
+
+                Mod.LogInfo(message);
+
                 ApplyPatchFile(patchName, patchFile, forceOriginal);
+            }
+            catch (InvalidDataException ex)
+            {
+                Mod.LogError($"Patch '{patchName}' is broken or contains errors: {ex.Message}");
+                Mod.DisplayError($"Error in terrain patch '{patchName}'!");
             }
             catch (Exception ex)
             {
-                Mod.LogError($"Problem applying patch '{patchName}': {ex}");
+                Mod.LogError(
+                    $"Unexpected error applying patch '{patchName}', please report this bug: {ex}"
+                );
+
+                Mod.DisplayError(
+                    $"Unexpected error applying terrain patch '{patchName}', please report this"
+                    + " bug!"
+                );
             }
         }
 
         // Applies a terrain patch.
-        internal static void ApplyPatchFile(
+        private static void ApplyPatchFile(
             string patchName,
             Stream patchFile,
-            bool forceOriginal = false
+            bool forceOriginal
         )
         {
-            if (patchFile is null)
-            {
-                throw new ArgumentNullException(
-                    $"Argument '{nameof(patchFile)}' must not be null."
-                );
-            }
-
             var reader = new BinaryReader(patchFile);
 
             uint version;
 
-            try
-            {
-                version = reader.ReadUInt32();
-            }
+            try { version = reader.ReadUInt32(); }
             catch (EndOfStreamException)
             {
-                throw new InvalidDataException("Provided patch file is not large enough.");
+                throw new InvalidDataException("Patch is not large enough");
+            }
+
+            if (version == Constants.SKIP_VERSION)
+            {
+                Mod.LogWarning(
+                    $"Skipping application of patch '{patchName}' because of invalid version!"
+                );
+                return;
             }
 
             if (version != Constants.PATCH_VERSION)
             {
                 throw new InvalidDataException(
-                    "Provided patch file does not have the correct version. The correct version " +
-                    $"is {Constants.PATCH_VERSION}, this patch file has version {version}."
+                    $"Unknown patch version {version}. Allowed version is:"
+                    + $" {Constants.PATCH_VERSION}"
                 );
             }
 
@@ -81,7 +110,7 @@ namespace TerrainPatcher
                 }
                 catch (EndOfStreamException ex)
                 {
-                    throw new InvalidDataException("File ended too early.", ex);
+                    throw new InvalidDataException("Patch ends too early", ex);
                 }
             }
 
@@ -107,17 +136,17 @@ namespace TerrainPatcher
         // A batch that has been modified.
         internal struct PatchedBatch
         {
-            internal PatchedBatch(string fileName)
+            public PatchedBatch(string fileName)
             {
                 this.fileName = fileName;
                 this.octreePatches = new List<string>?[Constants.OCTREES_PER_BATCH];
             }
 
             // The name of the new batch file.
-            internal string fileName;
+            public string fileName;
 
             // A list of the patch names that have been applied for each octree.
-            internal List<string>?[] octreePatches;
+            public List<string>?[] octreePatches;
         }
 
         // Loads a batch into patchedBatches if necessary, then applies the patch.
@@ -138,7 +167,7 @@ namespace TerrainPatcher
                 {
                     Mod.LogWarning(
                         $"Patch '{patchName}' forcefully resetting batch "
-                        + "[{batchId.x}, {batchId.y}, {batchId.z}]!"
+                        + $"[{batchId.x}, {batchId.y}, {batchId.z}]!"
                     );
 
                     RegisterNewBatch(batchId);
@@ -186,7 +215,7 @@ namespace TerrainPatcher
             }
 
             // Vanilla file was not found, creating empty batch.
-            using (FileStream file = File.Open(newPath, FileMode.Create))
+            using (FileStream file = File.Create(newPath))
             {
                 var writer = new BinaryWriter(file);
 
@@ -209,22 +238,28 @@ namespace TerrainPatcher
             string fileName = patchedBatches[batchId].fileName;
 
             // Copy the contents of the original file into memory.
-            byte[] bytes = File.ReadAllBytes(fileName);
-            var original = new BinaryReader(new MemoryStream(buffer: bytes, writable: false));
+            byte[] origBytes = File.ReadAllBytes(fileName);
+            var original = new BinaryReader(new MemoryStream(buffer: origBytes, writable: false));
 
             original.ReadUInt32(); // Discard version bytes.
 
             BitArray patchedOctrees;
 
             // Apply the patch to the target file.
-            using (FileStream file = File.Open(fileName, FileMode.Create))
+            using (FileStream targetFile = File.Open(fileName, FileMode.Create))
             {
-                var target = new BinaryWriter(file);
+                var target = new BinaryWriter(targetFile);
 
                 target.WriteUInt32(Constants.BATCH_VERSION); // Prepend version bytes.
 
                 // Call the terrain patcher.
-                patchedOctrees = TerrainPatching.Patch(target, original, patch);
+                try { patchedOctrees = TerrainPatching.Patch(target, original, patch); }
+                catch (Exception)
+                {
+                    targetFile.Seek(0, SeekOrigin.Begin);
+                    targetFile.Write(origBytes, 0, origBytes.Length);
+                    throw;
+                }
             }
 
             var octreePatches = patchedBatches[batchId].octreePatches;
@@ -304,7 +339,9 @@ namespace TerrainPatcher
 
             if (patchedOctreeCount > Constants.OCTREES_PER_BATCH)
             {
-                Mod.LogWarning("Patch contains more octrees than the batch can contain.");
+                throw new InvalidDataException(
+                    "Patch contains more octrees than the batch can contain"
+                );
             }
 
             // An array of byte arrays. Each byte array is the binary node data for one octree.
@@ -317,10 +354,7 @@ namespace TerrainPatcher
                 {
                     octrees[i] = original.ReadBytes(original.ReadUInt16() * 4);
                 }
-                catch (EndOfStreamException)
-                {
-                    break;
-                }
+                catch (EndOfStreamException) { break; }
             }
 
             // Apply patches on top of the octrees array.
@@ -329,20 +363,22 @@ namespace TerrainPatcher
                 try
                 {
                     int octree = patch.ReadByte();
+                    byte[] bytes = patch.ReadBytes(patch.ReadUInt16() * 4);
+
                     patchedOctrees[octree] = true;
-                    octrees[octree] = patch.ReadBytes(patch.ReadUInt16() * 4);
+                    octrees[octree] = bytes;
                 }
-                catch (EndOfStreamException)
+                catch (EndOfStreamException ex)
                 {
-                    Mod.LogWarning("Patch ended too early.");
-                    break;
+                    throw new InvalidDataException("Patch ends too early", ex);
                 }
-                catch (IndexOutOfRangeException)
+                catch (Exception ex)
+                when (ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
                 {
-                    Mod.LogWarning(
-                        "Patch contains an octree outside the bounds of the batch it applies to."
+                    throw new InvalidDataException(
+                        "Patch contains an octree outside the bounds of the batch it applies to",
+                        ex
                     );
-                    continue;
                 }
             }
 

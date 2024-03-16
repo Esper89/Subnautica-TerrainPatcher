@@ -11,6 +11,7 @@ namespace TerrainPatcher
         // Finds all patch files to apply and loads them.
         public static void FindAndLoadPatches()
         {
+            Mod.LogInfo("Loading terrain patch files");
             LoadPatchFiles(GetPatchFiles());
         }
 
@@ -25,6 +26,18 @@ namespace TerrainPatcher
                     $"*.{ext}",
                     SearchOption.AllDirectories
                 ))
+                .Where(path =>
+                {
+                    try
+                    {
+                        uint version = new BinaryReader(File.OpenRead(path)).ReadUInt32();
+                        return version != Constants.SKIP_VERSION;
+                    }
+                    catch (Exception ex) when (ex is IOException || ex is EndOfStreamException)
+                    {
+                        return false;
+                    }
+                })
                 .ToArray();
 
             return SortFiles(paths, GetLoadOrder());
@@ -43,17 +56,17 @@ namespace TerrainPatcher
                 var sorted = new List<string> { };
 
                 // Loop through each entry in the load order list.
-                for (int i = 0; i < loadOrder.Length; i++)
+                foreach (string entry in loadOrder)
                 {
                     // And check each file name to see if it matches that entry.
-                    for (int j = 0; j < names.Length; j++)
+                    for (int i = 0; i < names.Length; i++)
                     {
-                        if (loadOrder[i] == names[j])
+                        if (entry == names[i])
                         {
-                            sorted.Add(paths[j]);
-                            Mod.LogInfo($"- {names[j]}: '{paths[j]}'");
+                            sorted.Add(paths[i]);
+                            Mod.LogInfo($"{sorted.Count}. '{names[i]}': '{paths[i]}'");
 
-                            names[j] = null; // Remove the name from the list.
+                            names[i] = null; // Remove the name from the list.
                         }
                     }
                 }
@@ -64,7 +77,7 @@ namespace TerrainPatcher
                     if (names[i] is object)
                     {
                         sorted.Add(paths[i]);
-                        Mod.LogInfo($"- {names[i]}: '{paths[i]}'");
+                        Mod.LogInfo($"{sorted.Count}. '{names[i]}': '{paths[i]}'");
                     }
                 }
 
@@ -74,7 +87,7 @@ namespace TerrainPatcher
             // Gets the desired load order from the config file.
             static string[] GetLoadOrder()
             {
-                string path = Path.Combine(Constants.MOD_DIR, CONFIG_FILE);
+                string path = Path.Combine(Constants.MOD_DIR, LOAD_ORDER_FILE);
 
                 var seen = new HashSet<string> { };
                 var loadOrder = new List<string> { };
@@ -100,7 +113,10 @@ namespace TerrainPatcher
                             }
                         }
                     }
-                    catch (IOException) { Mod.LogWarning("Could not open load order file"); }
+                    catch (IOException ex)
+                    {
+                        Mod.LogWarning($"Could not open load order file: {ex}");
+                    }
                 }
                 else { Mod.LogWarning("Could not find load order file"); }
 
@@ -108,8 +124,8 @@ namespace TerrainPatcher
             }
         }
 
-        // The name of the load order config file.
-        private static readonly string CONFIG_FILE = "load-order.txt";
+        // The name of the load order file.
+        private static readonly string LOAD_ORDER_FILE = "load-order.txt";
 
         // Load terrain patch files.
         private static void LoadPatchFiles(string[] patchFiles)
@@ -125,19 +141,18 @@ namespace TerrainPatcher
             {
                 string patchName = Path.GetFileNameWithoutExtension(filepath);
 
-                try
-                {
-                    Mod.LogInfo($"Loading patch '{patchName}'");
+                FileStream file;
 
-                    using (FileStream file = File.OpenRead(filepath))
-                    {
-                        TerrainRegistry.ApplyPatchFile(patchName, file);
-                    }
-                }
-                catch (Exception ex)
+                try { file = File.OpenRead(filepath); }
+                catch (IOException ex)
                 {
-                    Mod.LogError($"Problem loading patch '{patchName}': {ex}");
+                    Mod.LogError($"Could not open patch file '{patchName}': {ex.Message}");
+                    Mod.DisplayError($"Error opening terrain patch '{patchName}'!");
+                    return;
                 }
+
+                TerrainRegistry.PatchTerrain(patchName, file);
+                file.Close();
             }
         }
     }

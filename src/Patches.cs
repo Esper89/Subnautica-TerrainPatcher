@@ -23,7 +23,7 @@ namespace TerrainPatcher
         {
             // Matches a batch file name. Supports negative batch numbers.
             private static readonly Regex pattern = new Regex(
-                $@"^(?:.*(?:\/|\\))?compiled-batch-(-?\d+)-(-?\d+)-(-?\d+)\.optoctrees$"
+                @"^(?:.*(?:\/|\\))?compiled-batch-(-?\d+)-(-?\d+)-(-?\d+)\.optoctrees$"
             );
 
             private static bool Prefix(string filename, ref string __result, bool __runOriginal)
@@ -43,7 +43,7 @@ namespace TerrainPatcher
                 }
                 catch (FormatException)
                 {
-                    Mod.LogError($"Game accessed batch file with invalid filename '{filename}'");
+                    Mod.LogWarning($"Game accessed batch file with invalid filename '{filename}'");
                     return false;
                 }
 

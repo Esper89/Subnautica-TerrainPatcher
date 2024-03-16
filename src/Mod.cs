@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using BepInEx;
@@ -22,11 +23,22 @@ namespace TerrainPatcher
 
             if (Chainloader.PluginInfos.ContainsKey("com.snmodding.nautilus"))
             {
+                Mod.LogInfo("Nautilus is installed, options menu will be available");
                 Options.Register();
             }
             else
             {
-                Mod.LogInfo("Nautilus is not installed, no options menu will be available.");
+                Mod.LogWarning("Nautilus is not installed, no options menu will be available");
+            }
+        }
+
+        // Prints error messages.
+        private void Update()
+        {
+            if (this.messages.Count > 0 && ErrorMessage.main != null)
+            {
+                foreach (string message in this.messages) { ErrorMessage.AddError(message); }
+                this.messages.Clear();
             }
         }
 
@@ -34,14 +46,19 @@ namespace TerrainPatcher
         private static Mod Instance
         {
             get => Mod._instance ?? throw new InvalidOperationException(
-                "Cannot call TerrainPatcher functions before it is loaded."
+                "Cannot call TerrainPatcher functions before it is loaded"
             );
             set => Mod._instance = value;
         }
 
+        // Writes a message to the BepInEx log with the specified log level.
         internal static void LogInfo(string message) => Mod.Instance.Logger.LogInfo(message);
         internal static void LogWarning(string message) => Mod.Instance.Logger.LogWarning(message);
         internal static void LogError(string message) => Mod.Instance.Logger.LogError(message);
+
+        // Displays an error message to the player once the title screen has loaded.
+        internal static void DisplayError(string message) => Mod.Instance.messages.Add(message);
+        private List<string> messages = new List<string>();
 
         private Settings? _settings;
         internal static Settings Settings { get => Mod.Instance._settings!; }
@@ -72,11 +89,14 @@ namespace TerrainPatcher
         // The current version number of the patch format.
         internal const uint PATCH_VERSION = 0;
 
+        // The patch format version number that's guaranteed to be skipped.
+        internal const uint SKIP_VERSION = uint.MaxValue;
+
         // All valid file extensions for the patch format.
         internal static readonly string[] PATCH_EXTENSIONS =
         {
             "optoctreepatch",
-            "optoctreepatc", // Discord shortens uploaded file extensions to 13 characters.
+            "optoctreepatc", // Discord used to shorten uploaded file extensions to 13 characters.
         };
 
         // The current version number of the game's batch format.

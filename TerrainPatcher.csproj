@@ -6,6 +6,7 @@
         <LangVersion>8.0</LangVersion>
         <Nullable>enable</Nullable>
         <WarningLevel>4</WarningLevel>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <OutputPath>bin/$(Configuration)</OutputPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
