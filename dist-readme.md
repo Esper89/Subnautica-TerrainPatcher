@@ -7,12 +7,12 @@ the game's terrain.
 
 Patch load order can be configured in `load-order.txt`. Each line should be the name of the patch to
 reorder. Load order can only be configured for patches loaded from the filesystem; to configure the
-load order of patches provided by other mods, change the BepInEx load order of those mods.
+load order of patches provided directly by other mods, change the BepInEx load order of those mods.
 
-## Repo
+## Repository
 
-Terrain Patcher's source code and documentation can be found on the [GitHub
-repo](https://github.com/Esper89/Subnautica-TerrainPatcher).
+Terrain Patcher's source code and documentation can be found in its [GitHub
+repository](https://github.com/Esper89/Subnautica-TerrainPatcher).
 
 ## License
 
@@ -26,7 +26,7 @@ even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
 General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License along with this program.
-If not, see <https://www.gnu.org/licenses/>.
+If not, see <https://www.gnu.org/licenses>.
 
 Additional permission under GNU AGPL version 3 section 7
 

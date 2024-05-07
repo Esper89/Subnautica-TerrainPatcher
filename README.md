@@ -10,9 +10,7 @@ This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica) and
 recommended.
 
 You can download Terrain Patcher from the [releases
-page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest) (below the changelog),
-or from the [Subnautica](https://submodica.xyz/mods/sn1/240) and [Below
-Zero](https://submodica.xyz/mods/sbz/241) Submodica pages.
+page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest), below the changelog.
 
 To install Terrain Patcher, just extract the zip file and place the `TerrainPatcher` folder into
 your `BepInEx/plugins` folder.
@@ -29,10 +27,24 @@ Loading patch files can be enabled/disabled from the in-game config menu if Naut
 Some mods, such as [Sea To Sea](https://reikakalseki.github.io/subnautica/mods/seatosea.html), may
 require using the legacy QModManager version of Terrain Patcher instead of the current BepInEx
 version. The legacy version can be downloaded from the [releases
-page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/tag/v0.4) (below the changelog).
+page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/tag/v0.4), below the changelog.
 Installation and usage instructions for the legacy version can be found [in an older version of the
-repository](https://github.com/Esper89/Subnautica-TerrainPatcher/tree/b379c34). Please do not submit
+repository](https://github.com/Esper89/Subnautica-TerrainPatcher/tree/v0.4). Please do not submit
 issues for bugs encountered on an old version of Terrain Patcher.
+
+### Terrain Extender
+
+As of version 1.1.0, Terrain Patcher is no longer compatible with Terrain Extender (v1.0.0). This is
+because Terrain Extender relies on a private field that needed to be changed in the v1.1.0 release.
+For compatibility with Terrain Extender, use the previous release of Terrain Patcher, v1.0.2. It can
+be downloaded from the [releases
+page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/tag/v1.0.2), below the
+changelog. Installation and usage instructions for v1.0.2 can be found [in an older version of the
+repository](https://github.com/Esper89/Subnautica-TerrainPatcher/tree/v1.0.2). Please do not submit
+issues for bugs encountered on an old version of Terrain Patcher.
+
+This incompatibility will likely be fixed when Terrain Extender's features are integrated into
+Terrain Patcher.
 
 ## Library Usage
 
@@ -57,19 +69,30 @@ var patch = asm.GetManifestResourceStream("MyModName.my-file-name.optoctreepatch
 TerrainPatcher.TerrainRegistry.PatchTerrain("my-file-name", patch);
 ```
 
+Using `TerrainRegistry.PatchTerrain` to load terrain patches may be deprecated in a future release.
+
 ### Dependency Registration
 
-If your mod can function without Terrain Patcher (despite including terrain patches) then you don't
-need to add it as a dependency, and you can skip this section.
+Regardless of which method you use to load terrain patches, you'll need to add Terrain Patcher as a
+dependency of your mod.
 
-Regardless of which method you use to load patches, you'll need to add Terrain Patcher as a
-dependency of your mod (as shown in [`ExampleMod.cs`](./examples/ExampleMod.cs)). To do this, just
-add the `[BepInDependency("Esper89.TerrainPatcher")]` attribute to your mod's entry point, below the
-`BepInPlugin` attribute, as shown here:
+If your mod **requires** Terrain Patcher to function, add the
+`[BepInDependency("Esper89.TerrainPatcher")]` attribute to your mod's entry point (below the
+`BepInPlugin` attribute), as shown here:
 
 ```cs
 [BepInPlugin("YourName.ExampleMod", "Example Mod", "0.0.0")]
 [BepInDependency("Esper89.TerrainPatcher")]
+internal class Mod : BaseUnityPlugin { /* ... */ }
+```
+
+If your mod **does not require** Terrain Patcher but still uses it, add the
+`[BepInDependency("Esper89.TerrainPatcher", BepInDependency.DependencyFlags.SoftDependency)]`
+attribute to your mod's entry point (below the `BepInPlugin` attribute), as shown here:
+
+```cs
+[BepInPlugin("YourName.ExampleMod", "Example Mod", "0.0.0")]
+[BepInDependency("Esper89.TerrainPatcher", BepInDependency.DependencyFlags.SoftDependency)]
 internal class Mod : BaseUnityPlugin { /* ... */ }
 ```
 
@@ -81,7 +104,7 @@ referencing `TerrainPatcher.dll` and calling `TerrainPatcher.TerrainRegistry.Pat
 might be considered a derivative work. To avoid any possible copyright issues, if your mod isn't
 licensed under the GNU AGPL, you should avoid referencing `TerrainPatcher.dll` or otherwise
 interacting with Terrain Patcher directly. Patches can still be loaded without referencing Terrain
-Patcher by distributing them alongside your mod.
+Patcher by distributing them alongside your mod as separate `.optoctreepatch` files.
 
 ## Patch Format
 
@@ -92,14 +115,18 @@ for proper patching of terrain. The patch format also allows as much data as nec
 in one file, for easier distribution.
 
 An example `optoctreepatch` file is included at
-[`example.optoctreepatch`](./examples/example.optoctreepatch).
+[`example.optoctreepatch`](./examples/example.optoctreepatch). Patches that demonstrate all valid
+materials in-game can be found for Subnautica and Below Zero at
+[`material-preview-sn.optoctreepatch`](./examples/material-preview-sn.optoctreepatch) and
+[`material-preview-bz.optoctreepatch`](./examples/material-preview-bz.optoctreepatch).
 
-Patch files can be generated using [Reef Editor](https://github.com/eternaight/sn-terrain-edit), but
-any files conforming to the specification will work.
+Patch files can be created using [Reef Editor](https://github.com/eternaight/sn-terrain-edit). Any
+files conforming to the specification will work.
 
 Terrain Patcher places patched batches in `CompiledOctreesCache/patches`, using the same naming
-system as the game does. These patched batches can be loaded by external tools, if they wish to
-support terrain patches.
+system as the game. These patched batches can be loaded by external tools or other mods, if they
+wish to support terrain patches. Anything using this feature should make it optional, as those files
+aren't removed when Terrain Patcher is disabled or uninstalled.
 
 ## Features
 
@@ -107,19 +134,17 @@ support terrain patches.
 
 - Replacing some parts of a batch without replacing the whole batch.
 
-- As many world modifications as necessary can fit in one file.
+- As many world modifications as necessary can fit in one patch file.
 
-- No actual changes to game files; uses temporary files to store patched terrain.
+- No actual changes to game files.
 
-- Support for Subnautica and Below Zero.
+- Support for both Subnautica and Below Zero.
 
-- Easily load patches without making a mod, or have more control by using a mod.
+- Easily load patches without making a mod.
 
 - Custom load order.
 
-- Enable and disable patch loading in-game.
-
-- Cool rocks.
+- Enabling and disabling patch loading in-game.
 
 ### Planned Features
 
@@ -157,7 +182,7 @@ even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE
 General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License along with this program.
-If not, see <https://www.gnu.org/licenses/>.
+If not, see <https://www.gnu.org/licenses>.
 
 Additional permission under GNU AGPL version 3 section 7
 
