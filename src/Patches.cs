@@ -13,6 +13,9 @@ namespace TerrainPatcher
             var harmony = new Harmony("Esper89.TerrainPatcher");
             harmony.PatchAll(typeof(LargeWorldStreamer_GetCompiledOctreesCachePath_Patch));
             harmony.PatchAll(typeof(BatchOctreesStreamer_GetPath_Patch));
+            harmony.PatchAll(typeof(LargeWorldStreamer_CheckBatch_Patches));
+            harmony.PatchAll(typeof(WorldStreamerPatches));
+            Array3Patches.Patch(harmony);
         }
 
         [HarmonyPatch(
@@ -71,6 +74,20 @@ namespace TerrainPatcher
             else
             {
                 return true;
+            }
+        }
+        
+        // Permits any batch location
+        [HarmonyPatch(typeof(LargeWorldStreamer))]
+        internal static class LargeWorldStreamer_CheckBatch_Patches
+        {
+            [HarmonyPatch(nameof(LargeWorldStreamer.CheckBatch))]
+            [HarmonyPatch(nameof(LargeWorldStreamer.CheckRoot), typeof(int), typeof(int), typeof(int))]
+            [HarmonyPrefix]
+            private static bool AllowOutOfBounds(ref bool __result)
+            {
+                __result = true;
+                return false;
             }
         }
     }

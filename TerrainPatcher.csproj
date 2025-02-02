@@ -49,6 +49,8 @@
         <Compile Include="src/FileLoading.cs"/>
         <Compile Include="src/Patches.cs"/>
         <Compile Include="src/Options.cs"/>
+        <Compile Include="src\Array3Patches.cs" />
+        <Compile Include="src\WorldStreamerPatches.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets"/>
     <Target Name="CopyToTargetDir" AfterTargets="Build">
