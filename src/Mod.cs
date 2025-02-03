@@ -5,6 +5,7 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
+using HarmonyLib;
 
 namespace TerrainPatcher
 {
@@ -18,7 +19,11 @@ namespace TerrainPatcher
             this._settings = new Settings(base.Config);
             Mod.Instance = this;
 
-            Patches.Register();
+            var harmony = new Harmony("Esper89.TerrainPatcher");
+            BatchPatches.Patch(harmony);
+            Array3Patches.Patch(harmony);
+            WorldStreamerPatches.Patch(harmony);
+
             FileLoading.FindAndLoadPatches();
 
             if (Chainloader.PluginInfos.ContainsKey("com.snmodding.nautilus"))

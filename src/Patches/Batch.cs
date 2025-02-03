@@ -6,16 +6,13 @@ using WorldStreaming;
 namespace TerrainPatcher
 {
     // Harmony patches that make the game open patched terrain files instead of the originals.
-    internal static class Patches
+    internal static class BatchPatches
     {
-        internal static void Register()
+        internal static void Patch(Harmony harmony)
         {
-            var harmony = new Harmony("Esper89.TerrainPatcher");
             harmony.PatchAll(typeof(LargeWorldStreamer_GetCompiledOctreesCachePath_Patch));
             harmony.PatchAll(typeof(BatchOctreesStreamer_GetPath_Patch));
             harmony.PatchAll(typeof(LargeWorldStreamer_CheckBatch_Patches));
-            harmony.PatchAll(typeof(WorldStreamerPatches));
-            Array3Patches.Patch(harmony);
         }
 
         [HarmonyPatch(
@@ -76,8 +73,8 @@ namespace TerrainPatcher
                 return true;
             }
         }
-        
-        // Permits any batch location
+
+        // Permits any batch location.
         [HarmonyPatch(typeof(LargeWorldStreamer))]
         internal static class LargeWorldStreamer_CheckBatch_Patches
         {

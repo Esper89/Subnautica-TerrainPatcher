@@ -47,10 +47,10 @@
         <Compile Include="src/Mod.cs"/>
         <Compile Include="src/Terrain.cs"/>
         <Compile Include="src/FileLoading.cs"/>
-        <Compile Include="src/Patches.cs"/>
         <Compile Include="src/Options.cs"/>
-        <Compile Include="src\Array3Patches.cs" />
-        <Compile Include="src\WorldStreamerPatches.cs" />
+        <Compile Include="src/Patches/Batches.cs"/>
+        <Compile Include="src/Patches/Array3.cs"/>
+        <Compile Include="src/Patches/WorldStreamer.cs"/>
     </ItemGroup>
     <Import Project="$(MSBuildBinPath)/Microsoft.CSharp.targets"/>
     <Target Name="CopyToTargetDir" AfterTargets="Build">

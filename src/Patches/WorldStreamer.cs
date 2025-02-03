@@ -9,23 +9,33 @@ namespace TerrainPatcher
     [HarmonyPatch(typeof(WorldStreamer))]
     internal static class WorldStreamerPatches
     {
+        internal static void Patch(Harmony harmony)
+        {
+            harmony.PatchAll(typeof(WorldStreamerPatches));
+        }
+
         [HarmonyPatch(nameof(WorldStreamer.CreateStreamers))]
         [HarmonyPrefix]
         private static void CreateStreamersPrefix(WorldStreamer __instance)
         {
-            // allows the streamer to stream octrees as far as the patched batches go
-            
-            var biggestBatch = BiggestBatch(TerrainRegistry.patchedBatches.Keys, __instance.settings.numOctrees) +
-                               __instance.settings.numOctreesPerBatch * (__instance.settings.numOctreesPerBatch * 2);
+            // Allows the streamer to stream octrees as far as the patched batches go.
+
+            var biggestBatch =
+                BiggestBatch(TerrainRegistry.patchedBatches.Keys, __instance.settings.numOctrees) +
+                __instance.settings.numOctreesPerBatch *
+                (__instance.settings.numOctreesPerBatch * 2);
+
             __instance.settings.numOctrees = biggestBatch;
         }
 
         [HarmonyPatch(nameof(WorldStreamer.CreateStreamers))]
         [HarmonyTranspiler]
-        private static IEnumerable<CodeInstruction> CreateStreamersTranspiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> CreateStreamersTranspiler(
+            IEnumerable<CodeInstruction> instructions
+        )
         {
-            // Changes minimum and maximum center positions. Also necessary to stream batches
-            
+            // Changes minimum and maximum center positions. Also necessary to stream batches.
+
             var int3Zero = AccessTools.Field(typeof(Int3), nameof(Int3.zero));
             var found = false;
             var found2 = false;
@@ -33,14 +43,18 @@ namespace TerrainPatcher
             {
                 if (instruction.Is(OpCodes.Ldsfld, int3Zero))
                 {
-                    yield return CodeInstruction.Call(typeof(WorldStreamerPatches), nameof(MinimumBoundary));
+                    yield return CodeInstruction.Call(
+                        typeof(WorldStreamerPatches), nameof(MinimumBoundary)
+                    );
                     found = true;
                 }
                 else if (instruction.Calls(AccessTools.Method(typeof(WorldStreamer),
                              nameof(WorldStreamer.ParseStreamingSettings))))
                 {
                     yield return instruction;
-                    yield return CodeInstruction.Call(typeof(WorldStreamerPatches), nameof(ParseStreamingSettings));
+                    yield return CodeInstruction.Call(
+                        typeof(WorldStreamerPatches), nameof(ParseStreamingSettings)
+                    );
                     found2 = true;
                 }
                 else
@@ -59,11 +73,14 @@ namespace TerrainPatcher
             }
         }
 
-        private static LargeWorldStreamer.Settings ParseStreamingSettings(LargeWorldStreamer.Settings settings)
+        private static LargeWorldStreamer.Settings ParseStreamingSettings(
+            LargeWorldStreamer.Settings settings
+        )
         {
             var patchedBatches = TerrainRegistry.patchedBatches.Keys;
             settings.octreesSettings.centerMin = SmallestBatch(patchedBatches) * 5 - 10;
-            settings.octreesSettings.centerMax = BiggestBatch(patchedBatches, settings.octreesSettings.centerMax) * 5 + 15;
+            settings.octreesSettings.centerMax =
+                BiggestBatch(patchedBatches, settings.octreesSettings.centerMax) * 5 + 15;
             return settings;
         }
 
@@ -82,7 +99,6 @@ namespace TerrainPatcher
             }
 
             var horizontalMin = Mathf.Min(result.x, result.z);
-
             return new Int3(horizontalMin, result.y, horizontalMin);
         }
 
@@ -97,7 +113,6 @@ namespace TerrainPatcher
             }
 
             var horizontalMax = Mathf.Max(result.x, result.z);
-
             return new Int3(horizontalMax, result.y, horizontalMax);
         }
     }
