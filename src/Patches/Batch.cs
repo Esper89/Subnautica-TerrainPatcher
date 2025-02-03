@@ -79,7 +79,10 @@ namespace TerrainPatcher
         internal static class LargeWorldStreamer_CheckBatch_Patches
         {
             [HarmonyPatch(nameof(LargeWorldStreamer.CheckBatch))]
-            [HarmonyPatch(nameof(LargeWorldStreamer.CheckRoot), typeof(int), typeof(int), typeof(int))]
+            [HarmonyPatch(
+                nameof(LargeWorldStreamer.CheckRoot),
+                typeof(int), typeof(int), typeof(int)
+            )]
             [HarmonyPrefix]
             private static bool AllowOutOfBounds(ref bool __result)
             {

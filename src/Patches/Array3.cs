@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using HarmonyLib;
-using Nautilus.Utility;
 
 namespace TerrainPatcher
 {
@@ -19,8 +18,7 @@ namespace TerrainPatcher
             harmony.Patch(setMethod, prefix: new HarmonyMethod(
                 AccessTools.Method(typeof(Array3Patches), nameof(SetPrefix))
             ));
-
-            SaveUtils.RegisterOnQuitEvent(() => { _vanillaToNegativeArrays.Clear(); });
+            harmony.PatchAll(typeof(IngameMenu_QuitGameAsync_Patch));
         }
 
         private class NegativeEntityCell
@@ -33,7 +31,7 @@ namespace TerrainPatcher
             }
         }
 
-        private static Dictionary<Array3<EntityCell>, NegativeEntityCell> _vanillaToNegativeArrays =
+        private static Dictionary<Array3<EntityCell>, NegativeEntityCell> vanillaToNegativeArrays =
             new Dictionary<Array3<EntityCell>, NegativeEntityCell>();
 
         private static bool GetPrefix(
@@ -49,15 +47,15 @@ namespace TerrainPatcher
             }
 
             // At this point the index is negative, so we'll handle it ourselves.
-            if (_vanillaToNegativeArrays.TryGetValue(__instance, out var negativesArray) &&
+            if (vanillaToNegativeArrays.TryGetValue(__instance, out var negativesArray) &&
                 negativesArray.EntityCells.TryGetValue(new Int3(x, y, z), out var entityCell))
             {
                 __result = entityCell;
-                Mod.LogDebug($"Get negative entity cell for ({x},{y},{z})");
+                Mod.LogDebug($"Get negative entity cell for ({x}, {y}, {z})");
                 return false;
             }
 
-            Mod.LogDebug($"Couldn't find negative entity cell for ({x},{y},{z})");
+            Mod.LogDebug($"Couldn't find negative entity cell for ({x}, {y}, {z})");
             return false;
         }
 
@@ -74,18 +72,29 @@ namespace TerrainPatcher
             }
 
             // At this point the index is negative, so we'll set it to our collection.
-            if (!_vanillaToNegativeArrays.TryGetValue(__instance, out var negativeEntityCell))
+            if (!vanillaToNegativeArrays.TryGetValue(__instance, out var negativeEntityCell))
             {
                 negativeEntityCell = new NegativeEntityCell(
                     new Dictionary<Int3, EntityCell>(Int3.equalityComparer)
                 );
-                _vanillaToNegativeArrays[__instance] = negativeEntityCell;
+                vanillaToNegativeArrays[__instance] = negativeEntityCell;
             }
 
             negativeEntityCell.EntityCells[new Int3(x, y, z)] = value;
-            Mod.LogDebug($"Set negative entity cell for ({x},{y},{z})");
+            Mod.LogDebug($"Set negative entity cell for ({x}, {y}, {z})");
 
             return false;
+        }
+
+        // Clear `vanillaToNegativeArrays` when the user quits the game.
+        [HarmonyPatch(typeof(IngameMenu), nameof(IngameMenu.QuitGameAsync))]
+        internal static class IngameMenu_QuitGameAsync_Patch
+        {
+            private static void Postfix()
+            {
+                Mod.LogDebug("Clearing negative entity cells on quit");
+                vanillaToNegativeArrays.Clear();
+            }
         }
     }
 }
