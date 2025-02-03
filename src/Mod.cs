@@ -5,6 +5,7 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
+using HarmonyLib;
 
 namespace TerrainPatcher
 {
@@ -18,7 +19,11 @@ namespace TerrainPatcher
             this._settings = new Settings(base.Config);
             Mod.Instance = this;
 
-            Patches.Register();
+            var harmony = new Harmony("Esper89.TerrainPatcher");
+            BatchPatches.Patch(harmony);
+            Array3Patches.Patch(harmony);
+            WorldStreamerPatches.Patch(harmony);
+
             FileLoading.FindAndLoadPatches();
 
             if (Chainloader.PluginInfos.ContainsKey("com.snmodding.nautilus"))
@@ -52,6 +57,7 @@ namespace TerrainPatcher
         }
 
         // Writes a message to the BepInEx log with the specified log level.
+        internal static void LogDebug(string message) => Mod.Instance.Logger.LogDebug(message);
         internal static void LogInfo(string message) => Mod.Instance.Logger.LogInfo(message);
         internal static void LogWarning(string message) => Mod.Instance.Logger.LogWarning(message);
         internal static void LogError(string message) => Mod.Instance.Logger.LogError(message);

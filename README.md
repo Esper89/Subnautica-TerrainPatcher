@@ -34,17 +34,13 @@ issues for bugs encountered on an old version of Terrain Patcher.
 
 ### Terrain Extender
 
-As of version 1.1.0, Terrain Patcher is no longer compatible with Terrain Extender (v1.0.0). This is
-because Terrain Extender relies on a private field that needed to be changed in the v1.1.0 release.
-For compatibility with Terrain Extender, use the previous release of Terrain Patcher, v1.0.2. It can
-be downloaded from the [releases
+Terrain Patcher is not compatible with Terrain Extender. The features of Terrain Extender have been
+merged into Terrain Patcher and will be packaged with the next release. For compatibility with
+Terrain Extender, use the v1.0.2 release of Terrain Patcher. It can be downloaded from the [releases
 page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/tag/v1.0.2), below the
 changelog. Installation and usage instructions for v1.0.2 can be found [in an older version of the
 repository](https://github.com/Esper89/Subnautica-TerrainPatcher/tree/v1.0.2). Please do not submit
 issues for bugs encountered on an old version of Terrain Patcher.
-
-This incompatibility will likely be fixed when Terrain Extender's features are integrated into
-Terrain Patcher.
 
 ## Library Usage
 
@@ -146,9 +142,11 @@ aren't removed when Terrain Patcher is disabled or uninstalled.
 
 - Enabling and disabling patch loading in-game.
 
-### Planned Features
-
 - Extending the current edge of the world to allow for more terrain.
+
+- Extending the edge of the world where entities can spawn and save.
+
+### Planned Features
 
 - Patching biomes and entities.
 
@@ -169,6 +167,14 @@ directories for easier testing.
 
 To build Terrain Patcher in release mode, run `dotnet build --configuration Release`. This will
 also create a `dist.zip` file in `target` for easy distribution.
+
+### Contributors
+
+- Esper Thomson ([@Esper89](https://github.com/Esper89))
+
+- Metious ([@Metious](https://github.com/Metious))
+
+- Jonah Butler ([@jonahnm](https://github.com/jonahnm))
 
 ## License
 
