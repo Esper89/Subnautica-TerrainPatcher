@@ -37,6 +37,19 @@ namespace TerrainPatcher
             }
         }
 
+        private void Start()
+        {
+            // Detect Terrain Extender and give errors.
+            if (Chainloader.PluginInfos.ContainsKey("TerrainExtender"))
+            {
+                Mod.LogError(
+                    "Terrain Patcher is not compatible with Terrain Extender. Please uninstall"
+                    + " Terrain Extender!"
+                );
+                Mod.DisplayError("Please uninstall Terrain Extender!");
+            }
+        }
+
         // Prints error messages.
         private void Update()
         {
