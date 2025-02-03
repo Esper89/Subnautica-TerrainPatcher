@@ -34,13 +34,9 @@ issues for bugs encountered on an old version of Terrain Patcher.
 
 ### Terrain Extender
 
-Terrain Patcher is not compatible with Terrain Extender. The features of Terrain Extender have been
-merged into Terrain Patcher and will be packaged with the next release. For compatibility with
-Terrain Extender, use the v1.0.2 release of Terrain Patcher. It can be downloaded from the [releases
-page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/tag/v1.0.2), below the
-changelog. Installation and usage instructions for v1.0.2 can be found [in an older version of the
-repository](https://github.com/Esper89/Subnautica-TerrainPatcher/tree/v1.0.2). Please do not submit
-issues for bugs encountered on an old version of Terrain Patcher.
+Current versions of Terrain Patcher are **not compatible with Terrain Extender**. The features of
+Terrain Extender have been merged into Terrain Patcher as of v1.2.0, and you should **uninstall
+Terrain Extender** if you have it installed.
 
 ## Library Usage
 
@@ -178,7 +174,7 @@ also create a `dist.zip` file in `target` for easy distribution.
 
 ## License
 
-Copyright © 2021, 2023–2024 Esper Thomson
+Copyright © 2021, 2023–2025 Esper Thomson
 
 This program is free software: you can redistribute it and/or modify it under the terms of version
 3 of the GNU Affero General Public License as published by the Free Software Foundation.
