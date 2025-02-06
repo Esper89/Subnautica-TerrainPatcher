@@ -37,19 +37,6 @@ namespace TerrainPatcher
             }
         }
 
-        private void Start()
-        {
-            // Detect Terrain Extender and give errors.
-            if (Chainloader.PluginInfos.ContainsKey("TerrainExtender"))
-            {
-                Mod.LogError(
-                    "Terrain Patcher is not compatible with Terrain Extender. Please uninstall"
-                    + " Terrain Extender!"
-                );
-                Mod.DisplayError("Please uninstall Terrain Extender!");
-            }
-        }
-
         // Prints error messages.
         private void Update()
         {
@@ -135,4 +122,12 @@ namespace TerrainPatcher
             "Expansion",
         };
     }
+
+    [BepInPlugin(
+        "TerrainExtender",
+        "Terrain Extender [Provided by Terrain Patcher]",
+        "2.0.0"
+    )]
+	[BepInDependency("Esper89.TerrainPatcher")]
+    internal class TerrainExtender : BaseUnityPlugin { }
 }

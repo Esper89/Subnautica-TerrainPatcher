@@ -34,9 +34,9 @@ issues for bugs encountered on an old version of Terrain Patcher.
 
 ### Terrain Extender
 
-Current versions of Terrain Patcher are **not compatible with Terrain Extender**. The features of
-Terrain Extender have been merged into Terrain Patcher as of v1.2.0, and you should **uninstall
-Terrain Extender** if you have it installed.
+Current versions of Terrain Patcher provide all the features that Terrain Extender provided and
+satisfy other mods' dependencies on Terrain Extender. Terrain Extender is deprecated and you should
+uninstall Terrain Extender if you have it installed.
 
 ## Library Usage
 
