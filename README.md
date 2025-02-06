@@ -144,6 +144,8 @@ aren't removed when Terrain Patcher is disabled or uninstalled.
 
 ### Planned Features
 
+- Patching the in-game seaglide and scanner room maps.
+
 - Patching biomes and entities.
 
 ## Contributing
