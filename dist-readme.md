@@ -1,7 +1,7 @@
 # Terrain Patcher v1.2.0
 
-Terrain Patcher is a Subnautica and Below Zero library mod that allows modders and players to modify
-the game's terrain.
+Terrain Patcher is a Subnautica and Below Zero library mod that allows anyone to modify the game's
+terrain.
 
 ## Configuration
 
@@ -13,6 +13,14 @@ load order of patches provided directly by other mods, change the BepInEx load o
 
 Terrain Patcher's source code and documentation can be found in its [GitHub
 repository](https://github.com/Esper89/Subnautica-TerrainPatcher).
+
+## Contributors
+
+- Esper Thomson ([`@Esper89`](https://github.com/Esper89))
+
+- Metious ([`@Metious`](https://github.com/Metious))
+
+- Jonah Butler ([`@jonahnm`](https://github.com/jonahnm))
 
 ## License
 
