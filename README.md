@@ -15,7 +15,9 @@ page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest), bel
 To install Terrain Patcher, just extract the zip file and place the `TerrainPatcher` folder into
 your `BepInEx/plugins` folder.
 
-To install a `.optoctreepatch` file, place it in the `TerrainPatcher/patches` folder.
+To install a `.optoctreepatch` file manually, place it in the `TerrainPatcher/patches` folder. You
+can place a terrain patch anywhere in the `BepInEx/plugins` folder or any subfolder and it will
+still be loaded.
 
 You can specify a custom load order for `.optoctreepatch` files by writing the file names (without
 the extensions) into the `load-order.txt` file.
@@ -46,8 +48,8 @@ mod uses Terrain Patcher, anyone using your mod needs to have Terrain Patcher in
 ### Patch Loading
 
 There are two ways to load a terrain patch. The easiest way is to distribute your `.optoctreepatch`
-file alongside your mod. Terrain Patcher will find and load all `.optoctreepatch` files placed
-anywhere in the `BepInEx/plugins` folder or any subfolder.
+file alongside your mod. **Terrain Patcher will find and load all `.optoctreepatch` files placed
+anywhere in the `BepInEx/plugins` folder or any subfolder.**
 
 Alternatively, you can add your `.optoctreepatch` file to your project as an embedded resource and
 add `TerrainPatcher.dll` as a reference. You can then use `Assembly.GetManifestResourceStream` (as
