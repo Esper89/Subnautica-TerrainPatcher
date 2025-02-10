@@ -9,7 +9,7 @@ using HarmonyLib;
 
 namespace TerrainPatcher
 {
-    [BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.2.1")]
+    [BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.2.2")]
     [BepInDependency("com.snmodding.nautilus", BepInDependency.DependencyFlags.SoftDependency)]
     internal class Mod : BaseUnityPlugin
     {
