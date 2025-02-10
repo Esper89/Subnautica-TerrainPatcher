@@ -151,7 +151,7 @@ namespace TerrainPatcher
                     return;
                 }
 
-                TerrainRegistry.PatchTerrain(patchName, file);
+                TerrainRegistry.ApplyTerrainPatch(patchName, file, forceOriginal: false);
                 file.Close();
             }
         }

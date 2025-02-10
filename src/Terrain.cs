@@ -10,11 +10,15 @@ namespace TerrainPatcher
     /// <summary>The global registry of terrain patches.</summary>
     public static class TerrainRegistry
     {
-        /// <summary>Applies a terrain patch file to the game's terrain.</summary>
+        /// <summary>Applies a terrain patch file to the game's terrain. Deprecated</summary>
         /// <param name="patchName">The name of the patch file to apply.</param>
         /// <param name="patchFile">The patch file to apply.</param>
         /// <param name="forceOriginal">Force-overwrites batches in this patch, resetting them to
         /// their original states before applying patches.</param>
+        [Obsolete(
+            "This method is deprecated; instead, load terrain patches by distributing them as"
+            + " individual files alongside your mod."
+        )]
         public static void PatchTerrain(
             string patchName,
             Stream patchFile,
@@ -26,6 +30,15 @@ namespace TerrainPatcher
                 throw new ArgumentNullException($"Argument '{nameof(patchFile)}' must not be null");
             }
 
+            ApplyTerrainPatch(patchName, patchFile, forceOriginal);
+        }
+
+        internal static void ApplyTerrainPatch(
+            string patchName,
+            Stream patchFile,
+            bool forceOriginal
+        )
+        {
             try
             {
                 string message = $"Applying patch '{patchName}'";

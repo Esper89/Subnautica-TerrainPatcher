@@ -47,28 +47,18 @@ mod uses Terrain Patcher, anyone using your mod needs to have Terrain Patcher in
 
 ### Patch Loading
 
-There are two ways to load a terrain patch. The easiest way is to distribute your `.optoctreepatch`
-file alongside your mod. **Terrain Patcher will find and load all `.optoctreepatch` files placed
-anywhere in the `BepInEx/plugins` folder or any subfolder.**
+To load a terrain patch, just distribute your `.optoctreepatch` file alongside your mod. **Terrain
+Patcher will find and load all `.optoctreepatch` files placed anywhere in the `BepInEx/plugins`
+folder or any subfolder**, so you don't need to do anything else to make sure your terrain patch
+gets loaded.
 
-Alternatively, you can add your `.optoctreepatch` file to your project as an embedded resource and
-add `TerrainPatcher.dll` as a reference. You can then use `Assembly.GetManifestResourceStream` (as
-demonstrated in [`ExampleMod.cs`](./examples/ExampleMod.cs)) to load the resource. If you pass this
-stream to `TerrainRegistry.PatchTerrain`, Terrain Patcher will apply your patch file. Below is an
-example of how to do this.
-
-```cs
-var asm = System.Reflection.Assembly.GetExecutingAssembly();
-var patch = asm.GetManifestResourceStream("MyModName.my-file-name.optoctreepatch");
-TerrainPatcher.TerrainRegistry.PatchTerrain("my-file-name", patch);
-```
-
-Using `TerrainRegistry.PatchTerrain` to load terrain patches may be deprecated in a future release.
+Terrain patcher also currently supports loading patches via the
+`TerrainPatcher.TerrainRegistry.PatchTerrain` method, but this method is deprecated and may be
+removed in a future release of Terrain Patcher.
 
 ### Dependency Registration
 
-Regardless of which method you use to load terrain patches, you'll need to add Terrain Patcher as a
-dependency of your mod.
+If your mod contains terrain patches, you should add Terrain Patcher as a dependency of your mod.
 
 If your mod **requires** Terrain Patcher to function, add the
 `[BepInDependency("Esper89.TerrainPatcher")]` attribute to your mod's entry point (below the
@@ -94,11 +84,11 @@ internal class Mod : BaseUnityPlugin { /* ... */ }
 
 Terrain Patcher is licensed under the GNU AGPL, which says that derivative works must also be
 licensed under the GNU AGPL. If your mod directly interacts with Terrain Patcher (e.g. by
-referencing `TerrainPatcher.dll` and calling `TerrainPatcher.TerrainRegistry.PatchTerrain`), it
-might be considered a derivative work. To avoid any possible copyright issues, if your mod isn't
-licensed under the GNU AGPL, you should avoid referencing `TerrainPatcher.dll` or otherwise
-interacting with Terrain Patcher directly. Patches can still be loaded without referencing Terrain
-Patcher by distributing them alongside your mod as separate `.optoctreepatch` files.
+referencing `TerrainPatcher.dll`), it might be considered a derivative work. To avoid any possible
+copyright issues, if your mod isn't licensed under the GNU AGPL, you should avoid referencing
+`TerrainPatcher.dll` or otherwise interacting with Terrain Patcher directly. Terrain patches are
+loaded without referencing Terrain Patcher by distributing them alongside your mod as separate
+`.optoctreepatch` files.
 
 ## Patch Format
 
