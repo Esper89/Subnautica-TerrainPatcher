@@ -159,7 +159,7 @@ aren't removed when Terrain Patcher is disabled or uninstalled.
 Contributions of any kind—issues, pull requests, feature requests—are all welcome. You can submit
 suggestions and bug reports [as an
 issue](https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose), or code
-contributions [as a pull request](https://github.com/Esper89/Subnautica-TerrainPatcher/pulls).
+contributions [as a pull request](https://github.com/Esper89/Subnautica-TerrainPatcher/compare).
 
 ### Building
 
