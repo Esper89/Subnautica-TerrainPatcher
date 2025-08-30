@@ -6,32 +6,42 @@ labels: bug
 assignees: ''
 ---
 
-**Describe the bug:**
+### Describe the bug:
+
 A clear and concise description of what the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+### Describe how to to reproduce the bug:
 
-**Expected Behavior**
+Steps to reproduce the behavior:
+
+1. Install patch `...`
+2. Launch the game
+3. Go to...
+4. Open log
+5. See error
+
+### Describe what you expected to happen:
+
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
+### Screenshots
+
 If applicable, add screenshots to help explain your problem.
 
-**Log File**
+### Log File
+
 Please upload your `LogOutput.log` file, located in the `BepInEx` folder.
 
-**Patch Files**
+### Patch Files
+
 Please upload any relevant `.optoctreepatch` files from the `BepInEx/plugins` folder.
 
-**Please complete the following version information:**
- - Subnautica/Below Zero: Living Large Update/What the Dock Update
- - Terrain Patcher: 1.1.0
- - Other mods...?
+### Please complete the following version information:
 
-**Additional Context**
+- Subnautica/Below Zero: 2025 Patch/What the Dock Update
+- Terrain Patcher: 1.2.2
+- Other relevant mods...?
+
+### Additional Information
+
 Add any other context about the problem here.
