@@ -24,15 +24,28 @@ the extensions) into the `load-order.txt` file.
 
 Loading patch files can be enabled/disabled from the in-game config menu if Nautilus is installed.
 
-### Legacy Version
+### Old Versions
 
-Some mods, such as [Sea To Sea](https://reikakalseki.github.io/subnautica/mods/seatosea.html), may
-require using the legacy QModManager version of Terrain Patcher instead of the current BepInEx
-version. The legacy version can be downloaded from the [releases
-page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/tag/v0.4), below the changelog.
-Installation and usage instructions for the legacy version can be found [in an older version of the
-repository](https://github.com/Esper89/Subnautica-TerrainPatcher/tree/v0.4). Please do not submit
-issues for bugs encountered on an old version of Terrain Patcher.
+Terrain Patcher aims to always support up-to-date stable versions of Subnautica and Below Zero
+(on Steam, this corresponds to the `public` branches). Other branches of these games may require
+using old versions of Terrain Patcher, which are unsupported. Please do not submit issues for old
+versions of Terrain Patcher.
+
+#### Subnautica 2023
+
+Subnautica 2023 (the `march_2023` branch on Steam) was last supported in v1.2.2, which can be
+downloaded from the [releases
+page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/tag/v1.2.2), below the
+changelog. Installation and usage instructions for v1.2.2 can be found in [an older version of the
+repository](https://github.com/Esper89/Subnautica-TerrainPatcher/tree/v1.2.2).
+
+#### Legacy Subnautica
+
+Legacy Subnautica and Below Zero (the `legacy` branches on Steam) were last supported using
+[QModManager](https://github.com/SubnauticaModding/QModManager) in v0.4, which can be downloaded
+from the [releases page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/tag/v0.4),
+below the changelog. Installation and usage instructions for v0.4 can be found in [an older version
+of the repository](https://github.com/Esper89/Subnautica-TerrainPatcher/tree/v0.4).
 
 ### Terrain Extender
 
