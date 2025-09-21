@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using HarmonyLib;
 using WorldStreaming;
@@ -89,6 +91,30 @@ namespace TerrainPatcher
                 __result = true;
                 return false;
             }
+        }
+
+        [HarmonyPatch(typeof(BatchOctrees), nameof(BatchOctrees.LoadOctrees))]
+        internal static class BatchOctrees_LoadOctrees_Patch
+        {
+            private static IEnumerable<CodeInstruction> Transpiler(
+                IEnumerable<CodeInstruction> instructions
+            ) => new CodeMatcher(instructions)
+                .MatchStartForward([
+                    new(OpCodes.Call, AccessTools.Method(
+                        typeof(Int3.Bounds), nameof(Int3.Bounds.Contains)
+                    )),
+                ])
+                .ThrowIfNotMatch(
+                    $"Could not transpile {typeof(BatchOctrees)}." +
+                    $"{nameof(BatchOctrees.LoadOctrees)}: method does not call " +
+                    $"{typeof(Int3.Bounds)}.{nameof(Int3.Bounds.Contains)}"
+                )
+                .Advance(1)
+                .Insert([
+                    new(OpCodes.Pop),
+                    new(OpCodes.Ldc_I4_1),
+                ])
+                .InstructionEnumeration();
         }
     }
 }
