@@ -38,7 +38,7 @@ Please upload any relevant `.optoctreepatch` files from the `BepInEx/plugins` fo
 
 ### Please complete the following version information:
 
-- Subnautica/Below Zero: 2025 Patch/What the Dock Update
+- Subnautica/Below Zero: 2025 Patch
 - Terrain Patcher: 1.2.2
 - Other relevant mods...?
 
