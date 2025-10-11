@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using BepInEx;
 
 namespace TerrainPatcher
 {
@@ -18,28 +19,8 @@ namespace TerrainPatcher
         // Search for patch files and sort them according to the config file.
         private static string[] GetPatchFiles()
         {
-            string searchDir = Directory.GetParent(Constants.MOD_DIR).FullName;
-
-            string[] paths = Constants.PATCH_EXTENSIONS
-                .SelectMany(ext => Directory.GetFiles(
-                    searchDir,
-                    $"*.{ext}",
-                    SearchOption.AllDirectories
-                ))
-                .Where(path =>
-                {
-                    try
-                    {
-                        uint version = new BinaryReader(File.OpenRead(path)).ReadUInt32();
-                        return version != Constants.SKIP_VERSION;
-                    }
-                    catch (Exception ex) when (ex is IOException || ex is EndOfStreamException)
-                    {
-                        return false;
-                    }
-                })
-                .ToArray();
-
+            string searchDir = Paths.BepInExRootPath;
+            string[] paths = RecursiveFindPatchFiles(searchDir).ToArray();
             return SortFiles(paths, GetLoadOrder());
 
             // Sorts a list of file paths according to the specified load order.
@@ -121,6 +102,38 @@ namespace TerrainPatcher
                 else { Mod.LogWarning("Could not find load order file"); }
 
                 return loadOrder.ToArray();
+            }
+        }
+
+        // Recursively find all patch files to load in the specified directory.
+        private static IEnumerable<string> RecursiveFindPatchFiles(string path)
+        {
+            var stack = new Stack<string>();
+            stack.Push(path);
+
+            while (stack.Count > 0)
+            {
+                var dir = stack.Pop();
+                if (File.Exists(Path.Combine(dir, ".terrain-patcher-ignore"))) continue;
+
+                foreach (var ext in Constants.PATCH_EXTENSIONS)
+                {
+                    foreach (var file in Directory.GetFiles(dir, $"*.{ext}"))
+                    {
+                        var skip = true;
+                        try
+                        {
+                            var version = new BinaryReader(File.OpenRead(file)).ReadUInt32();
+                            if (version != Constants.SKIP_VERSION) skip = false;
+                        }
+                        catch (Exception ex)
+                        when (ex is IOException || ex is EndOfStreamException) { }
+
+                        if (!skip) yield return file;
+                    }
+                }
+
+                foreach (var subdir in Directory.GetDirectories(dir)) stack.Push(subdir);
             }
         }
 

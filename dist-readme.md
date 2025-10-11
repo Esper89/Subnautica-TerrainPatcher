@@ -7,8 +7,8 @@ terrain.
 
 To install Terrain Patcher, place the `TerrainPatcher` folder (containing `TerrainPatcher.dll`) in
 your `BepInEx/plugins` folder. To install a `.optoctreepatch` file manually, place it in the
-`TerrainPatcher/patches` folder. You can also place a terrain patch anywhere in the
-`BepInEx/plugins` folder or any subfolder and it will still be loaded.
+`TerrainPatcher/patches` folder. You can also place a terrain patch anywhere in the `BepInEx` folder
+or any subfolder and it will still be loaded.
 
 ## Configuration
 

@@ -34,7 +34,7 @@ Please upload your `LogOutput.log` file, located in the `BepInEx` folder.
 
 ### Patch Files
 
-Please upload any relevant `.optoctreepatch` files from the `BepInEx/plugins` folder.
+Please upload any relevant `.optoctreepatch` files from the `BepInEx` folder or any subfolder.
 
 ### Please complete the following version information:
 

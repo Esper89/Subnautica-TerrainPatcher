@@ -16,8 +16,8 @@ To install Terrain Patcher, just extract the zip file and place the `TerrainPatc
 your `BepInEx/plugins` folder.
 
 To install a `.optoctreepatch` file manually, place it in the `TerrainPatcher/patches` folder. You
-can also place a terrain patch anywhere in the `BepInEx/plugins` folder or any subfolder and it will
-still be loaded.
+can also place a terrain patch anywhere in the `BepInEx` folder or any subfolder and it will still
+be loaded.
 
 You can specify a custom load order for `.optoctreepatch` files by writing the file names (without
 the extensions) into the `load-order.txt` file.
@@ -45,9 +45,8 @@ terrain changes.
 ### Patch Loading
 
 To load a terrain patch, just distribute your `.optoctreepatch` file alongside your mod. **Terrain
-Patcher will find and load all `.optoctreepatch` files placed anywhere in the `BepInEx/plugins`
-folder or any subfolder**, so you don't need to do anything else to make sure your terrain patch
-gets loaded.
+Patcher will find and load all `.optoctreepatch` files placed anywhere in the `BepInEx` folder or
+any subfolder**, so you don't need to do anything else to make sure your terrain patch gets loaded.
 
 Terrain Patcher also currently supports loading patches via the
 `TerrainPatcher.TerrainRegistry.PatchTerrain` method, but this method is deprecated and may be
