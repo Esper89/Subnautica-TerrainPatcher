@@ -48,6 +48,9 @@ To load a terrain patch, just distribute your `.optoctreepatch` file alongside y
 Patcher will find and load all `.optoctreepatch` files placed anywhere in the `BepInEx` folder or
 any subfolder**, so you don't need to do anything else to make sure your terrain patch gets loaded.
 
+To have Terrain Patcher ignore a directory entirely, place a file named `.terrain-patcher-ignore` in
+that directory.
+
 Terrain Patcher also currently supports loading patches via the
 `TerrainPatcher.TerrainRegistry.PatchTerrain` method, but this method is deprecated and may be
 removed in a future release of Terrain Patcher.
