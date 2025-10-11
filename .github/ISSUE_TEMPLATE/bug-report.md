@@ -39,7 +39,7 @@ Please upload any relevant `.optoctreepatch` files from the `BepInEx` folder or 
 ### Please complete the following version information:
 
 - Subnautica/Below Zero: 2025 Patch
-- Terrain Patcher: 1.2.3
+- Terrain Patcher: 1.2.4
 - Other relevant mods...?
 
 ### Additional Information
