@@ -61,11 +61,11 @@
         <CreateItem Include="target/$(Configuration)/*">
             <Output TaskParameter="Include" ItemName="TargetFiles"/>
         </CreateItem>
-        <CreateProperty Value="BepInEx/plugins/$(ProjectName)">
-            <Output TaskParameter="Value" PropertyName="PluginDir"/>
-        </CreateProperty>
-        <Copy SourceFiles="@(TargetFiles)" DestinationFolder="%(GameDirs.Identity)/$(PluginDir)"/>
-        <MakeDir Directories="%(GameDirs.Identity)/$(PluginDir)/patches"/>
+        <Copy
+            SourceFiles="@(TargetFiles)"
+            DestinationFolder="%(GameDirs.Identity)/BepInEx/plugins/$(ProjectName)"
+        />
+        <MakeDir Directories="%(GameDirs.Identity)/BepInEx/plugins/$(ProjectName)/patches"/>
     </Target>
     <Target
         Name="ZipDist"
