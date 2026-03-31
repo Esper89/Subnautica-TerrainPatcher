@@ -165,7 +165,7 @@ also create a `dist.zip` file in `target` for easy distribution.
 
 - Metious ([`@Metious`](https://github.com/Metious))
 
-- Jonah Butler ([`@jonahnm`](https://github.com/jonahnm))
+- Aerith Butler ([`@jonahnm`](https://github.com/jonahnm))
 
 ## License
 
