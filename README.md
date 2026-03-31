@@ -104,7 +104,9 @@ materials in-game can be found for Subnautica and Below Zero at
 [`material-preview-bz.optoctreepatch`](./examples/material-preview-bz.optoctreepatch).
 
 Patch files can be created using [Reef Editor](https://github.com/eternaight/sn-terrain-edit). Any
-files conforming to the specification will work.
+files conforming to the specification will work. An example Rust script that generates the material
+preview terrain patches is included at
+[`generate_material_preview.rs`](./examples/generate_material_preview.rs).
 
 Terrain Patcher places patched batches in `CompiledOctreesCache/patches`, using the same naming
 system as the game. These patched batches can be loaded by external tools or other mods, if they
