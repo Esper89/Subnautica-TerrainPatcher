@@ -21,7 +21,7 @@ namespace TerrainPatcher
 
             var harmony = new Harmony("Esper89.TerrainPatcher");
             BatchPatches.Patch(harmony);
-            Array3Patches.Patch(harmony);
+            CellManagerPatches.Patch(harmony);
             WorldStreamerPatches.Patch(harmony);
 
             FileLoading.FindAndLoadPatches();
