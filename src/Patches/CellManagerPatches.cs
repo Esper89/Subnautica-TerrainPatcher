@@ -53,7 +53,7 @@ internal static class CellManagerPatches
     /// For positive values this works perfectly fine but for negative values it always results in a batch index off by 1 towards 0 as a result.
     /// For example, if an entity was at x = -40: -40 / 160 = -0.25 as a float. But when it converts to an integer, it rounds up to 0.
     /// Logically this entity has to be in a negative batch with a negative voxel position, but the original rounded up to 0.
-    /// Flooring the value works in both positive and negative as negative values round down to negatives whole negatives, while positives behave the same
+    /// Flooring the value works in both positive and negative as negative values round down to negatives whole negatives, while positives behave the same.
     /// </remarks>
     private static Int3 VoxelPosToBatchId(Int3 block,
         Int3 blocksPerBatch) => new Int3(
@@ -62,13 +62,16 @@ internal static class CellManagerPatches
             Mathf.FloorToInt((float) block.z / blocksPerBatch.z)
         );
 
-    
+
     /// <summary>
     /// Converts a voxel position to a local position within the given batch.
     /// Works for negative and positive voxel positions
     /// </summary>
     /// <remarks>
-    /// The original used a modulus operator
+    /// The original used a modulus operator but that behaves incorrectly for negative voxel positions.
+    /// For example, a voxel at x = -1 would undergo the operation -1 % 160 should result in positive 159 for local indexes to work properly, but
+    /// this actually equals -1. Negative local batch positions break how entities are stored so in the fix we ensure that local batch positions are always positive,
+    /// which makes more sense at the end of the day anyway.
     /// </remarks>
     private static Int3 GlobalVoxelToLocalVoxelPos(Int3 block, Int3 batchId, Int3 blocksPerBatch) => block - (batchId * blocksPerBatch);
 }
