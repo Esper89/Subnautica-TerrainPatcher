@@ -3,6 +3,9 @@
 Terrain Patcher is a Subnautica and Below Zero library mod that allows anyone to modify the game's
 terrain.
 
+Terrain Patcher loads terrain patches containing terrain to replace (stored as `.optoctreepatch`
+files) and makes the game load that terrain instead of its vanilla terrain.
+
 ## Installation
 
 This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica) and
@@ -20,7 +23,9 @@ can also place a terrain patch anywhere in the `BepInEx` folder or any subfolder
 be loaded.
 
 You can specify a custom load order for `.optoctreepatch` files by writing the file names (without
-the extensions) into the `load-order.txt` file.
+the extensions) into the `load-order.txt` file. If you have multiple terrain patches that conflict
+with each other, changing the load order usually won't fix broken terrain—the terrain patches are
+likely just incompatible.
 
 Loading patch files can be enabled/disabled from the in-game config menu if Nautilus is installed.
 
@@ -103,10 +108,10 @@ materials in-game can be found for Subnautica and Below Zero at
 [`material-preview-sn.optoctreepatch`](./examples/material-preview-sn.optoctreepatch) and
 [`material-preview-bz.optoctreepatch`](./examples/material-preview-bz.optoctreepatch).
 
-Patch files can be created using [Reef Editor](https://github.com/eternaight/sn-terrain-edit). Any
-files conforming to the specification will work. An example Rust script that generates the material
-preview terrain patches is included at
-[`generate_material_preview.rs`](./examples/generate_material_preview.rs).
+Patch files can be created using [Abyss Editor](https://github.com/BeneathTheWaves/AbyssEditor) or
+[Reef Editor](https://github.com/eternaight/sn-terrain-edit). Any files conforming to the
+specification will work. An example Rust script that generates the material preview terrain patches
+is included at [`generate_material_preview.rs`](./examples/generate_material_preview.rs).
 
 Terrain Patcher places patched batches in `CompiledOctreesCache/patches`, using the same naming
 system as the game. These patched batches can be loaded by external tools or other mods, if they
@@ -115,38 +120,28 @@ aren't removed when Terrain Patcher is disabled or uninstalled.
 
 ## Features
 
-- Modifying the game's terrain in a modular way.
+- Loads terrain patch files.
 
-- Replacing some parts of a batch without replacing the whole batch.
+- Replaces the terrain that loads in-game.
 
-- As many world modifications as necessary can fit in one patch file.
+- Supports both Subnautica and Below Zero.
 
-- No actual changes to game files.
+- Using patched terrain can be enabled and disabled in-game.
 
-- Support for both Subnautica and Below Zero.
-
-- Easily load patches without making a mod.
-
-- Custom load order.
-
-- Enabling and disabling patch loading in-game.
-
-- Extending the current edge of the world to allow for more terrain.
-
-- Extending the edge of the world where entities can spawn and save.
+- Extends the edges of the world to allow for more terrain and entities.
 
 ### Planned Features
 
 - Patching the in-game seaglide and scanner room maps.
 
-- Patching biomes and entities.
+- Patching two-dimensional biome data.
 
 ## Contributing
 
 Contributions of any kind—issues, pull requests, feature requests—are all welcome. You can submit
-suggestions and bug reports [as an
-issue](https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose), or code
-contributions [as a pull request](https://github.com/Esper89/Subnautica-TerrainPatcher/compare).
+suggestions and bug reports [as
+issues](https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose), or code
+contributions [as pull requests](https://github.com/Esper89/Subnautica-TerrainPatcher/compare).
 
 ### Building
 
@@ -164,6 +159,8 @@ also create a `dist.zip` file in `target` for easy distribution.
 - Esper Thomson ([`@Esper89`](https://github.com/Esper89))
 
 - Metious ([`@Metious`](https://github.com/Metious))
+
+- Jbeast ([`@jbeast291`](https://github.com/jbeast291))
 
 - Aerith Butler ([`@jonahnm`](https://github.com/jonahnm))
 

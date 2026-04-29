@@ -3,6 +3,9 @@
 Terrain Patcher is a Subnautica and Below Zero library mod that allows anyone to modify the game's
 terrain.
 
+Terrain Patcher loads terrain patches containing terrain to replace (stored as `.optoctreepatch`
+files) and makes the game load that terrain instead of its vanilla terrain.
+
 ## Installation
 
 To install Terrain Patcher, place the `TerrainPatcher` folder (containing `TerrainPatcher.dll`) in
@@ -27,7 +30,9 @@ repository](https://github.com/Esper89/Subnautica-TerrainPatcher).
 
 - Metious ([`@Metious`](https://github.com/Metious))
 
-- Jonah Butler ([`@jonahnm`](https://github.com/jonahnm))
+- Jbeast ([`@jbeast291`](https://github.com/jbeast291))
+
+- Aerith Butler ([`@jonahnm`](https://github.com/jonahnm))
 
 ## License
 
