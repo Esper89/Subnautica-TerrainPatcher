@@ -18,25 +18,7 @@
         <DocumentationFile>bin/Release/TerrainPatcher.xml</DocumentationFile>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="System"/>
-        <Reference Include="BepInEx">
-            <HintPath>references/BepInEx.refasm.dll</HintPath>
-        </Reference>
-        <Reference Include="0Harmony">
-            <HintPath>references/0Harmony.refasm.dll</HintPath>
-        </Reference>
-        <Reference Include="Assembly-CSharp">
-            <HintPath>references/Assembly-CSharp-publicized.refasm.dll</HintPath>
-        </Reference>
-        <Reference Include="Assembly-CSharp-firstpass">
-            <HintPath>references/Assembly-CSharp-firstpass-publicized.refasm.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine">
-            <HintPath>references/UnityEngine.refasm.dll</HintPath>
-        </Reference>
-        <Reference Include="UnityEngine.CoreModule">
-            <HintPath>references/UnityEngine.CoreModule.refasm.dll</HintPath>
-        </Reference>
+        <Reference Include="references/*.refasm.dll"/>
     </ItemGroup>
     <Target Name="CopyToTargetDir" AfterTargets="Build">
         <Copy
