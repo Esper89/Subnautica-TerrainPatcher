@@ -1,172 +1,135 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using BepInEx;
 
-namespace TerrainPatcher
-{
-    // Loading patches from the filesystem.
-    internal static class FileLoading
-    {
-        // Finds all patch files to apply and loads them.
-        public static void FindAndLoadPatches()
-        {
-            Mod.LogInfo("Loading terrain patch files");
-            LoadPatchFiles(GetPatchFiles());
-        }
+namespace TerrainPatcher;
 
-        // Search for patch files and sort them according to the config file.
-        private static string[] GetPatchFiles()
-        {
-            string searchDir = Paths.BepInExRootPath;
-            string[] paths = RecursiveFindPatchFiles(searchDir).ToArray();
-            return SortFiles(paths, GetLoadOrder());
+static class FileLoading {
+    public static void FindAndLoadPatches() {
+        FileLoading.LoadPatchFiles(FileLoading.GetOrderedPatchFiles());
+    }
 
-            // Sorts a list of file paths according to the specified load order.
-            static string[] SortFiles(string[] paths, string[] loadOrder)
-            {
-                string?[] names = new string[paths.Length];
-                for (int i = 0; i < names.Length; i++)
-                {
-                    names[i] = Path.GetFileNameWithoutExtension(paths[i]);
-                }
+    static string[] GetOrderedPatchFiles() {
+        var searchDir = Paths.BepInExRootPath;
+        var paths = FileLoading.FindPatchFiles(searchDir).ToArray();
+        return SortFiles(paths, GetLoadOrder());
 
-                Mod.LogInfo("Patch load order:");
-
-                var sorted = new List<string> { };
-
-                // Loop through each entry in the load order list.
-                foreach (string entry in loadOrder)
-                {
-                    // And check each file name to see if it matches that entry.
-                    for (int i = 0; i < names.Length; i++)
-                    {
-                        if (entry == names[i])
-                        {
-                            sorted.Add(paths[i]);
-                            Mod.LogInfo($"{sorted.Count}. '{names[i]}': '{paths[i]}'");
-
-                            names[i] = null; // Remove the name from the list.
-                        }
-                    }
-                }
-
-                // Add all the files that weren't on the load order list to the end of it.
-                for (int i = 0; i < names.Length; i++)
-                {
-                    if (names[i] is object)
-                    {
-                        sorted.Add(paths[i]);
-                        Mod.LogInfo($"{sorted.Count}. '{names[i]}': '{paths[i]}'");
-                    }
-                }
-
-                return sorted.ToArray();
+        static string[] SortFiles(string[] paths, string[] loadOrder) {
+            if (paths.Length == 0) {
+                Mod.LogInfo("No terrain patches are to be applied");
+                return [];
             }
 
-            // Gets the desired load order from the config file.
-            static string[] GetLoadOrder()
-            {
-                string path = Path.Combine(Constants.MOD_DIR, LOAD_ORDER_FILE);
+            var names = new string?[paths.Length];
+            for (var i = 0; i < names.Length; i++) {
+                names[i] = Path.GetFileNameWithoutExtension(paths[i]);
+            }
 
-                var seen = new HashSet<string> { };
-                var loadOrder = new List<string> { };
+            Mod.LogInfo("Terrain patches to be applied:");
 
-                if (File.Exists(path))
-                {
-                    try
-                    {
-                        Mod.LogInfo("Found load order file");
+            var sorted = new List<string>();
 
-                        using (FileStream file = File.OpenRead(path))
-                        {
-                            var reader = new StreamReader(file);
+            foreach (var entry in loadOrder) {
+                for (var i = 0; i < names.Length; i++) {
+                    if (entry == names[i]) {
+                        sorted.Add(paths[i]);
+                        Mod.LogInfo($"- '{names[i]}' at: {paths[i]}");
+                        names[i] = null;
+                    }
+                }
+            }
 
-                            while (!reader.EndOfStream)
-                            {
-                                string line = reader.ReadLine();
+            for (var i = 0; i < names.Length; i++) {
+                if (names[i] is object) {
+                    sorted.Add(paths[i]);
+                    Mod.LogInfo($"- '{names[i]}' at: {paths[i]}");
+                }
+            }
 
-                                if (!string.IsNullOrEmpty(line) && !seen.Contains(line))
-                                {
-                                    loadOrder.Add(line);
-                                }
+            return sorted.ToArray();
+        }
+
+        static string[] GetLoadOrder() {
+            var path = Path.Combine(Mod.AssemblyDir, FileLoading.LOAD_ORDER_FILE);
+
+            var seen = new HashSet<string>();
+            var loadOrder = new List<string>();
+
+            if (File.Exists(path)) {
+                try {
+                    Mod.LogDebug("Found load order file");
+
+                    using (var file = File.OpenRead(path)) {
+                        var reader = new StreamReader(file);
+
+                        while (!reader.EndOfStream) {
+                            var line = reader.ReadLine();
+
+                            if (!string.IsNullOrEmpty(line) && !seen.Contains(line)) {
+                                loadOrder.Add(line);
                             }
                         }
                     }
-                    catch (IOException ex)
-                    {
-                        Mod.LogWarning($"Could not open load order file: {ex}");
-                    }
+                } catch (IOException ex) {
+                    Mod.LogWarning($"Could not open load order file: {ex}");
                 }
-                else { Mod.LogWarning("Could not find load order file"); }
+            } else Mod.LogDebug("Did not find load order file");
 
-                return loadOrder.ToArray();
-            }
+            return loadOrder.ToArray();
         }
+    }
 
-        // Recursively find all patch files to load in the specified directory.
-        private static IEnumerable<string> RecursiveFindPatchFiles(string path)
-        {
-            var stack = new Stack<string>();
-            stack.Push(path);
+    static readonly string LOAD_ORDER_FILE = "load-order.txt";
 
-            while (stack.Count > 0)
-            {
-                var dir = stack.Pop();
-                if (File.Exists(Path.Combine(dir, ".terrain-patcher-ignore"))) continue;
+    static readonly string[] PATCH_EXTENSIONS = [
+        "optoctreepatch",
+        "optoctreepatc",
+    ];
 
-                foreach (var ext in Constants.PATCH_EXTENSIONS)
-                {
-                    foreach (var file in Directory.GetFiles(dir, $"*.{ext}"))
-                    {
-                        var skip = true;
-                        try
-                        {
-                            var version = new BinaryReader(File.OpenRead(file)).ReadUInt32();
-                            if (version != Constants.SKIP_VERSION) skip = false;
-                        }
-                        catch (Exception ex)
+    static IEnumerable<string> FindPatchFiles(string path) {
+        var stack = new Stack<string>();
+        stack.Push(path);
+
+        while (stack.Count > 0) {
+            var dir = stack.Pop();
+            if (File.Exists(Path.Combine(dir, ".terrain-patcher-ignore"))) continue;
+
+            foreach (var ext in FileLoading.PATCH_EXTENSIONS) {
+                foreach (var file in Directory.GetFiles(dir, $"*.{ext}")) {
+                    var skip = false;
+                    try {
+                        var version = new BinaryReader(File.OpenRead(file)).ReadUInt32();
+                        if (version == uint.MaxValue) skip = true;
+                    } catch (Exception ex)
                         when (ex is IOException || ex is EndOfStreamException) { }
 
-                        if (!skip) yield return file;
-                    }
+                    if (!skip) yield return file;
                 }
-
-                foreach (var subdir in Directory.GetDirectories(dir)) stack.Push(subdir);
             }
+
+            foreach (var subdir in Directory.GetDirectories(dir)) stack.Push(subdir);
+        }
+    }
+
+    static void LoadPatchFiles(string[] patchFiles) {
+        Mod.LogInfo("Loading terrain patches");
+
+        for (var i = 0; i < patchFiles.Length; i++) {
+            LoadPatch(patchFiles[i]);
         }
 
-        // The name of the load order file.
-        private static readonly string LOAD_ORDER_FILE = "load-order.txt";
+        static void LoadPatch(string filepath) {
+            var patchName = Path.GetFileNameWithoutExtension(filepath);
 
-        // Load terrain patch files.
-        private static void LoadPatchFiles(string[] patchFiles)
-        {
-            Mod.LogInfo("Loading patch files");
+            FileStream file;
 
-            for (int i = 0; i < patchFiles.Length; i++)
-            {
-                LoadPatch(patchFiles[i]);
+            try { file = File.OpenRead(filepath); }
+            catch (IOException ex) {
+                Mod.LogError($"Could not open patch file '{patchName}': {ex.Message}");
+                Mod.DisplayError($"Error opening terrain patch '{patchName}'");
+                return;
             }
 
-            static void LoadPatch(string filepath)
-            {
-                string patchName = Path.GetFileNameWithoutExtension(filepath);
-
-                FileStream file;
-
-                try { file = File.OpenRead(filepath); }
-                catch (IOException ex)
-                {
-                    Mod.LogError($"Could not open patch file '{patchName}': {ex.Message}");
-                    Mod.DisplayError($"Error opening terrain patch '{patchName}'!");
-                    return;
-                }
-
-                TerrainRegistry.ApplyTerrainPatch(patchName, file, forceOriginal: false);
-                file.Close();
-            }
+            TerrainPatching.ApplyTerrainPatch(patchName, file, forceOriginal: false);
+            file.Close();
         }
     }
 }
