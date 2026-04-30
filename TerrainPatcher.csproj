@@ -37,9 +37,6 @@
         <Reference Include="UnityEngine.CoreModule">
             <HintPath>references/UnityEngine.CoreModule.refasm.dll</HintPath>
         </Reference>
-        <Reference Include="Nautilus">
-            <HintPath>references/Nautilus.refasm.dll</HintPath>
-        </Reference>
     </ItemGroup>
     <Target Name="CopyToTargetDir" AfterTargets="Build">
         <Copy

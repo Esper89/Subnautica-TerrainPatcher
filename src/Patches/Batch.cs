@@ -63,9 +63,7 @@ namespace TerrainPatcher
         // Sets the result of the method and skips the original if needed.
         private static bool SetResult(Int3 batchId, ref string result, bool runOriginal)
         {
-            if (runOriginal &&
-                Mod.Settings.IncludePatches &&
-                TerrainRegistry.patchedBatches.ContainsKey(batchId))
+            if (runOriginal && TerrainRegistry.patchedBatches.ContainsKey(batchId))
             {
                 result = TerrainRegistry.patchedBatches[batchId].fileName;
                 return false;

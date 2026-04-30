@@ -8,9 +8,7 @@ files) and makes the game load that terrain instead of its vanilla terrain.
 
 ## Installation
 
-This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica) and
-[Nautilus](https://github.com/SubnauticaModding/Nautilus). The Nautilus dependency is optional but
-recommended.
+This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica).
 
 You can download Terrain Patcher from the [releases
 page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest), below the changelog.
@@ -26,8 +24,6 @@ You can specify a custom load order for `.optoctreepatch` files by writing the f
 the extensions) into the `load-order.txt` file. If you have multiple terrain patches that conflict
 with each other, changing the load order usually won't fix broken terrain—the terrain patches are
 likely just incompatible.
-
-Loading patch files can be enabled/disabled from the in-game config menu if Nautilus is installed.
 
 ### Game Version
 
@@ -125,8 +121,6 @@ aren't removed when Terrain Patcher is disabled or uninstalled.
 - Replaces the terrain that loads in-game.
 
 - Supports both Subnautica and Below Zero.
-
-- Using patched terrain can be enabled and disabled in-game.
 
 - Extends the edges of the world to allow for more terrain and entities.
 

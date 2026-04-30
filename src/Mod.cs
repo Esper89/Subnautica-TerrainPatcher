@@ -3,20 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using BepInEx;
-using BepInEx.Bootstrap;
-using BepInEx.Configuration;
 using HarmonyLib;
 
 namespace TerrainPatcher
 {
     [BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.2.4")]
-    [BepInDependency("com.snmodding.nautilus", BepInDependency.DependencyFlags.SoftDependency)]
     internal class Mod : BaseUnityPlugin
     {
         // Initializes the mod.
         private void Awake()
         {
-            this._settings = new Settings(base.Config);
             Mod.Instance = this;
 
             var harmony = new Harmony("Esper89.TerrainPatcher");
@@ -25,16 +21,6 @@ namespace TerrainPatcher
             WorldStreamerPatches.Patch(harmony);
 
             FileLoading.FindAndLoadPatches();
-
-            if (Chainloader.PluginInfos.ContainsKey("com.snmodding.nautilus"))
-            {
-                Mod.LogInfo("Nautilus is installed, options menu will be available");
-                Options.Register();
-            }
-            else
-            {
-                Mod.LogWarning("Nautilus is not installed, no options menu will be available");
-            }
         }
 
         // Prints error messages.
@@ -65,29 +51,6 @@ namespace TerrainPatcher
         // Displays an error message to the player once the title screen has loaded.
         internal static void DisplayError(string message) => Mod.Instance.messages.Add(message);
         private List<string> messages = new List<string>();
-
-        private Settings? _settings;
-        internal static Settings Settings { get => Mod.Instance._settings!; }
-    }
-
-    internal class Settings
-    {
-        internal Settings(ConfigFile config)
-        {
-            this.includePatches = config.Bind(
-                "terrain", "include-patches", true, "Include patches when loading terrain?"
-            );
-
-            config.Save();
-        }
-
-        private ConfigEntry<bool> includePatches;
-
-        internal bool IncludePatches
-        {
-            get => this.includePatches.Value;
-            set => this.includePatches.Value = value;
-        }
     }
 
     internal static class Constants
