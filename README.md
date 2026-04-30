@@ -141,12 +141,12 @@ contributions [as pull requests](https://github.com/Esper89/Subnautica-TerrainPa
 
 To build Terrain Patcher, run `dotnet build` in the project's root directory. This will build in
 debug mode, and the output will be placed in `target/Debug`. If you create a file in the project
-root called `game-dirs.txt` and input the paths to your Subnautica and/or Below Zero installations
-(one per line), the output of debug builds will be automatically installed into those game
-directories for easier testing.
+root called `game-dirs` and input the paths to your Subnautica and/or Below Zero installations (one
+per line), the output of debug builds will be automatically installed into those game directories
+for easier testing.
 
-To build Terrain Patcher in release mode, run `dotnet build --configuration Release`. This will
-also create a `dist.zip` file in `target` for easy distribution.
+To build Terrain Patcher in release mode, run `dotnet build -c Release`. This will also create a
+`TerrainPatcher.zip` file in `target` for easy distribution.
 
 ### Contributors
 
