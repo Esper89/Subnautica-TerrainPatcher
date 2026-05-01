@@ -16,8 +16,8 @@ or any subfolder and it will still be loaded.
 ## Configuration
 
 Patch load order can be configured in `load-order.txt`. Each line should be the name of the patch to
-reorder. Load order can only be configured for patches loaded from the filesystem; to configure the
-load order of patches provided directly by other mods, change the BepInEx load order of those mods.
+reorder. If you have multiple terrain patches that conflict with each other, changing the load order
+usually won't fix broken terrain—the terrain patches are likely just incompatible.
 
 ## Repository
 
