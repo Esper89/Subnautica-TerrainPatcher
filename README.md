@@ -160,7 +160,7 @@ To build Terrain Patcher in release mode, run `dotnet build -c Release`. This wi
 
 ## License
 
-Copyright © 2021, 2023–2025 Esper Thomson
+Copyright © 2021, 2023–2026 Esper Thomson
 
 This program is free software: you can redistribute it and/or modify it under the terms of version
 3 of the GNU Affero General Public License as published by the Free Software Foundation.
