@@ -43,6 +43,12 @@ The following is for modders who want to use Terrain Patcher in your mod. Keep i
 mod uses Terrain Patcher, anyone using your mod needs to have Terrain Patcher installed to see your
 terrain changes.
 
+When linking users to Terrain Patcher to install, it's recommended to either link to this readme
+page or directly to the releases page at
+`https://github.com/Esper89/Subnautica-TerrainPatcher/releases`. Please avoid linking directly to
+one specific release (unless it's `releases/latest`) to avoid users installing old versions of
+Terrain Patcher instead of the latest version.
+
 ### Patch Loading
 
 To load a terrain patch, just distribute your `.optoctreepatch` file alongside your mod. **Terrain
@@ -127,8 +133,6 @@ aren't removed when Terrain Patcher is disabled or uninstalled.
 ### Planned Features
 
 - Patching the in-game seaglide and scanner room maps.
-
-- Patching two-dimensional biome data.
 
 ## Contributing
 
