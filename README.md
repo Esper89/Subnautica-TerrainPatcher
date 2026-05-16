@@ -73,7 +73,7 @@ If your mod **requires** Terrain Patcher to function, add the
 ```cs
 [BepInPlugin("YourName.ExampleMod", "Example Mod", "0.0.0")]
 [BepInDependency("Esper89.TerrainPatcher")]
-internal class Mod : BaseUnityPlugin { /* ... */ }
+sealed class Mod : BaseUnityPlugin { /* ... */ }
 ```
 
 If your mod **does not require** Terrain Patcher but still uses it, add the
@@ -83,7 +83,7 @@ attribute to your mod's entry point (below the `BepInPlugin` attribute), as show
 ```cs
 [BepInPlugin("YourName.ExampleMod", "Example Mod", "0.0.0")]
 [BepInDependency("Esper89.TerrainPatcher", BepInDependency.DependencyFlags.SoftDependency)]
-internal class Mod : BaseUnityPlugin { /* ... */ }
+sealed class Mod : BaseUnityPlugin { /* ... */ }
 ```
 
 ### Licensing
