@@ -3,8 +3,8 @@
 Terrain Patcher is a Subnautica and Below Zero library mod that allows anyone to modify the game's
 terrain.
 
-Terrain Patcher loads terrain patches containing terrain to replace (stored as `.optoctreepatch`
-files) and makes the game load that terrain instead of its vanilla terrain.
+Terrain Patcher loads terrain patches (stored as `.optoctreepatch` files) and replaces parts of the
+game's terrain with the terrain in those patches.
 
 ## Installation
 
@@ -43,6 +43,12 @@ The following is for modders who want to use Terrain Patcher in your mod. Keep i
 mod uses Terrain Patcher, anyone using your mod needs to have Terrain Patcher installed to see your
 terrain changes.
 
+When linking users to Terrain Patcher to install, it's recommended to either link to this readme
+page or directly to the releases page at
+`https://github.com/Esper89/Subnautica-TerrainPatcher/releases`. Please avoid linking directly to
+one specific release (unless it's `releases/latest`) to avoid users installing old versions of
+Terrain Patcher instead of the latest version.
+
 ### Patch Loading
 
 To load a terrain patch, just distribute your `.optoctreepatch` file alongside your mod. **Terrain
@@ -67,7 +73,7 @@ If your mod **requires** Terrain Patcher to function, add the
 ```cs
 [BepInPlugin("YourName.ExampleMod", "Example Mod", "0.0.0")]
 [BepInDependency("Esper89.TerrainPatcher")]
-internal class Mod : BaseUnityPlugin { /* ... */ }
+sealed class Mod : BaseUnityPlugin { /* ... */ }
 ```
 
 If your mod **does not require** Terrain Patcher but still uses it, add the
@@ -77,7 +83,7 @@ attribute to your mod's entry point (below the `BepInPlugin` attribute), as show
 ```cs
 [BepInPlugin("YourName.ExampleMod", "Example Mod", "0.0.0")]
 [BepInDependency("Esper89.TerrainPatcher", BepInDependency.DependencyFlags.SoftDependency)]
-internal class Mod : BaseUnityPlugin { /* ... */ }
+sealed class Mod : BaseUnityPlugin { /* ... */ }
 ```
 
 ### Licensing
@@ -128,8 +134,6 @@ aren't removed when Terrain Patcher is disabled or uninstalled.
 
 - Patching the in-game seaglide and scanner room maps.
 
-- Patching two-dimensional biome data.
-
 ## Contributing
 
 Contributions of any kind—issues, pull requests, feature requests—are all welcome. You can submit
@@ -140,10 +144,10 @@ contributions [as pull requests](https://github.com/Esper89/Subnautica-TerrainPa
 ### Building
 
 To build Terrain Patcher, run `dotnet build` in the project's root directory. This will build in
-debug mode, and the output will be placed in `target/Debug`. If you create a file in the project
-root called `game-dirs` and input the paths to your Subnautica and/or Below Zero installations (one
-per line), the output of debug builds will be automatically installed into those game directories
-for easier testing.
+debug mode, and the output will be placed in `bin/Debug`. If you create a file in the project root
+called `game-dirs` and input the paths to your Subnautica and/or Below Zero installations (one per
+line), the output of debug builds will be automatically installed into those game directories for
+easier testing.
 
 To build Terrain Patcher in release mode, run `dotnet build -c Release`. This will also create a
 `TerrainPatcher.zip` file in `target` for easy distribution.
@@ -160,7 +164,7 @@ To build Terrain Patcher in release mode, run `dotnet build -c Release`. This wi
 
 ## License
 
-Copyright © 2021, 2023–2025 Esper Thomson
+Copyright © 2021, 2023–2026 Esper Thomson
 
 This program is free software: you can redistribute it and/or modify it under the terms of version
 3 of the GNU Affero General Public License as published by the Free Software Foundation.

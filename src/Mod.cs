@@ -4,7 +4,7 @@ using HarmonyLib;
 
 namespace TerrainPatcher;
 
-[BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.2.4")]
+[BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.2.5")]
 [BepInProcess("Subnautica.exe")]
 [BepInProcess("SubnauticaZero.exe")]
 sealed class Mod : BaseUnityPlugin {
