@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <!--> The first portion of this should match your Subnautica installation directory! </!-->
+        <GameDir>YOUR_GAME_PATH_HERE</GameDir>
+    </PropertyGroup>
+</Project>

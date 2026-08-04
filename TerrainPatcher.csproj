@@ -1,72 +1,61 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net472</TargetFramework>
-        <LangVersion>12.0</LangVersion>
+        <LangVersion>14</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GenerateDependencyFile>false</GenerateDependencyFile>
         <DebugType>embedded</DebugType>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json;
+        </RestoreAdditionalProjectSources>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="PolySharp" Version="1.13.1" />
+        <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+        <PackageReference Include="HarmonyX" Version="2.16.1" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.1.0" />
+        <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" IncludeAssets="compile" />
+        <PackageReference Include="Subnautica.GameLibs" Version="82304.0.0-r.0" />
+    </ItemGroup>
+    
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <PathMap>$(MSBuildProjectDirectory)=./</PathMap>
     </PropertyGroup>
-    <ItemGroup>
-        <Reference Include="references/*.refasm.dll" Private="false"/>
-        <Content Include="LICENSE" CopyToOutputDirectory="PreserveNewest"/>
-        <Content Include="dist-readme.md" Link="README.md" CopyToOutputDirectory="PreserveNewest"/>
-    </ItemGroup>
+
+    <Import Condition="Exists('TargetDirectories.targets')" Project="TargetDirectories.targets"/>
+
     <Target Name="SetupTargetFiles" AfterTargets="PostBuildEvent">
         <ItemGroup>
-            <TargetFiles Include="$(TargetDir)/**"/>
+            <TargetFiles Include="$(TargetPath)"/>
+            <TargetFiles Include="LICENSE"/>
+            <TargetFiles Include="dist-readme.md" Link="README.md"/>
         </ItemGroup>
     </Target>
-    <Target
-        Name="LoadGameDirs"
-        AfterTargets="SetupTargetFiles"
-        Condition="'$(Configuration)' == 'Debug' And Exists('game-dirs')"
-    >
-        <ReadLinesFromFile File="game-dirs">
-            <Output TaskParameter="Lines" ItemName="GameDirs"/>
-        </ReadLinesFromFile>
-    </Target>
-    <Target
-        Name="CopyToPluginsDir"
-        AfterTargets="LoadGameDirs"
-        Condition="'$(Configuration)' == 'Debug' And Exists('game-dirs')"
-        Inputs="@(GameDirs);@(TargetFiles)"
-        Outputs="%(GameDirs.Identity)/BepInEx/plugins/$(ProjectName)/**"
-    >
-        <PropertyGroup>
-            <GameDir>%(GameDirs.Identity)</GameDir>
-        </PropertyGroup>
-        <Copy
-            SourceFiles="@(TargetFiles)"
-            DestinationFolder="$(GameDir)/BepInEx/plugins/$(ProjectName)/%(RecursiveDir)"
-        />
+    
+    <Target Name="CopyToPluginsDir" AfterTargets="SetupTargetFiles" Condition="'$(Configuration)' == 'Debug'">
+        <Copy SourceFiles="@(TargetFiles)" DestinationFolder="$(GameDir)/BepInEx/plugins/$(ProjectName)/%(RecursiveDir)"/>
         <WriteLinesToFile File="$(GameDir)/BepInEx/plugins/$(ProjectName)/load-order.txt"/>
         <MakeDir Directories="$(GameDir)/BepInEx/plugins/$(ProjectName)/patches"/>
     </Target>
-    <Target
-        Name="ZipDist"
-        AfterTargets="SetupTargetFiles"
-        Condition="'$(Configuration)' == 'Release'"
-    >
+    
+    <Target Name="ZipDist" AfterTargets="SetupTargetFiles" Condition="'$(Configuration)' == 'Release'">
         <RemoveDir Directories="target/dist"/>
-        <Copy
-            SourceFiles="@(TargetFiles)"
-            DestinationFolder="target/dist/$(ProjectName)/%(RecursiveDir)"
-        />
+        <Copy SourceFiles="@(TargetFiles)" DestinationFolder="target/dist/$(ProjectName)/%(RecursiveDir)"/>
         <WriteLinesToFile File="target/dist/$(ProjectName)/load-order.txt"/>
         <MakeDir Directories="target/dist/$(ProjectName)/patches"/>
-        <ZipDirectory
-            SourceDirectory="target/dist"
-            DestinationFile="target/$(ProjectName).zip"
-            Overwrite="true"
-        />
+        <ZipDirectory SourceDirectory="target/dist" DestinationFile="target/$(ProjectName).zip" Overwrite="true"/>
         <RemoveDir Directories="target/dist"/>
     </Target>
+
+    <ItemGroup>
+        <Folder Include="src\TerrainMaterials\Format\" />
+    </ItemGroup>
 </Project>

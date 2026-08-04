@@ -2,3 +2,5 @@
 /obj/
 /target/
 /game-dirs
+/.idea
+TargetDirectories.targets
