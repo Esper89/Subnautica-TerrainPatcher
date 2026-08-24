@@ -1,5 +1,6 @@
 namespace TerrainPatcher;
 
+//TODO: prob better to use the base game methods, these exist there :/
 static class Utils {
     internal static int DivFloor(int a, int b) {
         if (((a < 0) ^ (b < 0)) && (a % b != 0)) return a / b - 1;
@@ -9,5 +10,5 @@ static class Utils {
     internal static int RemFloor(int a, int b) {
         if (((a < 0) ^ (b < 0)) && (a % b != 0)) return a % b + b;
         else return a % b;
-    }
+    } 
 }

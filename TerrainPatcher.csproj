@@ -54,8 +54,4 @@
         <ZipDirectory SourceDirectory="target/dist" DestinationFile="target/$(ProjectName).zip" Overwrite="true"/>
         <RemoveDir Directories="target/dist"/>
     </Target>
-
-    <ItemGroup>
-        <Folder Include="src\TerrainMaterials\Format\" />
-    </ItemGroup>
 </Project>
