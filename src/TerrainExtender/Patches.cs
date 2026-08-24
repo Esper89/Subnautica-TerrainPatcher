@@ -1,5 +1,6 @@
 ﻿using System.Reflection.Emit;
 using HarmonyLib;
+using Unity.Mathematics;
 using UWE;
 using WorldStreaming;
 
@@ -19,7 +20,7 @@ internal static class FixNegativeEntityCells
         ])
         .ThrowIfNotMatch(
             "could not transpile " +
-            $"{{typeof(CellManager)}}.{nameof(CellManager.RegisterCellEntity)}: method does " +
+            $"{typeof(CellManager)}.{nameof(CellManager.RegisterCellEntity)}: method does " +
             "not divide by " +
             $"{typeof(LargeWorldStreamer)}.{nameof(LargeWorldStreamer.blocksPerBatch)} get"
         )
@@ -30,13 +31,9 @@ internal static class FixNegativeEntityCells
             new(OpCodes.Ldarg_1),
             CodeInstruction.CallClosure((CellManager cellMgr, LargeWorldEntity entity) =>
             {
-                var block = cellMgr.streamer.GetBlock(entity.transform.position);
-                var blocksPerBatch = cellMgr.streamer.blocksPerBatch;
-                return new Int3(
-                    Utils.DivFloor(block.x, blocksPerBatch.x),
-                    Utils.DivFloor(block.y, blocksPerBatch.y),
-                    Utils.DivFloor(block.z, blocksPerBatch.z)
-                );
+                Int3 block = cellMgr.streamer.GetBlock(entity.transform.position);
+                Int3 blocksPerBatch = cellMgr.streamer.blocksPerBatch;
+                return Int3.FloorDiv(block, blocksPerBatch);
             }),
         ])
         .Start()
@@ -59,16 +56,14 @@ internal static class FixNegativeEntityCells
             new(OpCodes.Ldarg_1),
             CodeInstruction.CallClosure((CellManager cellMgr, LargeWorldEntity entity) =>
             {
-                var block = cellMgr.streamer.GetBlock(entity.transform.position);
-                var blocksPerBatch = cellMgr.streamer.blocksPerBatch;
-                return new Int3(
-                    Utils.RemFloor(block.x, blocksPerBatch.x),
-                    Utils.RemFloor(block.y, blocksPerBatch.y),
-                    Utils.RemFloor(block.z, blocksPerBatch.z)
-                );
+                Int3 block = cellMgr.streamer.GetBlock(entity.transform.position);
+                Int3 blocksPerBatch = cellMgr.streamer.blocksPerBatch;
+                return Int3.PositiveModulo(block, blocksPerBatch);
             }),
         ])
         .InstructionEnumeration();
+    
+    
 }
 
 [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]
