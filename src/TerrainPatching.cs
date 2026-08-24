@@ -38,9 +38,8 @@ static class TerrainPatching {
     internal static readonly Dictionary<Int3, PatchedBatch> patchedBatches = new();
 
 
-
-    static void ApplyPatchFile(string patchName, Stream patchFile, bool forceOriginal) {
-        var reader = new BinaryReader(patchFile);
+    private static void ApplyPatchFile(string patchName, Stream patchFile, bool forceOriginal) {
+        BinaryReader reader = new(patchFile);
 
         uint version;
         try { version = reader.ReadUInt32(); }
@@ -122,7 +121,7 @@ static class TerrainPatching {
             
             BinaryReader reader = new(file);
 
-            if (reader.ReadUInt32() != 4) continue;
+            if (reader.ReadUInt32() != 4u) continue;
                 
             File.Copy(origPath, newPath, overwrite: true);
             patchedBatches[batchId] = new PatchedBatch(newPath);
@@ -132,10 +131,10 @@ static class TerrainPatching {
         using (FileStream file = File.Create(newPath)) {
             BinaryWriter writer = new(file);
 
-            writer.Write((uint)4);
+            writer.Write(4u);
             for (int i = 0; i < 125; i++) {
                 writer.Write((ushort)1);
-                writer.Write((uint)0);
+                writer.Write(0u);
             }
 
             patchedBatches[batchId] = new PatchedBatch(newPath);
@@ -151,16 +150,15 @@ static class TerrainPatching {
 
         BitArray patchedOctrees;
 
-        using (var targetFile = File.Open(path, FileMode.Create)) {
-            var target = new BinaryWriter(targetFile);
+        using var targetFile = File.Open(path, FileMode.Create);
+        BinaryWriter target = new(targetFile);
 
-            target.Write((uint)4);
-            try { patchedOctrees = PatchOctrees(target, original, patch); }
-            catch (Exception) {
-                targetFile.Seek(0, SeekOrigin.Begin);
-                targetFile.Write(origBytes, 0, origBytes.Length);
-                throw;
-            }
+        target.Write(4u);
+        try { patchedOctrees = PatchOctrees(target, original, patch); }
+        catch (Exception) {
+            targetFile.Seek(0, SeekOrigin.Begin);
+            targetFile.Write(origBytes, 0, origBytes.Length);
+            throw;
         }
 
         List<string>?[] octreePatchNames = patchedBatches[batchId].octreePatchNames;
@@ -223,7 +221,7 @@ static class TerrainPatching {
                 target.Write(t, 0, t.Length);
             } else {
                 target.Write((ushort)1);
-                target.Write((uint)0);
+                target.Write(0u);
             }
         }
 
@@ -237,8 +235,8 @@ internal struct PatchedBatch {
         octreePatchNames = new List<string>?[125];
     }
 
-    internal string path;
-    internal List<string>?[] octreePatchNames;
+    internal readonly string path;
+    internal readonly List<string>?[] octreePatchNames;
 }
 
 internal static class PatchesDir {
