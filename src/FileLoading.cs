@@ -2,7 +2,7 @@ using BepInEx;
 
 namespace TerrainPatcher;
 
-static class FileLoading {
+internal static class FileLoading {
     public static void FindAndLoadPatches() {
         LoadPatchFiles(GetOrderedPatchFiles());
     }

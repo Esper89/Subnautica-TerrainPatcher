@@ -31,8 +31,6 @@ internal sealed class Plugin : BaseUnityPlugin {
         }
     }
 
-
-
     internal static void LogDebug(string message) => Instance.Logger.LogDebug(message);
     internal static void LogInfo(string message) => Instance.Logger.LogInfo(message);
     internal static void LogWarning(string message) => Instance.Logger.LogWarning(message);

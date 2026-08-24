@@ -26,7 +26,7 @@ internal static class HarmonyPatches {
         }
     }
 
-    static readonly Regex BATCH_NAME_PATTERN = new(@"^compiled-batch-(-?\d+)-(-?\d+)-(-?\d+)\.optoctrees$");
+    private static readonly Regex BATCH_NAME_PATTERN = new(@"^compiled-batch-(-?\d+)-(-?\d+)-(-?\d+)\.optoctrees$");
 
     [HarmonyPatch(typeof(BatchOctreesStreamer), nameof(BatchOctreesStreamer.GetPath))]
     private static class ChangeBatchFilePath {

@@ -59,7 +59,7 @@ static class TerrainPatching {
 
         for (;;) {
             try {
-                var batchId = ReadBatchId(reader);
+                Int3? batchId = ReadBatchId(reader);
                 if (batchId is null) break;
                 var id = batchId.Value;
 
@@ -70,7 +70,7 @@ static class TerrainPatching {
                 throw new InvalidDataException("patch ends too early", ex);
             }
         }
-
+        
         static Int3? ReadBatchId(BinaryReader patch) {
             byte first;
             try { first = patch.ReadByte(); } catch (EndOfStreamException) { return null; }
@@ -142,10 +142,10 @@ static class TerrainPatching {
         }
     }
 
-    static void PatchBatch(string patchName, Int3 batchId, BinaryReader patch) {
-        var path = TerrainPatching.patchedBatches[batchId].path;
+    private static void PatchBatch(string patchName, Int3 batchId, BinaryReader patch) {
+        string path = patchedBatches[batchId].path;
 
-        var origBytes = File.ReadAllBytes(path);
+        byte[] origBytes = File.ReadAllBytes(path);
         var original = new BinaryReader(new MemoryStream(buffer: origBytes, writable: false));
         original.ReadUInt32();
 
@@ -168,7 +168,7 @@ static class TerrainPatching {
         {
             if (!patchedOctrees[i]) continue;
             octreePatchNames[i] ??= new();
-            var patches = octreePatchNames[i]!;
+            List<string>? patches = octreePatchNames[i]!;
 
             if (patches.Count > 0) {
                 string warning = $"patch '{patchName}' overrides ";
@@ -193,7 +193,7 @@ static class TerrainPatching {
             "patch contains more octrees than the batch can contain"
         );
 
-        byte[][] octrees = new byte[125][];
+        byte[]?[] octrees = new byte[125][];
 
         for (int i = 0; i < 125; i++) {
             try {
@@ -211,18 +211,20 @@ static class TerrainPatching {
             } catch (EndOfStreamException ex) {
                 throw new InvalidDataException("patch ends too early", ex);
             } catch (Exception ex)
-                when (ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException) {
-                throw new InvalidDataException(
-                    "patch contains an octree outside the bounds of the batch it applies to",
-                    ex
-                );
+                when (ex is IndexOutOfRangeException or ArgumentOutOfRangeException) {
+                throw new InvalidDataException("patch contains an octree outside the bounds of the batch it applies to", ex);
             }
         }
 
-        foreach (byte[] t in octrees)
+        foreach (byte[]? t in octrees)
         {
-            target.Write((ushort)(t.Length / 4));
-            target.Write(t, 0, t.Length);
+            if (t != null) {
+                target.Write((ushort)(t.Length / 4));
+                target.Write(t, 0, t.Length);
+            } else {
+                target.Write((ushort)1);
+                target.Write((uint)0);
+            }
         }
 
         return patchedOctrees;
