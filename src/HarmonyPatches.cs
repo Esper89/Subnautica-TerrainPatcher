@@ -6,6 +6,14 @@ using WorldStreaming;
 namespace TerrainPatcher;
 
 internal static class HarmonyPatches {
+    
+    private static readonly Regex BATCH_NAME_PATTERN = new(@"^compiled-batch-(-?\d+)-(-?\d+)-(-?\d+)\.optoctrees$");
+    
+    internal static readonly Int3.Bounds EXTENDED_BATCH_BOUNDS = new(
+        new(short.MinValue, short.MinValue, short.MinValue),
+        new(short.MaxValue, short.MaxValue, short.MaxValue)
+    );
+    
     [HarmonyPatch(typeof(LargeWorldStreamer), nameof(LargeWorldStreamer.GetCompiledOctreesCachePath))]
     private static class ParseAndReplaceBatchFilePath {
         private static bool Prefix(string filename, ref string? __result, bool __runOriginal) {
@@ -25,26 +33,19 @@ internal static class HarmonyPatches {
             return GetBatchFilePath(batchId, ref __result, __runOriginal);
         }
     }
-
-    private static readonly Regex BATCH_NAME_PATTERN = new(@"^compiled-batch-(-?\d+)-(-?\d+)-(-?\d+)\.optoctrees$");
-
+    
     [HarmonyPatch(typeof(BatchOctreesStreamer), nameof(BatchOctreesStreamer.GetPath))]
     private static class ChangeBatchFilePath {
         private static bool Prefix(Int3 batchId, ref string? __result, bool __runOriginal)
             => GetBatchFilePath(batchId, ref __result, __runOriginal);
     }
 
-    static bool GetBatchFilePath(Int3 batchId, ref string? result, bool runOriginal)
+    private static bool GetBatchFilePath(Int3 batchId, ref string? result, bool runOriginal)
     {
         if (!runOriginal || !TerrainPatching.patchedBatches.TryGetValue(batchId, out var batch)) return true;
         result = batch.path;
         return false;
     }
-
-    internal static readonly Int3.Bounds EXTENDED_BATCH_BOUNDS = new(
-        new(short.MinValue, short.MinValue, short.MinValue),
-        new(short.MaxValue, short.MaxValue, short.MaxValue)
-    );
 
     [HarmonyPatch(typeof(BatchOctrees), nameof(BatchOctrees.LoadOctrees))]
     private static class FixOctreeScrambling {

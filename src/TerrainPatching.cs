@@ -187,9 +187,7 @@ static class TerrainPatching {
         BitArray patchedOctrees = new(125);
         byte patchedOctreeCount = patch.ReadByte();
 
-        if (patchedOctreeCount > 125) throw new InvalidDataException(
-            "patch contains more octrees than the batch can contain"
-        );
+        if (patchedOctreeCount > 125) throw new InvalidDataException("patch contains more octrees than the batch can contain");
 
         byte[]?[] octrees = new byte[125][];
 
