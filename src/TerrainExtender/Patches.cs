@@ -6,8 +6,7 @@ using WorldStreaming;
 namespace TerrainPatcher;
 
 [HarmonyPatch(typeof(CellManager), nameof(CellManager.RegisterCellEntity))]
-internal static class FixNegativeEntityCells
-{
+internal static class FixNegativeEntityCells {
     private static IEnumerable<CodeInstruction> Transpiler(
         IEnumerable<CodeInstruction> instructions
     ) => new CodeMatcher(instructions)
@@ -61,8 +60,6 @@ internal static class FixNegativeEntityCells
             }),
         ])
         .InstructionEnumeration();
-    
-    
 }
 
 [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]

@@ -38,14 +38,12 @@ internal sealed class Plugin : BaseUnityPlugin {
 
     private static readonly List<string> QueuedMessages = new();
     // display an error message to the player once the title screen has loaded
-    internal static void DisplayError(string message)
-    {
+    internal static void DisplayError(string message) {
         if(ErrorMessage.main == null) QueuedMessages.Add(message);
         else ErrorMessage.AddError(message);
     }
 
-    private static IEnumerator DisplayQueuedErrorMessagesOnLoad()
-    {
+    private static IEnumerator DisplayQueuedErrorMessagesOnLoad() {
         yield return new WaitUntil(() => ErrorMessage.main != null);
         if (QueuedMessages.Count <= 0) yield break;
         foreach (string? message in QueuedMessages) { ErrorMessage.AddError($"[<#F00>ERROR</color>] {message}"); }

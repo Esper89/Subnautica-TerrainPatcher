@@ -40,8 +40,7 @@ internal static class HarmonyPatches {
             => GetBatchFilePath(batchId, ref __result, __runOriginal);
     }
 
-    private static bool GetBatchFilePath(Int3 batchId, ref string? result, bool runOriginal)
-    {
+    private static bool GetBatchFilePath(Int3 batchId, ref string? result, bool runOriginal) {
         if (!runOriginal || !TerrainPatching.patchedBatches.TryGetValue(batchId, out var batch)) return true;
         result = batch.path;
         return false;
