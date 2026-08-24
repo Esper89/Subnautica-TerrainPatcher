@@ -1,6 +1,9 @@
+using System.Collections;
 using System.Reflection;
 using BepInEx;
+using BepInEx.Logging;
 using HarmonyLib;
+using UnityEngine;
 
 namespace TerrainPatcher;
 
@@ -8,10 +11,12 @@ namespace TerrainPatcher;
 [BepInProcess("Subnautica.exe")]
 [BepInProcess("SubnauticaZero.exe")]
 internal sealed class Plugin : BaseUnityPlugin {
-    private static Plugin Instance;
+    private static Plugin instance;
+    private static ManualLogSource logger;
     
     private void Awake() {
-        Instance = this;
+        instance = this;
+        logger = base.Logger;
         LogDebug("Initializing Terrain Patcher");
 
         LogDebug("Applying Harmony patches");
@@ -21,25 +26,31 @@ internal sealed class Plugin : BaseUnityPlugin {
         FileLoading.FindAndLoadPatches();
 
         LogDebug("Terrain Patcher initialized");
+        
+        StartCoroutine(DisplayQueuedErrorMessagesOnLoad());
+    }
+
+    internal static void LogDebug(string message) => logger.LogDebug(message);
+    internal static void LogInfo(string message) => logger.LogInfo(message);
+    internal static void LogWarning(string message) => logger.LogWarning(message);
+    internal static void LogError(string message) => logger.LogError(message);
+    internal static void LogFatal(string message) => logger.LogFatal(message);
+
+    private static readonly List<string> QueuedMessages = new();
+    // display an error message to the player once the title screen has loaded
+    internal static void DisplayError(string message)
+    {
+        if(ErrorMessage.main == null) QueuedMessages.Add(message);
+        else ErrorMessage.AddError(message);
+    }
+
+    private static IEnumerator DisplayQueuedErrorMessagesOnLoad()
+    {
+        yield return new WaitUntil(() => ErrorMessage.main != null);
+        if (QueuedMessages.Count <= 0) yield break;
+        foreach (string? message in QueuedMessages) { ErrorMessage.AddError($"[<#F00>ERROR</color>] {message}"); }
+        QueuedMessages.Clear();
     }
     
-    //TODO: I dont like this constant polling. ya its probably negligible but why do it when we dont have to . We should have a better system in place
-    private void Update() {
-        if (messages.Count > 0 && ErrorMessage.main != null) {
-            foreach (var message in this.messages) { ErrorMessage.AddError(message); }
-            messages.Clear();
-        }
-    }
-
-    internal static void LogDebug(string message) => Instance.Logger.LogDebug(message);
-    internal static void LogInfo(string message) => Instance.Logger.LogInfo(message);
-    internal static void LogWarning(string message) => Instance.Logger.LogWarning(message);
-    internal static void LogError(string message) => Instance.Logger.LogError(message);
-    internal static void LogFatal(string message) => Instance.Logger.LogFatal(message);
-
-    // display an error message to the player once the title screen has loaded
-    internal static void DisplayError(string message) => Instance.messages.Add(message);
-    private List<string> messages = new();
-
     internal static string AssemblyDir => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 }
