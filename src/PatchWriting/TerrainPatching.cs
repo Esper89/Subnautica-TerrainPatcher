@@ -42,9 +42,7 @@ static class TerrainPatching {
         BinaryReader reader = new(patchFile);
         uint version;
         try { version = reader.ReadUInt32(); }
-        catch (EndOfStreamException) {
-            throw new InvalidDataException("patch is not large enough");
-        }
+        catch (EndOfStreamException) { throw new InvalidDataException("patch is not large enough"); }
 
         if (version == uint.MaxValue) {
             Plugin.LogWarning($"Skipping application of patch '{patchName}' because of invalid version");
@@ -65,7 +63,6 @@ static class TerrainPatching {
                 throw new InvalidDataException("patch ends too early", ex);
             }
         }
-        
         Int3? ReadBatchId() {
             byte first;
             try { first = reader.ReadByte(); } catch (EndOfStreamException) { return null; }
@@ -78,15 +75,9 @@ static class TerrainPatching {
         }
     }
 
-    private static void ApplyBatchPatch(
-        string patchName,
-        BinaryReader patch,
-        Int3 batchId,
-        bool forceOriginal
-    ) {
-        if (!patchedBatches.ContainsKey(batchId)) {
-            CreateNewPatchedBatch(batchId);
-        } else if (forceOriginal) {
+    private static void ApplyBatchPatch(string patchName, BinaryReader patch, Int3 batchId, bool forceOriginal) {
+        if (!patchedBatches.ContainsKey(batchId)) CreateNewPatchedBatch(batchId);
+        else if (forceOriginal) {
             Plugin.LogInfo(
                 $"Patch '{patchName}' forcefully resetting batch " +
                 $"[{batchId.x}, {batchId.y}, {batchId.z}]"
@@ -96,39 +87,38 @@ static class TerrainPatching {
         PatchBatch(patchName, batchId, patch);
     }
 
-    private static void CreateNewPatchedBatch(Int3 batchId) {
-        string newPath = Path.Combine(
-            PatchesDir.Path!,
-            $"compiled-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
-        );
+    private static void CreateNewPatchedBatch(Int3 batchId)
+    {
+        string fileName = $"compiled-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees";
+        string newPath = Path.Combine(OpoctreesDirs.PatchesPath, fileName);
+        string origPath = Path.Combine(OpoctreesDirs.OriginalPath, fileName);
 
-        foreach (string dir in PatchesDir.ORIG_BATCH_DIRS) {
-            string origPath = Path.Combine(
-                SNUtils.InsideUnmanaged(dir),
-                "CompiledOctreesCache",
-                $"compiled-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees"
-            );
-
-            if (!File.Exists(origPath)) continue;
-            using FileStream file = File.OpenRead(origPath);
+        if (!CopyBaseGame())
+        {
+            WriteEmpty();
+        }
+        bool CopyBaseGame()
+        {
+            if (!File.Exists(origPath)) return false;
+            using FileStream origfile = File.OpenRead(origPath);
             
-            BinaryReader reader = new(file);
-            if (reader.ReadUInt32() != 4u) continue;
+            BinaryReader reader = new(origfile);
+            if (reader.ReadUInt32() != 4u) return false;;
                 
             File.Copy(origPath, newPath, overwrite: true);
             patchedBatches[batchId] = new PatchedBatch(newPath);
-            return;
+            return true;
         }
 
-        using (FileStream file = File.Create(newPath)) {
-            BinaryWriter writer = new(file);
-
+        void WriteEmpty()
+        {
+            using FileStream newFile = File.Create(newPath) ;
+            BinaryWriter writer = new(newFile);
             writer.Write(4u);
             for (int i = 0; i < 125; i++) {
                 writer.Write((ushort)1);
                 writer.Write(0u);
             }
-
             patchedBatches[batchId] = new PatchedBatch(newPath);
         }
     }

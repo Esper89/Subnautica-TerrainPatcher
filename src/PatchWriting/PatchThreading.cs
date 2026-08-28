@@ -1,8 +1,13 @@
-﻿namespace TerrainPatcher;
+﻿using System.Collections;
+using System.Diagnostics;
+using Nautilus.Handlers;
+using UnityEngine;
+
+namespace TerrainPatcher;
 
 internal static class PatchThreading
 {
-    internal static bool finishedPatching { get; private set; }
+    private static bool finishedPatching { get; set; }
 
     public static void BeginPatchThread()
     {
@@ -11,18 +16,16 @@ internal static class PatchThreading
     
     private static async Task DispatchPatchThread()
     {
-        finishedPatching = true;
-        await Task.Run(FindAndLoadPatches);
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        await Task.Run(FileLoading.FindAndLoadPatches);
+        stopwatch.Stop();
+        Plugin.DisplayError($"Time To Patch: {stopwatch.ElapsedMilliseconds / 1000.0}s"); 
         finishedPatching = true;
     }
-    
-    private static void FindAndLoadPatches()
+
+    public static IEnumerator EnsurePatchingFinished(WaitScreenHandler.WaitScreenTask task)
     {
-        Plugin.LogDebug("Finding and loading terrain patches");
-        string[] patchFiles = FileLoading.GetOrderedPatchFiles();
-        FileLoading.LoadPatchFiles(patchFiles);
-        Plugin.LogDebug("Finished terrain patching");
+        yield return new WaitUntil(() => finishedPatching);
+        UnityThreadDispatcher.Stop();
     }
-    
-    
 }

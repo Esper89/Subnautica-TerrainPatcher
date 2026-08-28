@@ -23,6 +23,9 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="1.1.0" />
         <PackageReference Include="UnityEngine.Modules" Version="2019.4.36" IncludeAssets="compile" />
         <PackageReference Include="Subnautica.GameLibs" Version="82304.0.0-r.0" />
+        <PackageReference Include="Subnautica.Nautilus" Version="1.0.0-pre.51" PrivateAssets="all">
+            <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
     
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">

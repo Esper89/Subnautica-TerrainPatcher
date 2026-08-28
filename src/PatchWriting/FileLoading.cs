@@ -3,7 +3,13 @@ using BepInEx;
 namespace TerrainPatcher;
 
 internal static class FileLoading {
-    internal static string[] GetOrderedPatchFiles() {
+    internal static void FindAndLoadPatches() {
+        Plugin.LogDebug("Finding and loading terrain patches");
+        LoadPatchFiles(GetOrderedPatchFiles());
+        Plugin.LogDebug("Finished terrain patching");
+    }
+
+    private static string[] GetOrderedPatchFiles() {
         string? searchDir = Paths.BepInExRootPath;
         string[] paths = FindPatchFiles(searchDir).ToArray();
         return SortFiles(paths, GetLoadOrder());
@@ -107,7 +113,7 @@ internal static class FileLoading {
         return true;
     }
 
-    internal static void LoadPatchFiles(string[] patchFiles) {
+    private static void LoadPatchFiles(string[] patchFiles) {
         Plugin.LogInfo("Loading terrain patches");
         patchFiles.ForEach(LoadPatch);
     }
@@ -116,7 +122,6 @@ internal static class FileLoading {
         string? patchName = Path.GetFileNameWithoutExtension(filepath);
 
         FileStream file;
-
         try { file = File.OpenRead(filepath); }
         catch (IOException ex) {
             Plugin.LogError($"Could not open patch file '{patchName}': {ex.Message}");

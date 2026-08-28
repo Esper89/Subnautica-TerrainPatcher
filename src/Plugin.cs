@@ -4,15 +4,19 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using Nautilus.Handlers;
 using UnityEngine;
 using UnityEngine.Bindings;
 
 namespace TerrainPatcher;
 
-[BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.2.5")]
+[BepInPlugin("Esper89.TerrainPatcher", PLUGIN_NAME, "1.2.5")]
 [BepInProcess("Subnautica.exe")]
 [BepInProcess("SubnauticaZero.exe")]
-internal sealed class Plugin : BaseUnityPlugin {
+internal sealed class Plugin : BaseUnityPlugin
+{
+    private const string PLUGIN_NAME = "Terrain Patcher";
+    
     internal static Plugin instance = null!;
     private static ManualLogSource logger = null!;
     
@@ -29,6 +33,8 @@ internal sealed class Plugin : BaseUnityPlugin {
         PatchThreading.BeginPatchThread();
         StartCoroutine(DisplayQueuedErrorMessages());
         LogDebug("Terrain Patcher initialized");
+        
+        WaitScreenHandler.RegisterAsyncLoadTask(PLUGIN_NAME, PatchThreading.EnsurePatchingFinished,"Patching Terrain");
     }
 
     internal static void LogDebug(string message) => logger.LogDebug(message);
