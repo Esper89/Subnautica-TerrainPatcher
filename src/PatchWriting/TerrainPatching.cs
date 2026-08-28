@@ -40,7 +40,6 @@ static class TerrainPatching {
 
     private static void ApplyPatchFile(string patchName, Stream patchFile, bool forceOriginal) {
         BinaryReader reader = new(patchFile);
-
         uint version;
         try { version = reader.ReadUInt32(); }
         catch (EndOfStreamException) {
@@ -48,9 +47,7 @@ static class TerrainPatching {
         }
 
         if (version == uint.MaxValue) {
-            Plugin.LogWarning(
-                $"Skipping application of patch '{patchName}' because of invalid version"
-            );
+            Plugin.LogWarning($"Skipping application of patch '{patchName}' because of invalid version");
             return;
         }
 
@@ -58,26 +55,25 @@ static class TerrainPatching {
 
         for (;;) {
             try {
-                Int3? batchId = ReadBatchId(reader);
+                Int3? batchId = ReadBatchId();
                 if (batchId is null) break;
                 var id = batchId.Value;
 
                 Plugin.LogDebug($"Patching batch [{id.x}, {id.y}, {id.z}] for patch '{patchName}'");
-
                 ApplyBatchPatch(patchName, reader, id, forceOriginal);
             } catch (EndOfStreamException ex) {
                 throw new InvalidDataException("patch ends too early", ex);
             }
         }
         
-        static Int3? ReadBatchId(BinaryReader patch) {
+        Int3? ReadBatchId() {
             byte first;
-            try { first = patch.ReadByte(); } catch (EndOfStreamException) { return null; }
+            try { first = reader.ReadByte(); } catch (EndOfStreamException) { return null; }
 
             return new Int3(
-                first | (patch.ReadSByte() << 8),
-                patch.ReadInt16(),
-                patch.ReadInt16()
+                first | (reader.ReadSByte() << 8),
+                reader.ReadInt16(),
+                reader.ReadInt16()
             );
         }
     }
@@ -188,9 +184,8 @@ static class TerrainPatching {
         byte[]?[] octrees = new byte[125][];
 
         for (int i = 0; i < 125; i++) {
-            try {
-                octrees[i] = original.ReadBytes(original.ReadUInt16() * 4);
-            } catch (EndOfStreamException) { break; }
+            try { octrees[i] = original.ReadBytes(original.ReadUInt16() * 4); }
+            catch (EndOfStreamException) { break; }
         }
 
         for (int i = 0; i < patchedOctreeCount; i++) {

@@ -13,19 +13,19 @@ namespace TerrainPatcher;
 [BepInProcess("Subnautica.exe")]
 [BepInProcess("SubnauticaZero.exe")]
 internal sealed class Plugin : BaseUnityPlugin {
-    internal static Plugin instance;
-    private static ManualLogSource logger;
+    internal static Plugin instance = null!;
+    private static ManualLogSource logger = null!;
     
     private void Awake() {
         instance = this;
-        logger = base.Logger;
+        logger = Logger;
         LogDebug("Initializing Terrain Patcher");
 
         LogDebug("Applying Harmony patches");
         new Harmony("Esper89.TerrainPatcher").PatchAll();
 
         LogDebug("Dispatching patcher thread");
-        UnityThreadDispatcher.StartUnityThread();
+        UnityThreadDispatcher.Start(this);
         PatchThreading.BeginPatchThread();
         StartCoroutine(DisplayQueuedErrorMessages());
         LogDebug("Terrain Patcher initialized");

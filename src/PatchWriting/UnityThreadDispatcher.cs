@@ -1,25 +1,34 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
-using UnityEngine.Bindings;
+using UnityEngine;
 
 namespace TerrainPatcher;
 
 internal static class UnityThreadDispatcher
 {
     private static int unityMainThreadID;
+    private static MonoBehaviour? routineHost;
+    private static Coroutine? coroutineLoop;
     private static readonly ConcurrentQueue<Action> tasks = new();
     
-    /// <remarks>MUST be started from main thread for proper initialization</remarks>
-    public static void StartUnityThread()
+    public static void Start(MonoBehaviour host)
     {
+        if (routineHost != null) throw new InvalidOperationException("Dispatcher already initialized");
         unityMainThreadID = Thread.CurrentThread.ManagedThreadId;
-        Plugin.instance.StartCoroutine(ExecuteUnityThreadTasks());
+        routineHost = host;
+        coroutineLoop = host.StartCoroutine(ExecuteUnityThreadTasks());
+    }
+
+    public static void Stop()
+    {
+        routineHost?.StopCoroutine(coroutineLoop);
+        coroutineLoop = null;
+        routineHost = null;
     }
     
-    [ThreadSafe]
     internal static void EnsureOnUnityThread(Action action)
     {
-        if(action == null) throw new ArgumentNullException(nameof(action));
+        if (action == null) throw new ArgumentNullException(nameof(action));
         if (Thread.CurrentThread.ManagedThreadId == unityMainThreadID)
         {
             action.Invoke();
@@ -32,10 +41,13 @@ internal static class UnityThreadDispatcher
 
     private static IEnumerator ExecuteUnityThreadTasks()
     {
-        yield return null;
-        while (tasks.TryDequeue(out Action task))
+        for (;;)
         {
-            task.Invoke();
+            while (tasks.TryDequeue(out Action task))
+            {
+                task.Invoke();
+            }
+            yield return null;
         }
     }
 }

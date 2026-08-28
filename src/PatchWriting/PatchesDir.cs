@@ -11,15 +11,18 @@ internal static class PatchesDir {
             
             Path = System.IO.Path.Combine(origDir, "CompiledOctreesCache", "patches");
             Directory.CreateDirectory(Path);
-            //TODO: Arguably the clearing of the old patches dir should be more explicit, within its own method rather than some automatic process
-            //   Otherwise tho the checking of game versions is fine to do in a static constructor imo :/
-            foreach (string? path in Directory.EnumerateFiles(Path)) {
-                if (System.IO.Path.GetExtension(path) != ".optoctrees") continue;
-                File.Delete(path);
-            }
             break;
+        }
+        if(Path == null) throw new Exception("couldn't determine the patches directory");
+    }
+
+    internal static void ClearPatchesDir()
+    {
+        foreach (string? path in Directory.EnumerateFiles(Path)) {
+            if (System.IO.Path.GetExtension(path) != ".optoctrees") continue;
+            File.Delete(path);
         }
     }
     
-    internal static readonly string? Path;
+    internal static readonly string Path;
 }

@@ -76,7 +76,8 @@ internal static class FileLoading {
 
     private static readonly string[] PATCH_EXTENSIONS = [
         "optoctreepatch",
-        "optoctreepatc", // Discord (in the long distant past) would concat extensions longer than 13 chars
+        // Discord (in the long distant past) would concat extensions longer than 13 chars
+        "optoctreepatc"
     ];
 
     private static IEnumerable<string> FindPatchFiles(string path) {
@@ -89,27 +90,26 @@ internal static class FileLoading {
 
             foreach (string ext in PATCH_EXTENSIONS) {
                 foreach (string file in Directory.GetFiles(dir, $"*.{ext}")) {
-                    bool skip = false;
-                    try {
-                        uint version = new BinaryReader(File.OpenRead(file)).ReadUInt32();
-                        if (version == uint.MaxValue) skip = true;
-                    } catch (Exception ex)
-                        when (ex is IOException or EndOfStreamException) { }
-
-                    if (!skip) yield return file;
+                    if (IsPatchFile(file)) yield return file;
                 }
             }
-
             foreach (string? subdir in Directory.GetDirectories(dir)) stack.Push(subdir);
         }
     }
 
+    private static bool IsPatchFile(string file)
+    {
+        try {
+            uint version = new BinaryReader(File.OpenRead(file)).ReadUInt32();
+            if (version == uint.MaxValue) return false;
+        }
+        catch (Exception ex) when (ex is IOException or EndOfStreamException) { }
+        return true;
+    }
+
     internal static void LoadPatchFiles(string[] patchFiles) {
         Plugin.LogInfo("Loading terrain patches");
-        foreach (string t in patchFiles)
-        {
-            LoadPatch(t);
-        }
+        patchFiles.ForEach(LoadPatch);
     }
 
     private static void LoadPatch(string filepath) {

@@ -2,7 +2,7 @@
 
 internal static class PatchThreading
 {
-    private static bool isPatchThreadActive { get; set; }
+    internal static bool finishedPatching { get; private set; }
 
     public static void BeginPatchThread()
     {
@@ -11,9 +11,9 @@ internal static class PatchThreading
     
     private static async Task DispatchPatchThread()
     {
-        isPatchThreadActive = true;
+        finishedPatching = true;
         await Task.Run(FindAndLoadPatches);
-        isPatchThreadActive = true;
+        finishedPatching = true;
     }
     
     private static void FindAndLoadPatches()
@@ -23,4 +23,6 @@ internal static class PatchThreading
         FileLoading.LoadPatchFiles(patchFiles);
         Plugin.LogDebug("Finished terrain patching");
     }
+    
+    
 }
