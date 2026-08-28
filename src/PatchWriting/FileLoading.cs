@@ -3,11 +3,7 @@ using BepInEx;
 namespace TerrainPatcher;
 
 internal static class FileLoading {
-    public static void FindAndLoadPatches() {
-        LoadPatchFiles(GetOrderedPatchFiles());
-    }
-
-    private static string[] GetOrderedPatchFiles() {
+    internal static string[] GetOrderedPatchFiles() {
         string? searchDir = Paths.BepInExRootPath;
         string[] paths = FindPatchFiles(searchDir).ToArray();
         return SortFiles(paths, GetLoadOrder());
@@ -108,9 +104,8 @@ internal static class FileLoading {
         }
     }
 
-    private static void LoadPatchFiles(string[] patchFiles) {
+    internal static void LoadPatchFiles(string[] patchFiles) {
         Plugin.LogInfo("Loading terrain patches");
-
         foreach (string t in patchFiles)
         {
             LoadPatch(t);
