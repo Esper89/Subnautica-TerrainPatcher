@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Diagnostics;
 using Nautilus.Handlers;
 using UnityEngine;
 
@@ -16,10 +15,7 @@ internal static class PatchThreading
     
     private static async Task DispatchPatchThread()
     {
-        Stopwatch stopwatch = Stopwatch.StartNew();
         await Task.Run(FileLoading.FindAndLoadPatches);
-        stopwatch.Stop();
-        Plugin.DisplayError($"Time To Patch: {stopwatch.ElapsedMilliseconds / 1000.0}s"); 
         finishedPatching = true;
     }
 

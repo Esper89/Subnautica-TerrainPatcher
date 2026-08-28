@@ -103,8 +103,7 @@ internal static class FileLoading {
         }
     }
 
-    private static bool IsPatchFile(string file)
-    {
+    private static bool IsPatchFile(string file) {
         try {
             uint version = new BinaryReader(File.OpenRead(file)).ReadUInt32();
             if (version == uint.MaxValue) return false;

@@ -51,37 +51,31 @@ static class TerrainPatching {
 
         if (version != 0) throw new InvalidDataException($"unknown patch version {version}");
 
-        for (;;) {
+        while(TryReadBatchId(out Int3 id)) {
             try {
-                Int3? batchId = ReadBatchId();
-                if (batchId is null) break;
-                var id = batchId.Value;
-
                 Plugin.LogDebug($"Patching batch [{id.x}, {id.y}, {id.z}] for patch '{patchName}'");
                 ApplyBatchPatch(patchName, reader, id, forceOriginal);
             } catch (EndOfStreamException ex) {
                 throw new InvalidDataException("patch ends too early", ex);
             }
         }
-        Int3? ReadBatchId() {
-            byte first;
-            try { first = reader.ReadByte(); } catch (EndOfStreamException) { return null; }
-
-            return new Int3(
-                first | (reader.ReadSByte() << 8),
-                reader.ReadInt16(),
-                reader.ReadInt16()
-            );
+        bool TryReadBatchId(out Int3 id)
+        {
+            try {
+                id = new Int3(reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16());
+                return true;
+            }
+            catch (EndOfStreamException ex) {
+                id = default;
+                return false; 
+            }
         }
     }
 
     private static void ApplyBatchPatch(string patchName, BinaryReader patch, Int3 batchId, bool forceOriginal) {
         if (!patchedBatches.ContainsKey(batchId)) CreateNewPatchedBatch(batchId);
         else if (forceOriginal) {
-            Plugin.LogInfo(
-                $"Patch '{patchName}' forcefully resetting batch " +
-                $"[{batchId.x}, {batchId.y}, {batchId.z}]"
-            );
+            Plugin.LogInfo($"Patch '{patchName}' forcefully resetting batch [{batchId.x}, {batchId.y}, {batchId.z}]");
             CreateNewPatchedBatch(batchId);
         }
         PatchBatch(patchName, batchId, patch);
@@ -109,7 +103,6 @@ static class TerrainPatching {
             patchedBatches[batchId] = new PatchedBatch(newPath);
             return true;
         }
-
         void WriteEmpty()
         {
             using FileStream newFile = File.Create(newPath) ;
@@ -177,7 +170,7 @@ static class TerrainPatching {
             try { octrees[i] = original.ReadBytes(original.ReadUInt16() * 4); }
             catch (EndOfStreamException) { break; }
         }
-
+        
         for (int i = 0; i < patchedOctreeCount; i++) {
             try {
                 byte octree = patch.ReadByte();
@@ -192,7 +185,7 @@ static class TerrainPatching {
                 throw new InvalidDataException("patch contains an octree outside the bounds of the batch it applies to", ex);
             }
         }
-
+        
         foreach (byte[]? t in octrees)
         {
             if (t != null) {
@@ -203,7 +196,7 @@ static class TerrainPatching {
                 target.Write(0u);
             }
         }
-
+        
         return patchedOctrees;
     }
 }

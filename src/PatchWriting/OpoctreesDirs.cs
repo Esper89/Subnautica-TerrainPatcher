@@ -13,12 +13,12 @@ internal static class OpoctreesDirs {
             Directory.CreateDirectory(PatchesPath);
             break;
         }
-        if(PatchesPath == null) throw new Exception("couldn't determine the patches directory");
+        if(OriginalPath == null || PatchesPath == null) throw new Exception("couldn't determine the patches directory");
     }
 
     internal static void ClearPatchesDir() {
         foreach (string? path in Directory.EnumerateFiles(PatchesPath)) {
-            if (System.IO.Path.GetExtension(path) != ".optoctrees") continue;
+            if (Path.GetExtension(path) != ".optoctrees") continue;
             File.Delete(path);
         }
     }
