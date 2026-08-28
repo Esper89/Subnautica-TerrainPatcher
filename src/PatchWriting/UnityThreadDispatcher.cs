@@ -1,31 +1,41 @@
-﻿using UnityEngine.Bindings;
-using UWE;
+﻿using System.Collections;
+using System.Collections.Concurrent;
+using UnityEngine.Bindings;
 
 namespace TerrainPatcher;
 
 internal static class UnityThreadDispatcher
 {
-    private static UnityThread? unitySafeThread;
     private static int unityMainThreadID;
+    private static readonly ConcurrentQueue<Action> tasks = new();
     
     /// <remarks>MUST be started from main thread for proper initialization</remarks>
     public static void StartUnityThread()
     {
         unityMainThreadID = Thread.CurrentThread.ManagedThreadId;
-        unitySafeThread = ThreadUtils.StartUnityThread("TerrainPatcherMainThreadDispatcher", 5, Plugin.instance);
+        Plugin.instance.StartCoroutine(ExecuteUnityThreadTasks());
     }
     
     [ThreadSafe]
     internal static void EnsureOnUnityThread(Action action)
     {
+        if(action == null) throw new ArgumentNullException(nameof(action));
         if (Thread.CurrentThread.ManagedThreadId == unityMainThreadID)
         {
             action.Invoke();
         }
         else
         {
-            // TODO: might be better to roll our own threading so we dont have this delegate bs
-            unitySafeThread?.Enqueue((_,_) => action.Invoke(), null, null);
+            tasks.Enqueue(action);
+        }
+    }
+
+    private static IEnumerator ExecuteUnityThreadTasks()
+    {
+        yield return null;
+        while (tasks.TryDequeue(out Action task))
+        {
+            task.Invoke();
         }
     }
 }
