@@ -3,7 +3,11 @@ using System.Security.Cryptography;
 
 namespace TerrainPatcher;
 
-static class TerrainPatching {
+static class TerrainPatching
+{
+    private const int OCTREES_PER_BATCH = 125;
+    internal static readonly Dictionary<Int3, PatchedBatch> patchedBatches = new();
+    
     internal static void ApplyTerrainPatch(string patchName, Stream patchFile, bool forceOriginal) {
         try {
             string message = $"Loading terrain patch '{patchName}'";
@@ -24,7 +28,6 @@ static class TerrainPatching {
         } catch (Exception ex) {
             Plugin.LogError($"Unexpected error applying patch '{patchName}': {ex}");
             Plugin.DisplayError($"Unexpected error applying terrain patch '{patchName}'");
-
             if (
                 ex is IOException &&
                 ex.Message.IndexOf("sharing violation", StringComparison.OrdinalIgnoreCase) >= 0
@@ -34,9 +37,6 @@ static class TerrainPatching {
             }
         }
     }
-
-    internal static readonly Dictionary<Int3, PatchedBatch> patchedBatches = new();
-
 
     private static void ApplyPatchFile(string patchName, Stream patchFile, bool forceOriginal) {
         BinaryReader reader = new(patchFile);
@@ -108,7 +108,7 @@ static class TerrainPatching {
             using FileStream newFile = File.Create(newPath) ;
             BinaryWriter writer = new(newFile);
             writer.Write(4u);
-            for (int i = 0; i < 125; i++) {
+            for (int i = 0; i < OCTREES_PER_BATCH; i++) {
                 writer.Write((ushort)1);
                 writer.Write(0u);
             }
@@ -122,13 +122,12 @@ static class TerrainPatching {
         byte[] origBytes = File.ReadAllBytes(path);
         var original = new BinaryReader(new MemoryStream(buffer: origBytes, writable: false));
         original.ReadUInt32();
-
-        BitArray patchedOctrees;
-
+        
         using var targetFile = File.Open(path, FileMode.Create);
         BinaryWriter target = new(targetFile);
-
         target.Write(4u);
+        
+        BitArray patchedOctrees;
         try { patchedOctrees = PatchOctrees(target, original, patch); }
         catch (Exception) {
             targetFile.Seek(0, SeekOrigin.Begin);
@@ -137,44 +136,43 @@ static class TerrainPatching {
         }
 
         List<string>?[] octreePatchNames = patchedBatches[batchId].octreePatchNames;
-        for (int i = 0; i < 125; i++)
+        for (int i = 0; i < OCTREES_PER_BATCH; i++)
         {
             if (!patchedOctrees[i]) continue;
             octreePatchNames[i] ??= new();
-            List<string>? patches = octreePatchNames[i]!;
+            List<string> patches = octreePatchNames[i]!;
 
             if (patches.Count > 0) {
                 string warning = $"patch '{patchName}' overrides ";
                 warning += patches.Count == 1 ? "patch " : "patches [";
-                warning += string.Join(",", patches.Select(patch => $"'{patch}'"));
+                warning += string.Join(",", patches.Select(patchName => $"'{patchName}'"));
                 if (patches.Count > 1) { warning += "]"; }
                 warning += $" in batch [{batchId.x}, {batchId.y}, {batchId.z}]";
                 warning += $" at octree #{i}";
-
                 Plugin.LogWarning(warning);
             }
-
             patches.Add(patchName);
         }
     }
 
     private static BitArray PatchOctrees(BinaryWriter target, BinaryReader original, BinaryReader patch) {
-        BitArray patchedOctrees = new(125);
+        BitArray patchedOctrees = new(OCTREES_PER_BATCH);
         byte patchedOctreeCount = patch.ReadByte();
 
-        if (patchedOctreeCount > 125) throw new InvalidDataException("patch contains more octrees than the batch can contain");
+        if (patchedOctreeCount > OCTREES_PER_BATCH) throw new InvalidDataException("patch contains more octrees than the batch can contain");
 
-        byte[]?[] octrees = new byte[125][];
+        byte[]?[] octrees = new byte[OCTREES_PER_BATCH][];
 
-        for (int i = 0; i < 125; i++) {
-            try { octrees[i] = original.ReadBytes(original.ReadUInt16() * 4); }
+        const int OCTREE_NODE_SIZE = 4;
+        for (int i = 0; i < OCTREES_PER_BATCH; i++) {
+            try { octrees[i] = original.ReadBytes(original.ReadUInt16() * OCTREE_NODE_SIZE); }
             catch (EndOfStreamException) { break; }
         }
         
         for (int i = 0; i < patchedOctreeCount; i++) {
             try {
                 byte octree = patch.ReadByte();
-                byte[] bytes = patch.ReadBytes(patch.ReadUInt16() * 4);
+                byte[] bytes = patch.ReadBytes(patch.ReadUInt16() * OCTREE_NODE_SIZE);
 
                 patchedOctrees[octree] = true;
                 octrees[octree] = bytes;
@@ -189,7 +187,7 @@ static class TerrainPatching {
         foreach (byte[]? t in octrees)
         {
             if (t != null) {
-                target.Write((ushort)(t.Length / 4));
+                target.Write((ushort)(t.Length / OCTREE_NODE_SIZE));
                 target.Write(t, 0, t.Length);
             } else {
                 target.Write((ushort)1);
