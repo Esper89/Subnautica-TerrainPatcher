@@ -66,6 +66,7 @@ static class TerrainPatching
                 return true;
             }
             catch (EndOfStreamException ex) {
+            catch (EndOfStreamException) {
                 id = default;
                 return false; 
             }
