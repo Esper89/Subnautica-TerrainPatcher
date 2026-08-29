@@ -4,23 +4,19 @@ using UnityEngine;
 
 namespace TerrainPatcher;
 
-internal static class PatchThreading
-{
+internal static class PatchThreading {
     private static bool finishedPatching { get; set; }
 
-    public static void BeginPatchThread()
-    {
+    public static void BeginPatchThread() {
         _ = DispatchPatchThread();
     }
     
-    private static async Task DispatchPatchThread()
-    {
+    private static async Task DispatchPatchThread() {
         await Task.Run(FileLoading.FindAndLoadPatches);
         finishedPatching = true;
     }
 
-    public static IEnumerator EnsurePatchingFinished(WaitScreenHandler.WaitScreenTask task)
-    {
+    public static IEnumerator EnsurePatchingFinished(WaitScreenHandler.WaitScreenTask task) {
         yield return new WaitUntil(() => finishedPatching);
         UnityThreadDispatcher.Stop();
     }

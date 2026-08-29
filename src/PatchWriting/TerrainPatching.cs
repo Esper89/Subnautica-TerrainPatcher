@@ -28,9 +28,7 @@ static class TerrainPatching
         } catch (Exception ex) {
             Plugin.LogError($"Unexpected error applying patch '{patchName}': {ex}");
             Plugin.DisplayError($"Unexpected error applying terrain patch '{patchName}'");
-            if (
-                ex is IOException &&
-                ex.Message.IndexOf("sharing violation", StringComparison.OrdinalIgnoreCase) >= 0
+            if (ex is IOException && ex.Message.IndexOf("sharing violation", StringComparison.OrdinalIgnoreCase) >= 0
             ) {
                 Plugin.LogInfo("Your antivirus may be preventing Terrain Patcher from working");
                 Plugin.DisplayError("Your antivirus may be preventing Terrain Patcher from working");
@@ -59,13 +57,11 @@ static class TerrainPatching
                 throw new InvalidDataException("patch ends too early", ex);
             }
         }
-        bool TryReadBatchId(out Int3 id)
-        {
+        bool TryReadBatchId(out Int3 id) {
             try {
                 id = new Int3(reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16());
                 return true;
             }
-            catch (EndOfStreamException ex) {
             catch (EndOfStreamException) {
                 id = default;
                 return false; 
@@ -82,8 +78,7 @@ static class TerrainPatching
         PatchBatch(patchName, batchId, patch);
     }
 
-    private static void CreateNewPatchedBatch(Int3 batchId)
-    {
+    private static void CreateNewPatchedBatch(Int3 batchId) {
         string fileName = $"compiled-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees";
         string newPath = Path.Combine(OpoctreesDirs.PatchesPath, fileName);
         string origPath = Path.Combine(OpoctreesDirs.OriginalPath, fileName);

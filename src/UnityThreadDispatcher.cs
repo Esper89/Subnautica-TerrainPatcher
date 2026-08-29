@@ -4,8 +4,7 @@ using UnityEngine;
 
 namespace TerrainPatcher;
 
-internal static class UnityThreadDispatcher
-{
+internal static class UnityThreadDispatcher {
     private static int unityThreadID;
     private static MonoBehaviour? routineHost;
     private static Coroutine? coroutineLoop;

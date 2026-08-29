@@ -6,7 +6,6 @@ using WorldStreaming;
 namespace TerrainPatcher;
 
 internal static class HarmonyPatches {
-    
     private static readonly Regex BATCH_NAME_PATTERN = new(@"^compiled-batch-(-?\d+)-(-?\d+)-(-?\d+)\.optoctrees$");
     
     internal static readonly Int3.Bounds EXTENDED_BATCH_BOUNDS = new(

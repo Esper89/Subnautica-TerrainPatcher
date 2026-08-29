@@ -13,8 +13,7 @@ namespace TerrainPatcher;
 [BepInPlugin("Esper89.TerrainPatcher", PLUGIN_NAME, "1.2.5")]
 [BepInProcess("Subnautica.exe")]
 [BepInProcess("SubnauticaZero.exe")]
-internal sealed class Plugin : BaseUnityPlugin
-{
+internal sealed class Plugin : BaseUnityPlugin {
     private const string PLUGIN_NAME = "Terrain Patcher";
     
     internal static Plugin instance = null!;
