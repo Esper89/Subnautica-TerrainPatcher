@@ -27,23 +27,37 @@
             <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
+
+    <Target Name="LoadGameDirs" 
+            AfterTargets="SetupTargetFiles" 
+            Condition="'$(Configuration)' == 'Debug' And Exists('game-dirs')">
+        <ReadLinesFromFile File="game-dirs">
+            <Output TaskParameter="Lines" ItemName="GameDirs"/>
+        </ReadLinesFromFile>
+    </Target>
     
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <PathMap>$(MSBuildProjectDirectory)=./</PathMap>
     </PropertyGroup>
 
-    <Import Condition="Exists('TargetDirectories.targets')" Project="TargetDirectories.targets"/>
-
-    <Target Name="SetupTargetFiles" AfterTargets="PostBuildEvent">
+    <Target Name="SetupTargetFiles" 
+            AfterTargets="PostBuildEvent">
         <ItemGroup>
             <TargetFiles Include="$(TargetPath)"/>
             <TargetFiles Include="LICENSE"/>
             <TargetFiles Include="dist-readme.md" Link="README.md"/>
         </ItemGroup>
     </Target>
-    
-    <Target Name="CopyToPluginsDir" AfterTargets="SetupTargetFiles" Condition="'$(Configuration)' == 'Debug'">
+
+    <Target Name="CopyToPluginsDir" 
+            AfterTargets="LoadGameDirs" 
+            Condition="'$(Configuration)' == 'Debug' And Exists('game-dirs')" 
+            Inputs="@(GameDirs);@(TargetFiles)" 
+            Outputs="%(GameDirs.Identity)/BepInEx/plugins/$(ProjectName)/**">
+        <PropertyGroup>
+            <GameDir>%(GameDirs.Identity)</GameDir>
+        </PropertyGroup>
         <Copy SourceFiles="@(TargetFiles)" DestinationFolder="$(GameDir)/BepInEx/plugins/$(ProjectName)/%(RecursiveDir)"/>
         <WriteLinesToFile File="$(GameDir)/BepInEx/plugins/$(ProjectName)/load-order.txt"/>
         <MakeDir Directories="$(GameDir)/BepInEx/plugins/$(ProjectName)/patches"/>
