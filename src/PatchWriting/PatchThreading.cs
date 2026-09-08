@@ -7,11 +7,11 @@ namespace TerrainPatcher;
 internal static class PatchThreading {
     private static bool finishedPatching { get; set; }
 
-    public static void BeginPatchThread() {
-        _ = DispatchPatchThread();
+    public static void BeginPatching() {
+        _ = PatchThread();
     }
-    
-    private static async Task DispatchPatchThread() {
+
+    private static async Task PatchThread() {
         await Task.Run(FileLoading.FindAndLoadPatches);
         finishedPatching = true;
     }

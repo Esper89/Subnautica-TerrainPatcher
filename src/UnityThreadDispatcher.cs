@@ -5,14 +5,16 @@ using UnityEngine;
 namespace TerrainPatcher;
 
 internal static class UnityThreadDispatcher {
-    private static int unityThreadID;
+    private static int unityThreadId;
     private static MonoBehaviour? routineHost;
     private static Coroutine? coroutineLoop;
     private static readonly ConcurrentQueue<Action> tasks = new();
-    
+
     public static void Start(MonoBehaviour host) {
-        if (routineHost != null) throw new InvalidOperationException("Dispatcher already initialized");
-        unityThreadID = Thread.CurrentThread.ManagedThreadId;
+        if (routineHost != null) {
+            throw new InvalidOperationException("Dispatcher already initialized");
+        }
+        unityThreadId = Thread.CurrentThread.ManagedThreadId;
         routineHost = host;
         coroutineLoop = host.StartCoroutine(ExecuteUnityThreadTasks());
     }
@@ -22,13 +24,12 @@ internal static class UnityThreadDispatcher {
         coroutineLoop = null;
         routineHost = null;
     }
-    
+
     internal static void EnsureOnUnityThread(Action action) {
         if (action == null) throw new ArgumentNullException(nameof(action));
-        if (Thread.CurrentThread.ManagedThreadId == unityThreadID) {
+        if (Thread.CurrentThread.ManagedThreadId == unityThreadId) {
             TryInvoke(action);
-        }
-        else {
+        } else {
             tasks.Enqueue(action);
         }
     }
@@ -45,9 +46,8 @@ internal static class UnityThreadDispatcher {
     private static void TryInvoke(Action action) {
         try {
             action.Invoke();
-        }
-        catch (Exception e) {
-            Plugin.LogError($"Main thread task threw and exception: {e}");
+        } catch (Exception ex) {
+            Plugin.LogError($"Main thread task threw and exception: {ex}");
         }
     }
 }

@@ -15,10 +15,10 @@ namespace TerrainPatcher;
 [BepInProcess("SubnauticaZero.exe")]
 internal sealed class Plugin : BaseUnityPlugin {
     private const string PLUGIN_NAME = "Terrain Patcher";
-    
+
     internal static Plugin instance = null!;
     private static ManualLogSource logger = null!;
-    
+
     private void Awake() {
         instance = this;
         logger = Logger;
@@ -29,11 +29,13 @@ internal sealed class Plugin : BaseUnityPlugin {
 
         LogDebug("Dispatching patcher thread");
         UnityThreadDispatcher.Start(this);
-        PatchThreading.BeginPatchThread();
+        PatchThreading.BeginPatching();
         StartCoroutine(DisplayQueuedErrorMessages());
         LogDebug("Terrain Patcher initialized");
-        
-        WaitScreenHandler.RegisterAsyncLoadTask(PLUGIN_NAME, PatchThreading.EnsurePatchingFinished,"Patching Terrain");
+
+        WaitScreenHandler.RegisterAsyncLoadTask(
+            PLUGIN_NAME, PatchThreading.EnsurePatchingFinished, "Patching Terrain"
+        );
     }
 
     internal static void LogDebug(string message) => logger.LogDebug(message);
@@ -43,24 +45,25 @@ internal sealed class Plugin : BaseUnityPlugin {
     internal static void LogFatal(string message) => logger.LogFatal(message);
 
     private static readonly List<string> QueuedMessages = new();
-    
+
     [ThreadSafe]
     internal static void DisplayError(string message) {
-        UnityThreadDispatcher.EnsureOnUnityThread(() => 
-        {
-            if(ErrorMessage.main == null) QueuedMessages.Add(message);
+        UnityThreadDispatcher.EnsureOnUnityThread(() => {
+            if (ErrorMessage.main == null) QueuedMessages.Add(message);
             else DisplayErrorInGame(message);
         });
     }
 
     private static IEnumerator DisplayQueuedErrorMessages() {
         yield return new WaitUntil(() => ErrorMessage.main != null);
-        if(QueuedMessages.Count == 0) yield break;
+        if (QueuedMessages.Count == 0) yield break;
         QueuedMessages.ForEach(DisplayErrorInGame);
         QueuedMessages.Clear();
     }
 
-    private static void DisplayErrorInGame(string message) => ErrorMessage.AddError($"[<#F00>ERROR</color>] {message}");
-    
-    internal static string AssemblyDir => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+    private static void DisplayErrorInGame(string message)
+        => ErrorMessage.AddError($"[<#F00>ERROR</color>] {message}");
+
+    internal static string AssemblyDir
+        => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 }

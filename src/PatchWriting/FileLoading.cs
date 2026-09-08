@@ -14,7 +14,7 @@ internal static class FileLoading {
         string[] paths = FindPatchFiles(searchDir).ToArray();
         return SortFiles(paths, GetLoadOrder());
     }
-    
+
     private static string[] SortFiles(string[] paths, string[] loadOrder) {
         if (paths.Length == 0) {
             Plugin.LogInfo("No terrain patches are to be applied");
@@ -31,8 +31,7 @@ internal static class FileLoading {
         List<string> sorted = new();
 
         foreach (string entry in loadOrder) {
-            for (int i = 0; i < names.Length; i++)
-            {
+            for (int i = 0; i < names.Length; i++) {
                 if (entry != names[i]) continue;
                 sorted.Add(paths[i]);
                 Plugin.LogInfo($"- '{names[i]}' at: {paths[i]}");
@@ -40,8 +39,7 @@ internal static class FileLoading {
             }
         }
 
-        for (int i = 0; i < names.Length; i++)
-        {
+        for (int i = 0; i < names.Length; i++) {
             if (names[i] == null) continue;
             sorted.Add(paths[i]);
             Plugin.LogInfo($"- '{names[i]}' at: {paths[i]}");
@@ -82,8 +80,7 @@ internal static class FileLoading {
 
     private static readonly string[] PATCH_EXTENSIONS = [
         "optoctreepatch",
-        // Discord (in the long distant past) would concat extensions longer than 13 chars
-        "optoctreepatc"
+        "optoctreepatc", // Discord used to truncate file extensions longer than 13 characters
     ];
 
     private static IEnumerable<string> FindPatchFiles(string path) {
@@ -107,8 +104,7 @@ internal static class FileLoading {
         try {
             uint version = new BinaryReader(File.OpenRead(file)).ReadUInt32();
             if (version == uint.MaxValue) return false;
-        }
-        catch (Exception ex) when (ex is IOException or EndOfStreamException) { }
+        } catch (Exception ex) when (ex is IOException or EndOfStreamException) { }
         return true;
     }
 

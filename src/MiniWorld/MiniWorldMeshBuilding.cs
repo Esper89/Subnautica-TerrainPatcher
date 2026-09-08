@@ -21,14 +21,14 @@ internal sealed class StreamMiniWorldChunkOperation : AsyncOperationBase<Mesh> {
         guid = Guid.NewGuid();
         clipMapStreamer = LargeWorldStreamer.main.streamerV2.clipmapStreamer;
     }
-    
+
     internal static AsyncOperationHandle<Mesh> Start(Int3 cellId) {
         StreamMiniWorldChunkOperation operation = new(cellId);
         return Addressables.ResourceManager.StartOperation(operation, default);
     }
-    
+
     public override void Execute() {
-        MiniWorldBatchOctreesStreamer.MiniWorldBatchStreamer!.EnsureStreamerHasBatchesLoadedForCell(this);
+        MiniWorldBatchOctreesStreamer.Instance!.EnsureStreamerHasBatchesLoadedForCell(this);
     }
 
     public override void Destroy() {
@@ -53,56 +53,68 @@ internal static class MiniWorldMeshBuilding {
         }
     };
     internal const int cellSize = 160;
-    
-    //On Meshing Thread
-    internal static readonly UWE.Task.Function BeginBuildMiniWorldMeshDelegate = BeginBuildMiniWorldMesh;
+
+    // on meshing thread
+    internal static readonly UWE.Task.Function
+        BeginBuildMiniWorldMeshDelegate = BeginBuildMiniWorldMesh;
+
     private static void BeginBuildMiniWorldMesh(object owner, object state) {
         var operation = (StreamMiniWorldChunkOperation) owner;
         ClipmapStreamer streamer = operation.clipMapStreamer;
-        
-        const int levelID = 0; // Redundant, does nothing for our use case of the mesh builder but must supply a number
 
-        BatchOctreesStreamer octreesStreamer = MiniWorldBatchOctreesStreamer.MiniWorldBatchStreamer!;
+        // redundant, does nothing for our use case of the mesh builder but must supply a number
+        const int levelID = 0;
+
+        BatchOctreesStreamer octreesStreamer = MiniWorldBatchOctreesStreamer.Instance!;
         MeshBuilder meshBuilder = streamer.meshBuilderPool.Get();
-        meshBuilder.Reset(levelID, operation.cellId, cellSize, levelSettings, streamer.host.blockTypes);
+        meshBuilder.Reset(
+            levelID, operation.cellId, cellSize, levelSettings, streamer.host.blockTypes
+        );
         meshBuilder.DoThreadablePart(octreesStreamer, streamer.settings.collision);
-        
+
         streamer.streamingThread.Enqueue(EndBuildMiniWorldMeshDelegate, operation, meshBuilder);
     }
 
-    // On Streaming Thread
-    private static readonly UWE.Task.Function EndBuildMiniWorldMeshDelegate = EndBuildMiniWorldMesh;
+    // on streaming thread
+    private static readonly UWE.Task.Function
+        EndBuildMiniWorldMeshDelegate = EndBuildMiniWorldMesh;
+
     private static void EndBuildMiniWorldMesh(object owner, object state) {
         var operation = (StreamMiniWorldChunkOperation) owner;
         ClipmapStreamer streamer = operation.clipMapStreamer;
         var meshBuilder = (MeshBuilder) state;
-        
-        streamer.buildLayersThread.Enqueue(BeginBuildMiniWorldLayersDelegate, operation, meshBuilder);
+
+        streamer.buildLayersThread.Enqueue(
+            BeginBuildMiniWorldLayersDelegate, operation, meshBuilder
+        );
     }
 
-    //On Unity Main Thread
-    private static readonly UWE.Task.Function BeginBuildMiniWorldLayersDelegate = BeginBuildMiniWorldLayers;
+    // on unity main thread
+    private static readonly UWE.Task.Function
+        BeginBuildMiniWorldLayersDelegate = BeginBuildMiniWorldLayers;
+
     private static void BeginBuildMiniWorldLayers(object owner, object state) {
         var operation = (StreamMiniWorldChunkOperation) owner;
         var meshBuilder = (MeshBuilder) state;
-        
+
         Mesh mesh = GetMeshOut(meshBuilder);
         operation.clipMapStreamer.meshBuilderPool.Return(meshBuilder);
         operation.Complete(mesh, true, null);
-        MiniWorldBatchOctreesStreamer.MiniWorldBatchStreamer!.CleanupHangingBatches(operation);
+        MiniWorldBatchOctreesStreamer.Instance!.CleanupHangingBatches(operation);
     }
-    
+
     private static Mesh GetMeshOut(MeshBuilder meshBuilder) {
         Mesh returnMesh = new();
-        VoxelandVisualMeshSimplifier voxelandVisualMeshSimplifier = meshBuilder.visualMeshSimplifier;
+        var voxelandVisualMeshSimplifier = meshBuilder.visualMeshSimplifier;
         if (meshBuilder.chunkWorkspace.visibleFaces.Count > 0) {
-            // We only generate one material type so we can assume it's all in the first layer (0)
+            // we only generate one material type so we can assume it's all in the first layer
             MeshBuffer meshBuffer = voxelandVisualMeshSimplifier.builtLayers[0];
             meshBuffer.Upload(returnMesh);
             meshBuffer.Return();
         }
         for (int i = 1; i < voxelandVisualMeshSimplifier.builtLayers.Length; i++) {
-            // Return the empty other layers tho, the base game does it so might as well be safe to ensure the pools don't dry
+            // return the empty other layers though, the base game does it so might as well be safe
+            // to ensure the pools don't dry
             MeshBuffer meshBuffer = voxelandVisualMeshSimplifier.builtLayers[i];
             meshBuffer?.Return();
         }

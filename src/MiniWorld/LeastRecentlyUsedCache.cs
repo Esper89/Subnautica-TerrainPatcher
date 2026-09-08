@@ -15,21 +15,22 @@ internal class LeastRecentlyUsedCache<K, V> : IEnumerable<V> {
     private int _currentSize;
     private readonly Dictionary<K, CacheNode> _nodeQuickMap;
     private readonly Action<V> _onRemoveElement;
-    
+
     private class CacheNode(K _key, V _value) {
         internal K key = _key;
         internal V value = _value;
         internal CacheNode? next;
         internal CacheNode? prev;
     }
-    
+
     public LeastRecentlyUsedCache(int maxCapacity, Action<V> onRemoveElement) {
         if (maxCapacity < 1) throw new ArgumentOutOfRangeException(nameof(maxCapacity));
         _maxCapacity = maxCapacity;
         _nodeQuickMap = new(maxCapacity);
-        _onRemoveElement = onRemoveElement ?? throw new ArgumentNullException(nameof(onRemoveElement));
+        _onRemoveElement = onRemoveElement
+            ?? throw new ArgumentNullException(nameof(onRemoveElement));
     }
-    
+
     public bool TryGet(K key, out V? value) {
         if (_nodeQuickMap.TryGetValue(key, out CacheNode node)) {
             value = node.value;
@@ -58,7 +59,8 @@ internal class LeastRecentlyUsedCache<K, V> : IEnumerable<V> {
             _nodeQuickMap.Remove(removedNode.key);
             _currentSize--;
             callbackException = InvokeCallbackSafe(removedNode.value);
-            //Reuse old removed node object
+
+            // reuse old removed node object
             newNode = removedNode;
             newNode.key = key;
             newNode.value = value;
@@ -86,10 +88,10 @@ internal class LeastRecentlyUsedCache<K, V> : IEnumerable<V> {
         node.prev = null;
         head = node;
     }
-    
+
     private Exception? InvokeCallbackSafe(V value) {
         try { _onRemoveElement.Invoke(value); return null; }
-        catch (Exception e) { return e; }
+        catch (Exception ex) { return ex; }
     }
 
     public IEnumerator<V> GetEnumerator() {

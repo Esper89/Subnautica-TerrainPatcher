@@ -1,9 +1,9 @@
 ﻿namespace TerrainPatcher;
 
-internal static class OpoctreesDirs {
+internal static class OptoctreesDirs {
     internal static readonly string[] ORIG_BATCH_DIRS = ["Build18", "Expansion"];
-    
-    static OpoctreesDirs() {
+
+    static OptoctreesDirs() {
         foreach (string origDirName in ORIG_BATCH_DIRS) {
             string? origDir = SNUtils.InsideUnmanaged(origDirName);
 
@@ -13,7 +13,10 @@ internal static class OpoctreesDirs {
             Directory.CreateDirectory(PatchesPath);
             break;
         }
-        if(OriginalPath == null || PatchesPath == null) throw new Exception("couldn't determine the patches directory");
+
+        if (OriginalPath == null || PatchesPath == null) {
+            throw new Exception("couldn't determine the patches directory");
+        }
     }
 
     internal static void ClearPatchesDir() {

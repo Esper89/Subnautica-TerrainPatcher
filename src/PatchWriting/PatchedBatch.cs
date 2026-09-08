@@ -5,7 +5,7 @@ internal struct PatchedBatch {
         this.path = path;
         octreePatchNames = new List<string>?[125];
     }
-    
+
     internal readonly string path;
     internal readonly List<string>?[] octreePatchNames;
 }

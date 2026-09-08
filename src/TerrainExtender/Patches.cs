@@ -1,5 +1,5 @@
 ﻿using System.Reflection.Emit;
-using HarmonyLib; 
+using HarmonyLib;
 using UWE;
 using WorldStreaming;
 
@@ -18,17 +18,16 @@ internal static class FixNegativeEntityCells {
         ])
         .ThrowIfNotMatch(
             "could not transpile " +
-            $"{typeof(CellManager)}.{nameof(CellManager.RegisterCellEntity)}: method does " +
-            "not divide by " +
-            $"{typeof(LargeWorldStreamer)}.{nameof(LargeWorldStreamer.blocksPerBatch)} get"
+            $"{typeof(CellManager)}.{nameof(CellManager.RegisterCellEntity)}: method does not " +
+            $"divide by {typeof(LargeWorldStreamer)}.{nameof(LargeWorldStreamer.blocksPerBatch)} " +
+            "get"
         )
         .Advance(2)
         .Insert([
             new(OpCodes.Pop),
             new(OpCodes.Ldarg_0),
             new(OpCodes.Ldarg_1),
-            CodeInstruction.CallClosure((CellManager cellMgr, LargeWorldEntity entity) =>
-            {
+            CodeInstruction.CallClosure((CellManager cellMgr, LargeWorldEntity entity) => {
                 Int3 block = cellMgr.streamer.GetBlock(entity.transform.position);
                 Int3 blocksPerBatch = cellMgr.streamer.blocksPerBatch;
                 return Int3.FloorDiv(block, blocksPerBatch);
@@ -43,8 +42,8 @@ internal static class FixNegativeEntityCells {
         ])
         .ThrowIfNotMatch(
             "could not transpile " +
-            $"{typeof(CellManager)}.{nameof(CellManager.RegisterCellEntity)}: method does " +
-            "not take the remainder of division by " +
+            $"{typeof(CellManager)}.{nameof(CellManager.RegisterCellEntity)}: method does not " +
+            "take the remainder of division by " +
             $"{typeof(LargeWorldStreamer)}.{nameof(LargeWorldStreamer.blocksPerBatch)} get"
         )
         .Advance(2)
@@ -52,8 +51,7 @@ internal static class FixNegativeEntityCells {
             new(OpCodes.Pop),
             new(OpCodes.Ldarg_0),
             new(OpCodes.Ldarg_1),
-            CodeInstruction.CallClosure((CellManager cellMgr, LargeWorldEntity entity) =>
-            {
+            CodeInstruction.CallClosure((CellManager cellMgr, LargeWorldEntity entity) => {
                 Int3 block = cellMgr.streamer.GetBlock(entity.transform.position);
                 Int3 blocksPerBatch = cellMgr.streamer.blocksPerBatch;
                 return Int3.PositiveModulo(block, blocksPerBatch);
@@ -64,31 +62,32 @@ internal static class FixNegativeEntityCells {
 
 [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]
 internal static class ExtendWorldStreamerBounds {
-    private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-        => new CodeMatcher(instructions)
-            .MatchStartForward(CodeInstruction.Call(
-                typeof(WorldStreamer), nameof(WorldStreamer.ParseStreamingSettings)
-            ))
-            .ThrowIfNotMatch(
-                "could not transpile " +
-                $"{typeof(WorldStreamer)}.{nameof(WorldStreamer.CreateStreamers)}: method " +
-                "does not call " +
-                $"{typeof(WorldStreamer)}.{nameof(WorldStreamer.ParseStreamingSettings)}"
-            )
-            .Advance(1)
-            .Insert(CodeInstruction.CallClosure((LargeWorldStreamer.Settings settings) => {
-                settings.octreesSettings.centerMin = HarmonyPatches.EXTENDED_BATCH_BOUNDS.mins;
-                settings.octreesSettings.centerMax = HarmonyPatches.EXTENDED_BATCH_BOUNDS.maxs;
-                return settings;
-            }))
-            .InstructionEnumeration();
+    private static IEnumerable<CodeInstruction> Transpiler(
+        IEnumerable<CodeInstruction> instructions
+    ) => new CodeMatcher(instructions)
+        .MatchStartForward(CodeInstruction.Call(
+            typeof(WorldStreamer), nameof(WorldStreamer.ParseStreamingSettings)
+        ))
+        .ThrowIfNotMatch(
+            "could not transpile " +
+            $"{typeof(WorldStreamer)}.{nameof(WorldStreamer.CreateStreamers)}: method does not " +
+            $"call {typeof(WorldStreamer)}.{nameof(WorldStreamer.ParseStreamingSettings)}"
+        )
+        .Advance(1)
+        .Insert(CodeInstruction.CallClosure((LargeWorldStreamer.Settings settings) => {
+            settings.octreesSettings.centerMin = HarmonyPatches.EXTENDED_BATCH_BOUNDS.mins;
+            settings.octreesSettings.centerMax = HarmonyPatches.EXTENDED_BATCH_BOUNDS.maxs;
+            return settings;
+        }))
+        .InstructionEnumeration();
 }
 
-[HarmonyPatch(typeof(BatchOctreesStreamer), MethodType.Constructor, 
-    typeof(IThread), typeof(Int3.Bounds), typeof(int), typeof(int), typeof(int), 
-    typeof(int), typeof(string), typeof(BatchOctreesStreamer.Settings))]
+[HarmonyPatch(typeof(BatchOctreesStreamer), MethodType.Constructor, [
+    typeof(IThread), typeof(Int3.Bounds), typeof(int), typeof(int), typeof(int), typeof(int),
+    typeof(string), typeof(BatchOctreesStreamer.Settings),
+])]
 static class ExtendOctreeStreamerBounds {
-    static void Prefix(ref Int3.Bounds octreeBounds, int numOctreesPerBatch) 
+    static void Prefix(ref Int3.Bounds octreeBounds, int numOctreesPerBatch)
         => octreeBounds = HarmonyPatches.EXTENDED_BATCH_BOUNDS * numOctreesPerBatch;
 }
 
@@ -97,7 +96,9 @@ static class AllowOutOfBoundsBatch {
     static bool Prefix(ref bool __result) { __result = true; return false; }
 }
 
-[HarmonyPatch(typeof(LargeWorldStreamer), nameof(LargeWorldStreamer.CheckRoot), typeof(int), typeof(int), typeof(int))]
+[HarmonyPatch(typeof(LargeWorldStreamer), nameof(LargeWorldStreamer.CheckRoot), [
+    typeof(int), typeof(int), typeof(int),
+])]
 static class AllowOutOfBoundsRoot {
     static bool Prefix(ref bool __result) { __result = true; return false; }
 }
