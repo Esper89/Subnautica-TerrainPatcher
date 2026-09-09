@@ -1,38 +1,35 @@
 ﻿using System.Collections;
 
-namespace TerrainPatcher;
+namespace TerrainPatcher.StreamedMiniWorld;
 
-/// <summary>
-/// A cache that stores keys paired to values.
-/// Every time an item is used, it is moved to the front of the cache.
-/// When the cache limit is exceeded, items at the end of the cache are evicted.
-/// All access is guaranteed to be O(1)
-/// </summary>
-internal class LeastRecentlyUsedCache<K, V> : IEnumerable<V> {
-    private readonly int _maxCapacity;
+/// <summary>A cache that stores keys paired to values. Every time an item is used, it is moved to
+/// the front of the cache. When the cache limit is exceeded, items at the end of the cache are
+/// evicted.</summary>
+internal sealed class LruCache<K, V> : IEnumerable<V> {
+    private readonly int maxCapacity;
     private CacheNode? head;
     private CacheNode? tail;
-    private int _currentSize;
-    private readonly Dictionary<K, CacheNode> _nodeQuickMap;
-    private readonly Action<V> _onRemoveElement;
+    private int currentSize;
+    private readonly Dictionary<K, CacheNode> nodeQuickMap;
+    private readonly Action<V> onRemoveElement;
 
-    private class CacheNode(K _key, V _value) {
-        internal K key = _key;
-        internal V value = _value;
+    private sealed class CacheNode(K key, V value) {
+        internal K key = key;
+        internal V value = value;
         internal CacheNode? next;
         internal CacheNode? prev;
     }
 
-    public LeastRecentlyUsedCache(int maxCapacity, Action<V> onRemoveElement) {
+    internal LruCache(int maxCapacity, Action<V> onRemoveElement) {
         if (maxCapacity < 1) throw new ArgumentOutOfRangeException(nameof(maxCapacity));
-        _maxCapacity = maxCapacity;
-        _nodeQuickMap = new(maxCapacity);
-        _onRemoveElement = onRemoveElement
+        this.maxCapacity = maxCapacity;
+        nodeQuickMap = new(maxCapacity);
+        this.onRemoveElement = onRemoveElement
             ?? throw new ArgumentNullException(nameof(onRemoveElement));
     }
 
-    public bool TryGet(K key, out V? value) {
-        if (_nodeQuickMap.TryGetValue(key, out CacheNode node)) {
+    internal bool TryGet(K key, out V? value) {
+        if (nodeQuickMap.TryGetValue(key, out CacheNode node)) {
             value = node.value;
             MoveToFront(node);
             return true;
@@ -41,9 +38,9 @@ internal class LeastRecentlyUsedCache<K, V> : IEnumerable<V> {
         return false;
     }
 
-    public void Put(K key, V value) {
+    internal void Put(K key, V value) {
         Exception? callbackException = null;
-        if (_nodeQuickMap.TryGetValue(key, out CacheNode node)) {
+        if (nodeQuickMap.TryGetValue(key, out CacheNode node)) {
             callbackException = InvokeCallbackSafe(node.value);
             node.value = value;
             MoveToFront(node);
@@ -52,12 +49,12 @@ internal class LeastRecentlyUsedCache<K, V> : IEnumerable<V> {
         }
 
         CacheNode newNode;
-        if (_currentSize == _maxCapacity) {
+        if (currentSize == maxCapacity) {
             CacheNode removedNode = tail!;
             tail = removedNode.prev;
             tail?.next = null;
-            _nodeQuickMap.Remove(removedNode.key);
-            _currentSize--;
+            nodeQuickMap.Remove(removedNode.key);
+            currentSize--;
             callbackException = InvokeCallbackSafe(removedNode.value);
 
             // reuse old removed node object
@@ -67,9 +64,9 @@ internal class LeastRecentlyUsedCache<K, V> : IEnumerable<V> {
         } else {
             newNode = new(key, value);
         }
-        _nodeQuickMap.Add(key, newNode);
-        if (_currentSize == 0) tail = newNode;
-        _currentSize++;
+        nodeQuickMap.Add(key, newNode);
+        if (currentSize == 0) tail = newNode;
+        currentSize++;
         AddFront(newNode);
         if (callbackException != null) throw callbackException;
     }
@@ -90,12 +87,12 @@ internal class LeastRecentlyUsedCache<K, V> : IEnumerable<V> {
     }
 
     private Exception? InvokeCallbackSafe(V value) {
-        try { _onRemoveElement.Invoke(value); return null; }
+        try { onRemoveElement.Invoke(value); return null; }
         catch (Exception ex) { return ex; }
     }
 
     public IEnumerator<V> GetEnumerator() {
-        foreach (CacheNode node in _nodeQuickMap.Values) {
+        foreach (CacheNode node in nodeQuickMap.Values) {
             yield return node.value;
         }
     }

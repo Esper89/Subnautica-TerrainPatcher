@@ -12,6 +12,6 @@ public static class TerrainRegistry {
     ) {
         if (patchName is null) throw new ArgumentNullException(nameof(patchName));
         if (patchFile is null) throw new ArgumentNullException(nameof(patchFile));
-        TerrainPatching.ApplyTerrainPatch(patchName, patchFile, forceOriginal);
+        TerrainPatching.PatchTerrain.ApplyTerrainPatch(patchName, patchFile, forceOriginal);
     }
 }

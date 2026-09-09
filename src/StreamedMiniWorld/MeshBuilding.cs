@@ -4,43 +4,9 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using UWE;
 using WorldStreaming;
 
-namespace TerrainPatcher;
+namespace TerrainPatcher.StreamedMiniWorld;
 
-/// <summary>
-/// We use an AsyncOperationBase to mimic the MiniWorld's requests to addressable loading
-/// Also conveniently gives an event when the mesh is no longer needed
-/// </summary>
-internal sealed class StreamMiniWorldChunkOperation : AsyncOperationBase<Mesh> {
-    internal readonly Guid guid;
-    internal readonly Int3 cellId;
-    internal readonly ClipmapStreamer clipMapStreamer;
-    internal HashSet<Int3>? batchIdsNeeded;
-
-    private StreamMiniWorldChunkOperation(Int3 cellId) {
-        this.cellId = cellId;
-        guid = Guid.NewGuid();
-        clipMapStreamer = LargeWorldStreamer.main.streamerV2.clipmapStreamer;
-    }
-
-    internal static AsyncOperationHandle<Mesh> Start(Int3 cellId) {
-        StreamMiniWorldChunkOperation operation = new(cellId);
-        return Addressables.ResourceManager.StartOperation(operation, default);
-    }
-
-    public override void Execute() {
-        MiniWorldBatchOctreesStreamer.Instance!.EnsureStreamerHasBatchesLoadedForCell(this);
-    }
-
-    public override void Destroy() {
-        if (Result != null) {
-            UnityEngine.Object.Destroy(Result);
-            Result = null!;
-        }
-        base.Destroy();
-    }
-}
-
-internal static class MiniWorldMeshBuilding {
+internal static class MeshBuilding {
     internal static readonly ClipMapManager.LevelSettings levelSettings = new() {
         downsamples = 1,
         maxBlockTypes = 1,
@@ -52,6 +18,7 @@ internal static class MiniWorldMeshBuilding {
             }
         }
     };
+
     internal const int cellSize = 160;
 
     // on meshing thread
@@ -59,13 +26,13 @@ internal static class MiniWorldMeshBuilding {
         BeginBuildMiniWorldMeshDelegate = BeginBuildMiniWorldMesh;
 
     private static void BeginBuildMiniWorldMesh(object owner, object state) {
-        var operation = (StreamMiniWorldChunkOperation) owner;
+        var operation = (BuildMeshOperation)owner;
         ClipmapStreamer streamer = operation.clipMapStreamer;
 
         // redundant, does nothing for our use case of the mesh builder but must supply a number
         const int levelID = 0;
 
-        BatchOctreesStreamer octreesStreamer = MiniWorldBatchOctreesStreamer.Instance!;
+        BatchOctreesStreamer octreesStreamer = OctreeStreamer.Instance!;
         MeshBuilder meshBuilder = streamer.meshBuilderPool.Get();
         meshBuilder.Reset(
             levelID, operation.cellId, cellSize, levelSettings, streamer.host.blockTypes
@@ -80,9 +47,9 @@ internal static class MiniWorldMeshBuilding {
         EndBuildMiniWorldMeshDelegate = EndBuildMiniWorldMesh;
 
     private static void EndBuildMiniWorldMesh(object owner, object state) {
-        var operation = (StreamMiniWorldChunkOperation) owner;
+        var operation = (BuildMeshOperation)owner;
         ClipmapStreamer streamer = operation.clipMapStreamer;
-        var meshBuilder = (MeshBuilder) state;
+        var meshBuilder = (MeshBuilder)state;
 
         streamer.buildLayersThread.Enqueue(
             BeginBuildMiniWorldLayersDelegate, operation, meshBuilder
@@ -94,13 +61,13 @@ internal static class MiniWorldMeshBuilding {
         BeginBuildMiniWorldLayersDelegate = BeginBuildMiniWorldLayers;
 
     private static void BeginBuildMiniWorldLayers(object owner, object state) {
-        var operation = (StreamMiniWorldChunkOperation) owner;
-        var meshBuilder = (MeshBuilder) state;
+        var operation = (BuildMeshOperation)owner;
+        var meshBuilder = (MeshBuilder)state;
 
         Mesh mesh = GetMeshOut(meshBuilder);
         operation.clipMapStreamer.meshBuilderPool.Return(meshBuilder);
         operation.Complete(mesh, true, null);
-        MiniWorldBatchOctreesStreamer.Instance!.CleanupHangingBatches(operation);
+        OctreeStreamer.Instance!.CleanupHangingBatches(operation);
     }
 
     private static Mesh GetMeshOut(MeshBuilder meshBuilder) {
@@ -119,5 +86,36 @@ internal static class MiniWorldMeshBuilding {
             meshBuffer?.Return();
         }
         return returnMesh;
+    }
+}
+
+/// <summary>We use an `AsyncOperationBase` to mimic the `MiniWorld`'s requests to addressable
+/// loading. Also conveniently gives an event when the mesh is no longer needed.</summary>
+internal sealed class BuildMeshOperation : AsyncOperationBase<Mesh> {
+    internal readonly Guid guid;
+    internal readonly Int3 cellId;
+    internal readonly ClipmapStreamer clipMapStreamer;
+    internal HashSet<Int3>? batchIdsNeeded;
+
+    private BuildMeshOperation(Int3 cellId) {
+        this.cellId = cellId;
+        guid = Guid.NewGuid();
+        clipMapStreamer = LargeWorldStreamer.main.streamerV2.clipmapStreamer;
+    }
+
+    internal static AsyncOperationHandle<Mesh> Start(Int3 cellId) {
+        BuildMeshOperation operation = new(cellId);
+        return Addressables.ResourceManager.StartOperation(operation, default);
+    }
+
+    public override void Execute() {
+        OctreeStreamer.Instance!.EnsureStreamerHasBatchesLoadedForCell(this);
+    }
+
+    public override void Destroy() {
+        if (Result != null) {
+            UnityEngine.Object.Destroy(Result);
+        }
+        base.Destroy();
     }
 }

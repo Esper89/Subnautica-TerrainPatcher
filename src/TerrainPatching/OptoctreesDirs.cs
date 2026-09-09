@@ -1,4 +1,4 @@
-﻿namespace TerrainPatcher;
+﻿namespace TerrainPatcher.TerrainPatching;
 
 internal static class OptoctreesDirs {
     internal static readonly string[] ORIG_BATCH_DIRS = ["Build18", "Expansion"];

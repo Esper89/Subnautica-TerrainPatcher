@@ -4,37 +4,37 @@ using UnityEngine;
 
 namespace TerrainPatcher;
 
-internal static class UnityThreadDispatcher {
-    private static int unityThreadId;
+internal static class MainThreadDispatcher {
+    private static int mainThreadId;
     private static MonoBehaviour? routineHost;
     private static Coroutine? coroutineLoop;
     private static readonly ConcurrentQueue<Action> tasks = new();
 
-    public static void Start(MonoBehaviour host) {
+    internal static void Start(MonoBehaviour host) {
         if (routineHost != null) {
             throw new InvalidOperationException("Dispatcher already initialized");
         }
-        unityThreadId = Thread.CurrentThread.ManagedThreadId;
+        mainThreadId = Thread.CurrentThread.ManagedThreadId;
         routineHost = host;
-        coroutineLoop = host.StartCoroutine(ExecuteUnityThreadTasks());
+        coroutineLoop = host.StartCoroutine(ExecuteMainThreadTasks());
     }
 
-    public static void Stop() {
+    internal static void Stop() {
         routineHost?.StopCoroutine(coroutineLoop);
         coroutineLoop = null;
         routineHost = null;
     }
 
-    internal static void EnsureOnUnityThread(Action action) {
+    internal static void EnsureOnMainThread(Action action) {
         if (action == null) throw new ArgumentNullException(nameof(action));
-        if (Thread.CurrentThread.ManagedThreadId == unityThreadId) {
+        if (Thread.CurrentThread.ManagedThreadId == mainThreadId) {
             TryInvoke(action);
         } else {
             tasks.Enqueue(action);
         }
     }
 
-    private static IEnumerator ExecuteUnityThreadTasks() {
+    private static IEnumerator ExecuteMainThreadTasks() {
         for (;;) {
             while (tasks.TryDequeue(out Action action)) {
                 TryInvoke(action);

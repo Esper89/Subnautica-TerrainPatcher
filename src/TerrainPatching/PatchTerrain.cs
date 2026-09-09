@@ -1,12 +1,22 @@
 using System.Collections;
 using System.Security.Cryptography;
 
-namespace TerrainPatcher;
+namespace TerrainPatcher.TerrainPatching;
 
-static class TerrainPatching {
+internal static class PatchTerrain {
     private const int OCTREES_PER_BATCH = 125;
 
     internal static readonly Dictionary<Int3, PatchedBatch> patchedBatches = new();
+
+    internal readonly struct PatchedBatch {
+        internal PatchedBatch(string path) {
+            this.path = path;
+            octreePatchNames = new List<string>?[OCTREES_PER_BATCH];
+        }
+
+        internal readonly string path;
+        internal readonly List<string>?[] octreePatchNames;
+    }
 
     internal static void ApplyTerrainPatch(string patchName, Stream patchFile, bool forceOriginal) {
         try {

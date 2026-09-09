@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics.Contracts;
 
-namespace TerrainPatcher;
+namespace TerrainPatcher.StreamedMiniWorld;
 
 internal static class CellUtils {
-    [Pure]
     internal static HashSet<Int3> BatchesToLoadForGivenCell(
         Int3 cellId, int cellSize, ClipMapManager.LevelSettings settings
     ) {
@@ -27,7 +26,6 @@ internal static class CellUtils {
         return batches;
     }
 
-    [Pure]
     internal static Int3[] OrderCellsAroundCenter(Int3 minCell, Int3 maxCell, Int3 centerCell) {
         int countX = maxCell.x - minCell.x + 1;
         int countY = maxCell.y - minCell.y + 1;

@@ -1,6 +1,6 @@
 using BepInEx;
 
-namespace TerrainPatcher;
+namespace TerrainPatcher.TerrainPatching;
 
 internal static class FileLoading {
     internal static void FindAndLoadPatches() {
@@ -109,7 +109,7 @@ internal static class FileLoading {
     }
 
     private static void LoadPatchFiles(string[] patchFiles) {
-        Plugin.LogInfo("Loading terrain patches");
+        if (patchFiles.Length > 0) Plugin.LogInfo("Loading terrain patches");
         patchFiles.ForEach(LoadPatch);
     }
 
@@ -124,7 +124,7 @@ internal static class FileLoading {
             return;
         }
 
-        TerrainPatching.ApplyTerrainPatch(patchName, file, forceOriginal: false);
+        PatchTerrain.ApplyTerrainPatch(patchName, file, forceOriginal: false);
         file.Close();
     }
 }
