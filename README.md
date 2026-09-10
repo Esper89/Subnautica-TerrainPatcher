@@ -156,15 +156,15 @@ To build Terrain Patcher in release mode, run `dotnet build -c Release`. This wi
 
 - Esper Thomson ([`@Esper89`](https://github.com/Esper89))
 
-- Metious ([`@Metious`](https://github.com/Metious))
-
 - Jbeast ([`@jbeast291`](https://github.com/jbeast291))
+
+- Metious ([`@Metious`](https://github.com/Metious))
 
 - Aerith Butler ([`@jonahnm`](https://github.com/jonahnm))
 
 ## License
 
-Copyright © 2021, 2023–2026 Esper Thomson
+Copyright © 2021, 2023–2026 Esper Thomson, Jbeast291
 
 This program is free software: you can redistribute it and/or modify it under the terms of version
 3 of the GNU Affero General Public License as published by the Free Software Foundation.

@@ -2,26 +2,49 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net472</TargetFramework>
-        <LangVersion>12.0</LangVersion>
+        <LangVersion>14</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <GenerateDependencyFile>false</GenerateDependencyFile>
         <DebugType>embedded</DebugType>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json;
+        </RestoreAdditionalProjectSources>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <PathMap>$(MSBuildProjectDirectory)=./</PathMap>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="references/*.refasm.dll" Private="false"/>
-        <Content Include="LICENSE" CopyToOutputDirectory="PreserveNewest"/>
-        <Content Include="dist-readme.md" Link="README.md" CopyToOutputDirectory="PreserveNewest"/>
+        <PackageReference Include="HarmonyX" Version="2.9.0"/>
+        <PackageReference Include="PolySharp" Version="1.13.1"/>
+        <PackageReference Include="BepInEx.Core" Version="5.4.21"/>
+        <PackageReference
+            Include="UnityEngine.Modules"
+            Version="2019.4.36"
+            IncludeAssets="compile"
+        />
+        <PackageReference
+            Include="Subnautica.GameLibs"
+            Version="82304.0.0-r.0"
+            ExcludeAssets="all"
+        />
+        <!-- TODO: remove unsealed -->
+        <PackageReference Include="Jbeast.Subnautica.Unsealed" Version="82304.0.0-r.0"/>
+        <PackageReference Include="Subnautica.Nautilus" Version="1.0.0-pre.51" PrivateAssets="all">
+            <IncludeAssets>
+                compile; build; native; contentfiles; analyzers; buildtransitive
+            </IncludeAssets>
+        </PackageReference>
     </ItemGroup>
     <Target Name="SetupTargetFiles" AfterTargets="PostBuildEvent">
         <ItemGroup>
-            <TargetFiles Include="$(TargetDir)/**"/>
+            <TargetFiles Include="$(TargetPath)"/>
+            <TargetFiles Include="LICENSE"/>
+            <TargetFiles Include="dist-readme.md" Link="README.md"/>
         </ItemGroup>
     </Target>
     <Target
