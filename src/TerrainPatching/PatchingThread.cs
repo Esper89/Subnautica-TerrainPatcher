@@ -5,19 +5,21 @@ using UnityEngine;
 namespace TerrainPatcher.TerrainPatching;
 
 internal static class PatchingThread {
-    private static bool finishedPatching;
 
-    internal static void BeginPatching() {
-        PatchTerrain().Start();
-    }
+    internal static Task BeginPatching() => PatchTerrain();
 
     private static async Task PatchTerrain() {
         await Task.Run(FileLoading.FindAndLoadPatches);
-        finishedPatching = true;
     }
 
-    internal static IEnumerator EnsurePatchingFinished(WaitScreenHandler.WaitScreenTask task) {
-        yield return new WaitUntil(() => finishedPatching);
+    internal static IEnumerator EnsurePatchingFinished(Task patchingTask) {
+        while (!patchingTask.IsCompleted) yield return null;
+        
+        if (patchingTask.IsFaulted) {
+            Plugin.LogError($"Patching failed! {patchingTask.Exception?.InnerException}");
+            throw new Exception("Patching Failed!");
+        }
+        
         MainThreadDispatcher.Stop();
     }
 }

@@ -1,10 +1,10 @@
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using Nautilus.Handlers;
+using TerrainPatcher.TerrainPatching;
 using UnityEngine;
 using UnityEngine.Bindings;
 
@@ -26,13 +26,13 @@ internal sealed class Plugin : BaseUnityPlugin {
 
         LogDebug("Dispatching patcher thread");
         MainThreadDispatcher.Start(this);
-        TerrainPatching.PatchingThread.BeginPatching();
+        Task patchTask = PatchingThread.BeginPatching();
         StartCoroutine(DisplayQueuedErrorMessages());
         LogDebug("Terrain Patcher initialized");
-
+        
         WaitScreenHandler.RegisterAsyncLoadTask(
             "Terrain Patcher",
-            TerrainPatching.PatchingThread.EnsurePatchingFinished,
+            _ => TerrainPatching.PatchingThread.EnsurePatchingFinished(patchTask),
             "Patching Terrain"
         );
     }
