@@ -8,7 +8,7 @@ internal static class PatchingThread {
     private static bool finishedPatching;
 
     internal static void BeginPatching() {
-        _ = PatchTerrain();
+        PatchTerrain().Start();
     }
 
     private static async Task PatchTerrain() {
