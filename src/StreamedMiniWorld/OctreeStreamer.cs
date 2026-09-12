@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using System.Reflection.Emit;
 using HarmonyLib;
 using WorldStreaming;
 
@@ -149,26 +148,24 @@ internal sealed class OctreeStreamer : BatchOctreesStreamer {
         Instance = null;
     }
 
+    private static readonly ThreadLocal<WorldStreamer?> WORLD_STREAMER = new();
+    
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]
-    private static class CreateOctreeStreamerEvent {
-        private static IEnumerable<CodeInstruction> Transpiler(
-            IEnumerable<CodeInstruction> instructions
-        ) => new CodeMatcher(instructions)
-            .MatchStartForward([new(OpCodes.Ret)])
-            .ThrowIfNotMatch(
-                "could not transpile " +
-                $"{typeof(WorldStreamer)}.{nameof(WorldStreamer.CreateStreamers)}: method does " +
-                "not return"
-            )
-            .Advance(-1)
-            .Insert([
-                new(OpCodes.Ldarg_0),
-                new(OpCodes.Ldloc_3), // FIXME: hardcoded local variable index
-                CodeInstruction.CallClosure(CreateOctreeStreamer),
-            ])
-            .InstructionEnumeration();
-    }
+    private static class StoreWorldStreamerInstanceForCreateEvent {
+        private static void Prefix(WorldStreamer __instance)
+            => WORLD_STREAMER.Value = __instance;
 
+        private static void Finalizer() => WORLD_STREAMER.Value = null;
+    }
+    [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.ParseStreamingSettings))]
+    private static class CreateOctreeStreamerEvent {
+        private static void Postfix(LargeWorldStreamer.Settings __result) {
+            if (WORLD_STREAMER.Value is not null) {
+                CreateOctreeStreamer(WORLD_STREAMER.Value, __result);
+            }
+        }
+    }
+    
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.DestroyStreamers))]
     private static class DestroyStreamerEvent {
         private static void Postfix() => DestroyOctreeStreamer();
