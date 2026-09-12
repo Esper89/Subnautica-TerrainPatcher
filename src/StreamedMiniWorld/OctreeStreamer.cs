@@ -4,7 +4,7 @@ using WorldStreaming;
 
 namespace TerrainPatcher.StreamedMiniWorld;
 
-internal class OctreeStreamer {
+internal sealed class OctreeStreamer {
     internal static OctreeStreamer? Instance { get; private set; }
 
     private static void CreateOctreeStreamer(
