@@ -32,7 +32,7 @@ internal static class MeshBuilding {
         // redundant, does nothing for our use case of the mesh builder but must supply a number
         const int levelID = 0;
 
-        BatchOctreesStreamer octreesStreamer = OctreeStreamer.Instance!;
+        BatchOctreesStreamer octreesStreamer = OctreeStreamer.Instance!.BatchStreamer;
         MeshBuilder meshBuilder = streamer.meshBuilderPool.Get();
         meshBuilder.Reset(
             levelID, operation.cellId, cellSize, levelSettings, streamer.host.blockTypes
@@ -108,11 +108,11 @@ internal sealed class BuildMeshOperation : AsyncOperationBase<Mesh> {
         return Addressables.ResourceManager.StartOperation(operation, default);
     }
 
-    public override void Execute() {
+    protected override void Execute() {
         OctreeStreamer.Instance!.EnsureStreamerHasBatchesLoadedForCell(this);
     }
 
-    public override void Destroy() {
+    protected override void Destroy() {
         if (Result != null) {
             UnityEngine.Object.Destroy(Result);
         }
