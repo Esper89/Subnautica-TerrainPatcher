@@ -7,7 +7,7 @@ using WorldStreaming;
 namespace TerrainPatcher.StreamedMiniWorld;
 
 internal static class MeshBuilding {
-    internal static readonly ClipMapManager.LevelSettings levelSettings = new() {
+    internal static readonly ClipMapManager.LevelSettings LEVEL_SETTINGS = new() {
         downsamples = 1,
         maxBlockTypes = 1,
         visual = new VoxelandVisualMeshSimplifier.Settings {
@@ -19,11 +19,11 @@ internal static class MeshBuilding {
         }
     };
 
-    internal const int cellSize = 160;
+    internal const int CELL_SIZE = 160;
 
     // on meshing thread
     internal static readonly UWE.Task.Function
-        BeginBuildMiniWorldMeshDelegate = BeginBuildMiniWorldMesh;
+        BEGIN_BUILD_MINI_WORLD_MESH_DELEGATE = BeginBuildMiniWorldMesh;
 
     private static void BeginBuildMiniWorldMesh(object owner, object state) {
         var operation = (BuildMeshOperation)owner;
@@ -32,19 +32,21 @@ internal static class MeshBuilding {
         // redundant, does nothing for our use case of the mesh builder but must supply a number
         const int levelID = 0;
 
-        BatchOctreesStreamer octreesStreamer = OctreeStreamer.Instance!.BatchStreamer;
+        BatchOctreesStreamer octreesStreamer = OctreeStreamer.INSTANCE!.BatchStreamer;
         MeshBuilder meshBuilder = streamer.meshBuilderPool.Get();
         meshBuilder.Reset(
-            levelID, operation.cellId, cellSize, levelSettings, streamer.host.blockTypes
+            levelID, operation.cellId, CELL_SIZE, LEVEL_SETTINGS, streamer.host.blockTypes
         );
         meshBuilder.DoThreadablePart(octreesStreamer, streamer.settings.collision);
 
-        streamer.streamingThread.Enqueue(EndBuildMiniWorldMeshDelegate, operation, meshBuilder);
+        streamer.streamingThread.Enqueue(
+            END_BUILD_MINI_WORLD_MESH_DELEGATE, operation, meshBuilder
+        );
     }
 
     // on streaming thread
     private static readonly UWE.Task.Function
-        EndBuildMiniWorldMeshDelegate = EndBuildMiniWorldMesh;
+        END_BUILD_MINI_WORLD_MESH_DELEGATE = EndBuildMiniWorldMesh;
 
     private static void EndBuildMiniWorldMesh(object owner, object state) {
         var operation = (BuildMeshOperation)owner;
@@ -52,13 +54,13 @@ internal static class MeshBuilding {
         var meshBuilder = (MeshBuilder)state;
 
         streamer.buildLayersThread.Enqueue(
-            BeginBuildMiniWorldLayersDelegate, operation, meshBuilder
+            BEGIN_BUILD_MINI_WORLD_LAYERS_DELEGATE, operation, meshBuilder
         );
     }
 
     // on unity main thread
     private static readonly UWE.Task.Function
-        BeginBuildMiniWorldLayersDelegate = BeginBuildMiniWorldLayers;
+        BEGIN_BUILD_MINI_WORLD_LAYERS_DELEGATE = BeginBuildMiniWorldLayers;
 
     private static void BeginBuildMiniWorldLayers(object owner, object state) {
         var operation = (BuildMeshOperation)owner;
@@ -67,7 +69,7 @@ internal static class MeshBuilding {
         Mesh mesh = GetMeshOut(meshBuilder);
         operation.clipMapStreamer.meshBuilderPool.Return(meshBuilder);
         operation.Complete(mesh, true, null);
-        OctreeStreamer.Instance!.CleanupHangingBatches(operation);
+        OctreeStreamer.INSTANCE!.CleanupHangingBatches(operation);
     }
 
     private static Mesh GetMeshOut(MeshBuilder meshBuilder) {
@@ -109,7 +111,7 @@ internal sealed class BuildMeshOperation : AsyncOperationBase<Mesh> {
     }
 
     protected override void Execute() {
-        OctreeStreamer.Instance!.EnsureStreamerHasBatchesLoadedForCell(this);
+        OctreeStreamer.INSTANCE!.EnsureStreamerHasBatchesLoadedForCell(this);
     }
 
     protected override void Destroy() {

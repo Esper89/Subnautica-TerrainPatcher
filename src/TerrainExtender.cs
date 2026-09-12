@@ -27,9 +27,11 @@ internal static class TerrainExtender {
                 $"not call {typeof(WorldStreamer)}.{nameof(WorldStreamer.ParseStreamingSettings)}"
             )
             .Advance(1)
-            .Insert(CodeInstruction.CallClosure((LargeWorldStreamer.Settings settings) => {
-                settings.octreesSettings.centerMin = EXTENDED_BATCH_BOUNDS.mins;
-                settings.octreesSettings.centerMax = EXTENDED_BATCH_BOUNDS.maxs;
+            .Insert(CodeInstruction.CallClosure((LargeWorldStreamer.Settings? settings) => {
+                if (settings != null) {
+                    settings.octreesSettings.centerMin = EXTENDED_BATCH_BOUNDS.mins;
+                    settings.octreesSettings.centerMax = EXTENDED_BATCH_BOUNDS.maxs;
+                }
                 return settings;
             }))
             .InstructionEnumeration();
@@ -74,7 +76,7 @@ internal static class TerrainExtender {
             .ThrowIfNotMatch(
                 "could not transpile " +
                 $"{typeof(CellManager)}.{nameof(CellManager.RegisterCellEntity)}: method does " +
-                "not divide by " +
+                "not divide by the result of " +
                 $"{typeof(LargeWorldStreamer)}.{nameof(LargeWorldStreamer.blocksPerBatch)} get"
             )
             .Advance(1)
@@ -82,9 +84,9 @@ internal static class TerrainExtender {
                 new(OpCodes.Pop),
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldarg_1),
-                CodeInstruction.CallClosure((CellManager cellMgr, LargeWorldEntity entity) => {
-                    Int3 block = cellMgr.streamer.GetBlock(entity.transform.position);
-                    Int3 blocksPerBatch = cellMgr.streamer.blocksPerBatch;
+                CodeInstruction.CallClosure((CellManager self, LargeWorldEntity entity) => {
+                    Int3 block = self.streamer.GetBlock(entity.transform.position);
+                    Int3 blocksPerBatch = self.streamer.blocksPerBatch;
                     return Int3.FloorDiv(block, blocksPerBatch);
                 }),
             ])
@@ -98,7 +100,7 @@ internal static class TerrainExtender {
             .ThrowIfNotMatch(
                 "could not transpile " +
                 $"{typeof(CellManager)}.{nameof(CellManager.RegisterCellEntity)}: method does " +
-                "not take the remainder of division by " +
+                "not take the remainder of division by the result of " +
                 $"{typeof(LargeWorldStreamer)}.{nameof(LargeWorldStreamer.blocksPerBatch)} get"
             )
             .Advance(1)
@@ -106,9 +108,9 @@ internal static class TerrainExtender {
                 new(OpCodes.Pop),
                 new(OpCodes.Ldarg_0),
                 new(OpCodes.Ldarg_1),
-                CodeInstruction.CallClosure((CellManager cellMgr, LargeWorldEntity entity) => {
-                    Int3 block = cellMgr.streamer.GetBlock(entity.transform.position);
-                    Int3 blocksPerBatch = cellMgr.streamer.blocksPerBatch;
+                CodeInstruction.CallClosure((CellManager self, LargeWorldEntity entity) => {
+                    Int3 block = self.streamer.GetBlock(entity.transform.position);
+                    Int3 blocksPerBatch = self.streamer.blocksPerBatch;
                     return Int3.PositiveModulo(block, blocksPerBatch);
                 }),
             ])
@@ -142,7 +144,7 @@ internal static class TerrainExtender {
             .Insert([
                 new(OpCodes.Ldarg_0),
                 CodeInstruction.CallClosure((Int3.Bounds currBounds, BatchOctrees self) =>
-                    !TerrainPatching.PatchTerrain.patchedBatches.ContainsKey(self.id) &&
+                    !TerrainPatching.PatchTerrain.PATCHED_BATCHES.ContainsKey(self.id) &&
                     (self.id.z == 25 || self.id.x == 25)
                         ? VANILLA_OCTREE_BOUNDS
                         : currBounds

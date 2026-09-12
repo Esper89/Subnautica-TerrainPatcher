@@ -7,8 +7,8 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 namespace TerrainPatcher.StreamedMiniWorld;
 
 internal static class StreamingPatches {
-    private static readonly float MeshVertexScale = 0.25f * (
-        1 << MeshBuilding.levelSettings.downsamples
+    private static readonly float MESH_VERTEX_SCALE = 0.25f * (
+        1 << MeshBuilding.LEVEL_SETTINGS.downsamples
     );
 
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.GetOrMakeChunk))]
@@ -16,7 +16,7 @@ internal static class StreamingPatches {
         private static void Postfix(MiniWorld __instance, Int3 chunkId) {
             MiniWorld.Chunk chunk = __instance.loadedChunks[chunkId];
             chunk.gameObject.transform.localScale =
-                Vector3.one * (__instance.chunkScale * MeshVertexScale);
+                Vector3.one * (__instance.chunkScale * MESH_VERTEX_SCALE);
 
             Vector3 miniWorldStreamingOriginOffset = LargeWorldStreamer.main.land.transform
                 .InverseTransformPoint(__instance.transform.position);
@@ -29,7 +29,7 @@ internal static class StreamingPatches {
 
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.RebuildHologram))]
     private static class RebuildHologramWithWorldStreamer {
-        private static bool Prefix(MiniWorld __instance, ref IEnumerator __result) {
+        private static bool Prefix(MiniWorld __instance, ref IEnumerator? __result) {
             __result = RebuildHologramWithStreamingAsync(__instance);
             return false;
         }
@@ -58,13 +58,13 @@ internal static class StreamingPatches {
                 Int3 mapCenterBlock = LargeWorldStreamer.main.GetBlock(
                     miniWorld.transform.position
                 );
-                Int3 mapCenterCell = Int3.FloorDiv(mapCenterBlock, MeshBuilding.cellSize);
+                Int3 mapCenterCell = Int3.FloorDiv(mapCenterBlock, MeshBuilding.CELL_SIZE);
 
                 Int3 minBlock = mapCenterBlock - miniWorld.mapWorldRadius;
-                Int3 minCell = Int3.FloorDiv(minBlock, MeshBuilding.cellSize);
+                Int3 minCell = Int3.FloorDiv(minBlock, MeshBuilding.CELL_SIZE);
 
                 Int3 maxBlock = mapCenterBlock + miniWorld.mapWorldRadius;
-                Int3 maxCell = Int3.FloorDiv(maxBlock, MeshBuilding.cellSize);
+                Int3 maxCell = Int3.FloorDiv(maxBlock, MeshBuilding.CELL_SIZE);
 
                 Vector3 startedLoadingPos = miniWorld.transform.position;
                 Int3[] batches = CellUtils.OrderCellsAroundCenter(minCell, maxCell, mapCenterCell);
@@ -123,7 +123,7 @@ internal static class StreamingPatches {
         Int3 chunkId, MiniWorld.Chunk chunk
     ) {
         Vector3 cellPosLocalSpace =
-            (chunkId * MeshBuilding.cellSize).ToVector3() - miniWorldStreamingOriginOffset;
+            (chunkId * MeshBuilding.CELL_SIZE).ToVector3() - miniWorldStreamingOriginOffset;
         chunk.gameObject.transform.localPosition = cellPosLocalSpace * (miniWorld.chunkScale / 4);
     }
 }

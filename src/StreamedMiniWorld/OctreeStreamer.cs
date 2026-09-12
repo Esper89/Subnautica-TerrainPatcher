@@ -5,19 +5,19 @@ using WorldStreaming;
 namespace TerrainPatcher.StreamedMiniWorld;
 
 internal sealed class OctreeStreamer {
-    internal static OctreeStreamer? Instance { get; private set; }
+    internal static OctreeStreamer? INSTANCE { get; private set; }
 
     private static void CreateOctreeStreamer(
         WorldStreamer worldStreamer, LargeWorldStreamer.Settings settings
     ) {
-        if (Instance != null) {
+        if (INSTANCE != null) {
             throw new InvalidOperationException("Octree streamer already initialized");
         }
-        Instance = new OctreeStreamer(worldStreamer, settings);
+        INSTANCE = new OctreeStreamer(worldStreamer, settings);
     }
 
     public BatchOctreesStreamer BatchStreamer { get; }
-    private static readonly FakeArrayPool allocator = new();
+    private static readonly FakeArrayPool ALLOCATOR = new();
 
     private const int CACHE_CAPACITY = 40;
     private readonly LruCache<Int3, BatchOctrees> Lru;
@@ -49,34 +49,32 @@ internal sealed class OctreeStreamer {
         private static bool Prefix(
             BatchOctreesStreamer __instance, Int3 id, ref BatchOctrees? __result
         ) {
-            if (Instance is not null && __instance != Instance.BatchStreamer) {
-                return true;
-            }
+            if (INSTANCE == null || __instance != INSTANCE.BatchStreamer) return true;
 
-            lock (Instance!.Lru) {
-                if (Instance.Lru.TryGet(id, out __result)) return false;
+            lock (INSTANCE.Lru) {
+                if (INSTANCE.Lru.TryGet(id, out __result)) return false;
             }
 
             // this is a fallback, normally the preload should cover this but in the case of
             // multiple maps building, the cache may be full and this is required
-            Instance.batchOctreesToUnload.TryGetValue(id, out __result);
+            INSTANCE.batchOctreesToUnload.TryGetValue(id, out __result);
             return false;
         }
     }
 
     internal void EnsureStreamerHasBatchesLoadedForCell(BuildMeshOperation owner) {
-        BatchStreamer.ioThread.Enqueue(BeginEnsureBatchesLoadedDelegate, this, owner);
+        BatchStreamer.ioThread.Enqueue(BEGIN_ENSURE_BATCHES_LOADED_DELEGATE, this, owner);
     }
 
     // on i/o thread
     private static readonly UWE.Task.Function
-        BeginEnsureBatchesLoadedDelegate = BeginEnsureBatchesLoaded;
+        BEGIN_ENSURE_BATCHES_LOADED_DELEGATE = BeginEnsureBatchesLoaded;
 
     private static void BeginEnsureBatchesLoaded(object owner, object state) {
         var streamer = (OctreeStreamer)owner;
         var operation = (BuildMeshOperation)state;
         operation.batchIdsNeeded = CellUtils.BatchesToLoadForGivenCell(
-            operation.cellId, MeshBuilding.cellSize, MeshBuilding.levelSettings
+            operation.cellId, MeshBuilding.CELL_SIZE, MeshBuilding.LEVEL_SETTINGS
         );
         streamer.activeBuildRequests.TryAdd(operation.guid, operation);
 
@@ -86,17 +84,17 @@ internal sealed class OctreeStreamer {
             if (batch == null) streamer.LoadBatch(batchId);
         }
         BatchOctreesStreamer batchStreamer = streamer.BatchStreamer;
-        batchStreamer.streamingThread.Enqueue(EndEnsureBatchesLoadedDelegate, operation, null);
+        batchStreamer.streamingThread.Enqueue(END_ENSURE_BATCHES_LOADED_DELEGATE, operation, null);
     }
 
     // on streaming thread
     private static readonly UWE.Task.Function
-        EndEnsureBatchesLoadedDelegate = EndEnsureBatchesLoaded;
+        END_ENSURE_BATCHES_LOADED_DELEGATE = EndEnsureBatchesLoaded;
 
     private static void EndEnsureBatchesLoaded(object owner, object state) {
         var operation = (BuildMeshOperation)owner;
         operation.clipMapStreamer.meshingThreads.Enqueue(
-            MeshBuilding.BeginBuildMiniWorldMeshDelegate, operation, null
+            MeshBuilding.BEGIN_BUILD_MINI_WORLD_MESH_DELEGATE, operation, null
         );
     }
 
@@ -104,8 +102,8 @@ internal sealed class OctreeStreamer {
         if (batchPool.TryTake(out BatchOctrees manualBatchLoad)) {
             manualBatchLoad.id = batchID;
         } else {
-            manualBatchLoad = new(BatchStreamer, batchID, 
-                BatchStreamer.numOctreesPerBatch, allocator
+            manualBatchLoad = new(
+                BatchStreamer, batchID, BatchStreamer.numOctreesPerBatch, ALLOCATOR
             );
         }
 
@@ -142,19 +140,19 @@ internal sealed class OctreeStreamer {
     }
 
     private static void DestroyOctreeStreamer() {
-        if (Instance == null) {
+        if (INSTANCE == null) {
             throw new InvalidOperationException("Cannot destroy nonexistant octree streamer");
         }
-        lock (Instance.Lru) {
-            Instance.Lru.ForEach(Instance.ReturnOctreesToPool);
+        lock (INSTANCE.Lru) {
+            INSTANCE.Lru.ForEach(INSTANCE.ReturnOctreesToPool);
         }
-        Instance.batchOctreesToUnload.ForEach(batch => batch.Value.Clear());
-        Instance.BatchStreamer.Stop();
-        Instance = null;
+        INSTANCE.batchOctreesToUnload.ForEach(batch => batch.Value.Clear());
+        INSTANCE.BatchStreamer.Stop();
+        INSTANCE = null;
     }
 
     [ThreadStatic] private static WorldStreamer? WORLD_INSTANCE;
-    
+
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]
     private static class StoreWorldStreamerInstanceForCreateEvent {
         private static void Prefix(WorldStreamer __instance)
@@ -162,15 +160,16 @@ internal sealed class OctreeStreamer {
 
         private static void Finalizer() => WORLD_INSTANCE = null;
     }
+
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.ParseStreamingSettings))]
     private static class CreateOctreeStreamerEvent {
         private static void Postfix(LargeWorldStreamer.Settings __result) {
-            if (WORLD_INSTANCE is not null) {
+            if (WORLD_INSTANCE != null) {
                 CreateOctreeStreamer(WORLD_INSTANCE, __result);
             }
         }
     }
-    
+
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.DestroyStreamers))]
     private static class DestroyStreamerEvent {
         private static void Postfix() => DestroyOctreeStreamer();

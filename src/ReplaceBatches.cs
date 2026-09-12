@@ -41,7 +41,7 @@ internal static class ReplaceBatches {
     private static bool GetBatchFilePath(Int3 batchId, ref string? result, bool runOriginal) {
         if (
             !runOriginal ||
-            !TerrainPatching.PatchTerrain.patchedBatches.TryGetValue(batchId, out var batch)
+            !TerrainPatching.PatchTerrain.PATCHED_BATCHES.TryGetValue(batchId, out var batch)
         ) return true;
 
         result = batch.path;

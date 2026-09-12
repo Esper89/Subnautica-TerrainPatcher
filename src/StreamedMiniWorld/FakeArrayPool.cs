@@ -10,7 +10,7 @@ namespace TerrainPatcher.StreamedMiniWorld;
 /// main thread.</summary>
 internal sealed class FakeArrayPool() : SplitNativeArrayPool<byte>(0, 0, 0, 0, 0, 0, 0, 0) {
     [HarmonyPatch(typeof(SplitNativeArrayPool<byte>), nameof(Get))]
-    private static class CustomArrayPoolGetImpl {
+    private static class FakeArrayPoolGetImpl {
         private static bool Prefix(
             SplitNativeArrayPool<byte> __instance, int minLength, ref NativeArray<byte> __result
         ) {
@@ -21,7 +21,7 @@ internal sealed class FakeArrayPool() : SplitNativeArrayPool<byte>(0, 0, 0, 0, 0
     }
 
     [HarmonyPatch(typeof(SplitNativeArrayPool<byte>), nameof(Return))]
-    private static class CustomArrayPoolReturnImpl {
+    private static class FakeArrayPoolReturnImpl {
         private static bool Prefix(
             SplitNativeArrayPool<byte> __instance, ref NativeArray<byte> arr
         ) {

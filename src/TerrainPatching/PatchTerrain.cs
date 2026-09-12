@@ -6,7 +6,7 @@ namespace TerrainPatcher.TerrainPatching;
 internal static class PatchTerrain {
     private const int OCTREES_PER_BATCH = 125;
 
-    internal static readonly Dictionary<Int3, PatchedBatch> patchedBatches = new();
+    internal static readonly Dictionary<Int3, PatchedBatch> PATCHED_BATCHES = new();
 
     internal readonly struct PatchedBatch {
         internal PatchedBatch(string path) {
@@ -77,12 +77,21 @@ internal static class PatchTerrain {
         }
 
         bool TryReadBatchId(out Int3 id) {
+            byte xLeast;
             try {
-                id = new Int3(reader.ReadInt16(), reader.ReadInt16(), reader.ReadInt16());
-                return true;
+                xLeast = reader.ReadByte();
             } catch (EndOfStreamException) {
                 id = default;
                 return false;
+            }
+
+            try {
+                byte xMost = reader.ReadByte();
+                short x = (short)(xMost << 8 | xLeast);
+                id = new Int3(x, reader.ReadInt16(), reader.ReadInt16());
+                return true;
+            } catch (EndOfStreamException ex) {
+                throw new InvalidDataException("patch ends too early", ex);
             }
         }
     }
@@ -90,7 +99,7 @@ internal static class PatchTerrain {
     private static void ApplyBatchPatch(
         string patchName, BinaryReader patch, Int3 batchId, bool forceOriginal
     ) {
-        if (!patchedBatches.ContainsKey(batchId)) CreateNewPatchedBatch(batchId);
+        if (!PATCHED_BATCHES.ContainsKey(batchId)) CreateNewPatchedBatch(batchId);
         else if (forceOriginal) {
             Plugin.LogInfo(
                 $"Patch '{patchName}' forcefully resetting batch [{batchId.x}, {batchId.y}, " +
@@ -104,8 +113,8 @@ internal static class PatchTerrain {
 
     private static void CreateNewPatchedBatch(Int3 batchId) {
         string fileName = $"compiled-batch-{batchId.x}-{batchId.y}-{batchId.z}.optoctrees";
-        string newPath = Path.Combine(OptoctreesDirs.PatchesPath, fileName);
-        string origPath = Path.Combine(OptoctreesDirs.OriginalPath, fileName);
+        string newPath = Path.Combine(OptoctreesDirs.PATCHED_PATH, fileName);
+        string origPath = Path.Combine(OptoctreesDirs.ORIG_PATH, fileName);
 
         if (!CopyBaseGame()) WriteEmpty();
 
@@ -117,7 +126,7 @@ internal static class PatchTerrain {
             if (reader.ReadUInt32() != 4u) return false;
 
             File.Copy(origPath, newPath, overwrite: true);
-            patchedBatches[batchId] = new PatchedBatch(newPath);
+            PATCHED_BATCHES[batchId] = new PatchedBatch(newPath);
             return true;
         }
 
@@ -129,12 +138,12 @@ internal static class PatchTerrain {
                 writer.Write((ushort)1);
                 writer.Write(0u);
             }
-            patchedBatches[batchId] = new PatchedBatch(newPath);
+            PATCHED_BATCHES[batchId] = new PatchedBatch(newPath);
         }
     }
 
     private static void PatchBatch(string patchName, Int3 batchId, BinaryReader patch) {
-        string path = patchedBatches[batchId].path;
+        string path = PATCHED_BATCHES[batchId].path;
 
         byte[] origBytes = File.ReadAllBytes(path);
         var original = new BinaryReader(new MemoryStream(buffer: origBytes, writable: false));
@@ -152,7 +161,7 @@ internal static class PatchTerrain {
             throw;
         }
 
-        List<string>?[] octreePatchNames = patchedBatches[batchId].octreePatchNames;
+        List<string>?[] octreePatchNames = PATCHED_BATCHES[batchId].octreePatchNames;
         for (int i = 0; i < OCTREES_PER_BATCH; i++) {
             if (!patchedOctrees[i]) continue;
             octreePatchNames[i] ??= new();

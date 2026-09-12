@@ -76,7 +76,7 @@ internal static class FileLoading {
         return loadOrder.ToArray();
     }
 
-    private static readonly string LOAD_ORDER_FILE = "load-order.txt";
+    private const string LOAD_ORDER_FILE = "load-order.txt";
 
     private static readonly string[] PATCH_EXTENSIONS = [
         "optoctreepatch",

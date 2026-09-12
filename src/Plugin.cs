@@ -15,10 +15,10 @@ namespace TerrainPatcher;
 [BepInProcess("Subnautica.exe")]
 [BepInProcess("SubnauticaZero.exe")]
 internal sealed class Plugin : BaseUnityPlugin {
-    private static ManualLogSource? logger = null;
+    private static ManualLogSource? LOGGER = null;
 
     private void Awake() {
-        logger = Logger;
+        LOGGER = Logger;
         LogDebug("Initializing Terrain Patcher");
 
         LogDebug("Applying Harmony patches");
@@ -29,7 +29,7 @@ internal sealed class Plugin : BaseUnityPlugin {
         Task patchTask = PatchingThread.BeginPatching();
         StartCoroutine(DisplayQueuedErrorMessages());
         LogDebug("Terrain Patcher initialized");
-        
+
         WaitScreenHandler.RegisterAsyncLoadTask(
             "Terrain Patcher",
             _ => TerrainPatching.PatchingThread.EnsurePatchingFinished(patchTask),
@@ -37,27 +37,27 @@ internal sealed class Plugin : BaseUnityPlugin {
         );
     }
 
-    internal static void LogDebug(string message) => logger?.LogDebug(message);
-    internal static void LogInfo(string message) => logger?.LogInfo(message);
-    internal static void LogWarning(string message) => logger?.LogWarning(message);
-    internal static void LogError(string message) => logger?.LogError(message);
-    internal static void LogFatal(string message) => logger?.LogFatal(message);
+    internal static void LogDebug(string message) => LOGGER?.LogDebug(message);
+    internal static void LogInfo(string message) => LOGGER?.LogInfo(message);
+    internal static void LogWarning(string message) => LOGGER?.LogWarning(message);
+    internal static void LogError(string message) => LOGGER?.LogError(message);
+    internal static void LogFatal(string message) => LOGGER?.LogFatal(message);
 
-    private static readonly List<string> QueuedMessages = new();
+    private static readonly List<string> QUEUED_MESSAGES = new();
 
     [ThreadSafe]
     internal static void DisplayError(string message) {
         MainThreadDispatcher.EnsureOnMainThread(() => {
-            if (ErrorMessage.main == null) QueuedMessages.Add(message);
+            if (ErrorMessage.main == null) QUEUED_MESSAGES.Add(message);
             else DisplayErrorInGame(message);
         });
     }
 
     private static IEnumerator DisplayQueuedErrorMessages() {
         yield return new WaitUntil(() => ErrorMessage.main != null);
-        if (QueuedMessages.Count == 0) yield break;
-        QueuedMessages.ForEach(DisplayErrorInGame);
-        QueuedMessages.Clear();
+        if (QUEUED_MESSAGES.Count == 0) yield break;
+        QUEUED_MESSAGES.ForEach(DisplayErrorInGame);
+        QUEUED_MESSAGES.Clear();
     }
 
     private static void DisplayErrorInGame(string message)
