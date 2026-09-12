@@ -12,7 +12,7 @@ internal static class StreamingPatches {
     );
 
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.GetOrMakeChunk))]
-    private static class PostfixGetOrMakeChunk { // TODO: descriptive name
+    private static class PositionAndScaleOnChunkCreation {
         private static void Postfix(MiniWorld __instance, Int3 chunkId) {
             MiniWorld.Chunk chunk = __instance.loadedChunks[chunkId];
             chunk.gameObject.transform.localScale =
@@ -28,7 +28,7 @@ internal static class StreamingPatches {
     }
 
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.RebuildHologram))]
-    private static class PrefixRebuildHologram { // TODO: descriptive name
+    private static class RebuildHologramWithWorldStreamer {
         private static bool Prefix(MiniWorld __instance, ref IEnumerator __result) {
             __result = RebuildHologramWithStreamingAsync(__instance);
             return false;
@@ -99,7 +99,7 @@ internal static class StreamingPatches {
     }
 
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.UpdatePosition))]
-    private static class PrefixUpdatePosition { // TODO: descriptive name
+    private static class UpdatePositionWithStreamedChunkSize {
         private static bool Prefix(MiniWorld __instance) {
             __instance.hologramHolder.rotation = Quaternion.identity;
             __instance.materialInstance.SetVector(
