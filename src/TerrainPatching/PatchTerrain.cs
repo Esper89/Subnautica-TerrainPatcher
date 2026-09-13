@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 
 namespace TerrainPatcher.TerrainPatching;
@@ -6,22 +7,26 @@ namespace TerrainPatcher.TerrainPatching;
 internal static class PatchTerrain {
     private const int OCTREES_PER_BATCH = 125;
 
-    private static readonly Dictionary<Int3, PatchedBatch> PATCHED_BATCHES = new();
+    internal static bool GetPatchedBatch(Int3 batchId, [NotNullWhen(true)] out string? path) {
+        try {
+            PatchingThread.WaitUntilDone();
+        } catch (Exception ex) {
+            // may be on a world streaming thread where an uncaught exception will cause havoc
+            Plugin.LogError($"Unable to load world: {ex}");
+            Thread.Sleep(Timeout.Infinite); // goodnight
+        }
 
-    internal static Dictionary<Int3, PatchedBatch> PATCHED_BATCHES_BLOCKING {
-        get {
-            try {
-                PatchingThread.WaitUntilDone();
-            } catch (Exception ex) {
-                Plugin.LogError($"Unable to load world: {ex}");
-                Thread.Sleep(Timeout.Infinite); // goodnight
-            }
-
-            return PATCHED_BATCHES;
+        lock (PATCHED_BATCHES) {
+            bool hit = PATCHED_BATCHES.TryGetValue(batchId, out var batch);
+            if (hit) path = batch.path;
+            else path = null;
+            return hit;
         }
     }
 
-    internal readonly struct PatchedBatch {
+    private static readonly Dictionary<Int3, PatchedBatch> PATCHED_BATCHES = new();
+
+    private readonly struct PatchedBatch {
         internal PatchedBatch(string path) {
             this.path = path;
             octreePatchNames = new List<string>?[OCTREES_PER_BATCH];
@@ -44,7 +49,7 @@ internal static class PatchTerrain {
             }
             Plugin.LogInfo(message);
 
-            ApplyPatchFile(patchName, patchFile, forceOriginal);
+            lock (PATCHED_BATCHES) ApplyPatchFile(patchName, patchFile, forceOriginal);
         } catch (InvalidDataException ex) {
             Plugin.LogError($"Patch '{patchName}' is broken or contains errors: {ex.Message}");
             Plugin.DisplayError($"Error in terrain patch '{patchName}'");

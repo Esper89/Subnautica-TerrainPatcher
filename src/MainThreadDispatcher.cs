@@ -29,13 +29,17 @@ internal static class MainThreadDispatcher {
     }
 
     private static IEnumerator ExecuteMainThreadTasks() {
-        for (;;) {
-            while (TASKS.TryDequeue(out Action action)) TryInvoke(action);
-            if (TerrainPatching.PatchingThread.PollDone()) break;
+        while (!TerrainPatching.PatchingThread.IsDone) {
+            DequeueInvoke();
             yield return null;
         }
+        DequeueInvoke();
         COROUTINE_LOOP = null;
         ROUTINE_HOST = null;
+    }
+
+    private static void DequeueInvoke() {
+        while (TASKS.TryDequeue(out Action action)) TryInvoke(action);
     }
 
     private static void TryInvoke(Action action) {
