@@ -20,7 +20,7 @@ internal static class PatchingThread {
 
     internal static bool PollDone() => PATCHING?.Wait(1) ?? false;
 
-    internal static void WaitUntilDone() => PATCHING?.Wait();
+    internal static void WaitUntilDone() => PATCHING!.Wait();
 
     internal static void RegisterNautilusWaitScreen() {
         static IEnumerator EnsurePatchingFinished() {
