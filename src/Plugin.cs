@@ -1,17 +1,17 @@
 using System.Collections;
 using System.Reflection;
 using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
 using Nautilus.Handlers;
-using TerrainPatcher.TerrainPatching;
 using UnityEngine;
 using UnityEngine.Bindings;
 
 namespace TerrainPatcher;
 
 [BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.2.5")]
-[BepInDependency("com.snmodding.nautilus", "1.0.0.52")]
+[BepInDependency("com.snmodding.nautilus", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInProcess("Subnautica.exe")]
 [BepInProcess("SubnauticaZero.exe")]
 internal sealed class Plugin : BaseUnityPlugin {
@@ -26,15 +26,13 @@ internal sealed class Plugin : BaseUnityPlugin {
 
         LogDebug("Dispatching patcher thread");
         MainThreadDispatcher.Start(this);
-        Task patchTask = PatchingThread.BeginPatching();
+        TerrainPatching.PatchingThread.BeginPatching();
         StartCoroutine(DisplayQueuedErrorMessages());
         LogDebug("Terrain Patcher initialized");
 
-        WaitScreenHandler.RegisterAsyncLoadTask(
-            "Terrain Patcher",
-            _ => TerrainPatching.PatchingThread.EnsurePatchingFinished(patchTask),
-            "Patching Terrain"
-        );
+        if (Chainloader.PluginInfos.ContainsKey("com.snmodding.nautilus")) {
+            TerrainPatching.PatchingThread.RegisterNautilusWaitScreen();
+        }
     }
 
     internal static void LogDebug(string message) => LOGGER?.LogDebug(message);

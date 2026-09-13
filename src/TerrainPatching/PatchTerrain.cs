@@ -6,7 +6,20 @@ namespace TerrainPatcher.TerrainPatching;
 internal static class PatchTerrain {
     private const int OCTREES_PER_BATCH = 125;
 
-    internal static readonly Dictionary<Int3, PatchedBatch> PATCHED_BATCHES = new();
+    private static readonly Dictionary<Int3, PatchedBatch> PATCHED_BATCHES = new();
+
+    internal static Dictionary<Int3, PatchedBatch> PATCHED_BATCHES_BLOCKING {
+        get {
+            try {
+                PatchingThread.WaitUntilDone();
+            } catch (Exception ex) {
+                Plugin.LogError($"Unable to load world: {ex}");
+                Thread.Sleep(Timeout.Infinite); // goodnight
+            }
+
+            return PATCHED_BATCHES;
+        }
+    }
 
     internal readonly struct PatchedBatch {
         internal PatchedBatch(string path) {

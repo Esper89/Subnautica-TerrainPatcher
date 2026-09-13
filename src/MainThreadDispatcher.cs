@@ -19,12 +19,6 @@ internal static class MainThreadDispatcher {
         COROUTINE_LOOP = host.StartCoroutine(ExecuteMainThreadTasks());
     }
 
-    internal static void Stop() {
-        ROUTINE_HOST?.StopCoroutine(COROUTINE_LOOP);
-        COROUTINE_LOOP = null;
-        ROUTINE_HOST = null;
-    }
-
     internal static void EnsureOnMainThread(Action action) {
         if (action == null) throw new ArgumentNullException(nameof(action));
         if (Thread.CurrentThread.ManagedThreadId == MAIN_THREAD_ID) {
@@ -36,18 +30,19 @@ internal static class MainThreadDispatcher {
 
     private static IEnumerator ExecuteMainThreadTasks() {
         for (;;) {
-            while (TASKS.TryDequeue(out Action action)) {
-                TryInvoke(action);
-            }
+            while (TASKS.TryDequeue(out Action action)) TryInvoke(action);
+            if (TerrainPatching.PatchingThread.PollDone()) break;
             yield return null;
         }
+        COROUTINE_LOOP = null;
+        ROUTINE_HOST = null;
     }
 
     private static void TryInvoke(Action action) {
         try {
             action.Invoke();
         } catch (Exception ex) {
-            Plugin.LogError($"Main thread task threw and exception: {ex}");
+            Plugin.LogError($"Main thread task threw an exception: {ex}");
         }
     }
 }

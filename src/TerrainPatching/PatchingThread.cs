@@ -3,26 +3,34 @@
 namespace TerrainPatcher.TerrainPatching;
 
 internal static class PatchingThread {
-    internal static Task BeginPatching() => PatchTerrain();
+    private static Task? PATCHING = null;
 
-    private static async Task PatchTerrain() {
-        await Task.Run(PatchThread);
+    internal static void BeginPatching() => PATCHING = Task.Run(PatchThread);
+
+    private static void PatchThread() {
+        try {
+            OptoctreesDirs.ClearPatchesDir();
+            FileLoading.FindAndLoadPatches();
+        } catch (Exception ex) {
+            Plugin.LogFatal($"Patching failed unexpectedly: {ex}");
+            Plugin.DisplayError("Terrain patching failed!");
+            throw new Exception("Terrain patching failed!");
+        }
     }
 
-    private static Task PatchThread() {
-        OptoctreesDirs.ClearPatchesDir();
-        FileLoading.FindAndLoadPatches();
-        return Task.CompletedTask;
-    }
+    internal static bool PollDone() => PATCHING?.Wait(1) ?? false;
 
-    internal static IEnumerator EnsurePatchingFinished(Task patchingTask) {
-        while (!patchingTask.IsCompleted) yield return null;
+    internal static void WaitUntilDone() => PATCHING?.Wait();
 
-        if (patchingTask.IsFaulted) {
-            Plugin.LogError($"Patching failed: {patchingTask.Exception?.InnerException}");
-            throw new Exception("Patching failed!");
+    internal static void RegisterNautilusWaitScreen() {
+        static IEnumerator EnsurePatchingFinished() {
+            while (!PollDone()) yield return null;
         }
 
-        MainThreadDispatcher.Stop();
+        Nautilus.Handlers.WaitScreenHandler.RegisterAsyncLoadTask(
+            modName: "Terrain Patcher",
+            loadingFunction: _ => EnsurePatchingFinished(),
+            description: "Patching Terrain"
+        );
     }
 }

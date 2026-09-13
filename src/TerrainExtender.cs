@@ -144,7 +144,7 @@ internal static class TerrainExtender {
             .Insert([
                 new(OpCodes.Ldarg_0),
                 CodeInstruction.CallClosure((Int3.Bounds currBounds, BatchOctrees self) =>
-                    !TerrainPatching.PatchTerrain.PATCHED_BATCHES.ContainsKey(self.id) &&
+                    !TerrainPatching.PatchTerrain.PATCHED_BATCHES_BLOCKING.ContainsKey(self.id) &&
                     (self.id.z == 25 || self.id.x == 25)
                         ? VANILLA_OCTREE_BOUNDS
                         : currBounds
