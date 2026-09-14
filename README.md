@@ -93,10 +93,15 @@ sealed class Mod : BaseUnityPlugin { /* ... */ }
 Terrain Patcher is licensed under the GNU AGPL, which says that derivative works must also be
 licensed under the GNU AGPL. If your mod directly interacts with Terrain Patcher (e.g. by
 referencing `TerrainPatcher.dll`), it might be considered a derivative work. To avoid any possible
-copyright issues, if your mod isn't licensed under the GNU AGPL, you should avoid referencing
-`TerrainPatcher.dll` or otherwise interacting with Terrain Patcher directly. Terrain patches are
+copyright issues, if your mod isn't licensed under the GNU AGPL, you may want to avoid referencing
+`TerrainPatcher.dll` or otherwise interacting with Terrain Patcher directly. Terrain patches may be
 loaded without referencing Terrain Patcher by distributing them alongside your mod as separate
 `.optoctreepatch` files.
+
+It is not the intent of Terrain Patcher's copyright holders to enforce GPL compliance against other
+free and open-source mods made in good faith by the Subnautica modding community.
+
+This section is not part of Terrain Patcher's license, nor is it legal advice.
 
 ## Patch Format
 
