@@ -7,7 +7,9 @@ namespace TerrainPatcher.TerrainPatching;
 internal static class PatchTerrain {
     private const int OCTREES_PER_BATCH = 125;
 
-    internal static bool GetPatchedBatch(Int3 batchId, [NotNullWhen(true)] out string? path) {
+    internal static bool GetPatchedBatchBlocking(
+        Int3 batchId, [NotNullWhen(true)] out string? path
+    ) {
         try {
             PatchingThread.WaitUntilDone();
         } catch (Exception ex) {

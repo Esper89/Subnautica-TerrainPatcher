@@ -39,5 +39,5 @@ internal static class ReplaceBatches {
     }
 
     private static bool GetBatchFilePath(Int3 id, ref string? result, bool runOriginal)
-        => !runOriginal || !TerrainPatching.PatchTerrain.GetPatchedBatch(id, out result);
+        => !runOriginal || !TerrainPatching.PatchTerrain.GetPatchedBatchBlocking(id, out result);
 }
