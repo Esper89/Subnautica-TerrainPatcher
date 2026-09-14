@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UWE;
 
 namespace TerrainPatcher.StreamedMiniWorld;
 
@@ -30,8 +31,32 @@ internal static class StreamingPatches {
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.RebuildHologram))]
     private static class RebuildHologramWithWorldStreamer {
         private static bool Prefix(MiniWorld __instance, ref IEnumerator? __result) {
+            CoroutineHost.StartCoroutine(Fading(__instance));
             __result = RebuildHologramWithStreamingAsync(__instance);
             return false;
+        }
+    }
+
+    private static IEnumerator Fading(MiniWorld miniWorld) {
+        float currentRadius = 0;
+        while (miniWorld != null) {
+            float minRadius = CellUtils.MinDistanceToEdge(
+                miniWorld.transform.position,
+                MeshBuilding.CELL_SIZE,
+                miniWorld.mapWorldRadius,
+                miniWorld.loadedChunks
+            );
+            if(minRadius < currentRadius) currentRadius = minRadius;
+            currentRadius = Mathf.Lerp(currentRadius, minRadius, Time.deltaTime);
+            
+            float fadeRadius = WorldRadiusToFadeRadius(currentRadius);
+            Plugin.LogInfo($"minDist: {minRadius} fadeRadius:{fadeRadius}");
+            miniWorld.materialInstance.SetFloat(ShaderPropertyID._FadeRadius, fadeRadius);
+            yield return null;
+        }
+
+        float WorldRadiusToFadeRadius(float worldRadius) {
+            return worldRadius / 750;
         }
     }
 
