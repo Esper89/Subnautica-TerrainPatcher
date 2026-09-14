@@ -8,10 +8,9 @@ game's terrain with the terrain in those patches.
 
 ## Installation
 
-This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica).
+This mod requires [BepInEx].
 
-You can download Terrain Patcher from the [releases
-page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest), below the changelog.
+You can download Terrain Patcher from the [releases] page, below the changelog.
 
 To install Terrain Patcher, just extract the zip file and place the `TerrainPatcher` folder into
 your `BepInEx/plugins` folder.
@@ -24,6 +23,9 @@ You can specify a custom load order for `.optoctreepatch` files by writing the f
 the extensions) into the `load-order.txt` file. If you have multiple terrain patches that conflict
 with each other, changing the load order usually won't fix broken terrain—the terrain patches are
 likely just incompatible.
+
+Terrain Patcher interoperates with [Nautilus] if it's installed, but does not require Nautilus to
+function.
 
 ### Game Version
 
@@ -110,15 +112,14 @@ materials in-game can be found for Subnautica and Below Zero at
 [`material-preview-sn.optoctreepatch`](./examples/material-preview-sn.optoctreepatch) and
 [`material-preview-bz.optoctreepatch`](./examples/material-preview-bz.optoctreepatch).
 
-Patch files can be created using [Abyss Editor](https://github.com/BeneathTheWaves/AbyssEditor) or
-[Reef Editor](https://github.com/eternaight/sn-terrain-edit). Any files conforming to the
+Patch files can be created using [Abyss Editor] or [Reef Editor]. Any files conforming to the
 specification will work. An example Rust script that generates the material preview terrain patches
 is included at [`generate_material_preview.rs`](./examples/generate_material_preview.rs).
 
 Terrain Patcher places patched batches in `CompiledOctreesCache/patches`, using the same naming
 system as the game. These patched batches can be loaded by external tools or other mods, if they
 wish to support terrain patches. Anything using this feature should make it optional, as those files
-aren't removed when Terrain Patcher is disabled or uninstalled.
+aren't removed when Terrain Patcher is uninstalled.
 
 ## Features
 
@@ -126,20 +127,20 @@ aren't removed when Terrain Patcher is disabled or uninstalled.
 
 - Replaces the terrain that loads in-game.
 
-- Supports both Subnautica and Below Zero.
+- Replaces the terrain that appears on the in-game seaglide and scanner room maps.
 
 - Extends the edges of the world to allow for more terrain and entities.
 
+- Supports both Subnautica and Below Zero.
+
 ### Planned Features
 
-- Patching the in-game seaglide and scanner room maps.
+- Custom terrain materials.
 
 ## Contributing
 
 Contributions of any kind—issues, pull requests, feature requests—are all welcome. You can submit
-suggestions and bug reports [as
-issues](https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose), or code
-contributions [as pull requests](https://github.com/Esper89/Subnautica-TerrainPatcher/compare).
+suggestions and bug reports [issues], or code contributions as [pull requests].
 
 ### Building
 
@@ -181,3 +182,11 @@ Additional permission under GNU AGPL version 3 section 7
 If you modify this Program, or any covered work, by linking or combining it with Subnautica (or a
 modified version of that program), containing parts covered by the terms of its license, the
 licensors of this Program grant you additional permission to convey the resulting work.
+
+[BepInEx]: https://github.com/toebeann/BepInEx.Subnautica
+[releases]: https://github.com/Esper89/Subnautica-TerrainPatcher/releases
+[Nautilus]: https://github.com/SubnauticaModding/Nautilus
+[Abyss Editor]: https://github.com/BeneathTheWaves/AbyssEditor
+[Reef Editor]: https://github.com/eternaight/sn-terrain-edit
+[issues]: https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose
+[pull requests]: https://github.com/Esper89/Subnautica-TerrainPatcher/compare
