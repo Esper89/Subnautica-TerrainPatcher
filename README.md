@@ -145,7 +145,7 @@ aren't removed when Terrain Patcher is uninstalled.
 ## Contributing
 
 Contributions of any kind—issues, pull requests, feature requests—are all welcome. You can submit
-suggestions and bug reports [issues], or code contributions as [pull requests].
+suggestions and bug reports as [issues], or code contributions as [pull requests].
 
 ### Building
 
