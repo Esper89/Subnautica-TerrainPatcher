@@ -132,24 +132,24 @@ internal static class TerrainExtender {
                 new(OpCodes.Ldfld, AccessTools.Field(
                     typeof(BatchOctreesStreamer), nameof(BatchOctreesStreamer.octreeBounds)
                 )),
-                new(instr => instr.IsStloc()),
             ])
             .ThrowIfNotMatch(
                 "could not transpile " +
                 $"{typeof(BatchOctrees)}.{nameof(BatchOctrees.LoadOctrees)}: method does not " +
-                "load " +
-                $"{nameof(BatchOctreesStreamer)}.{nameof(BatchOctreesStreamer.octreeBounds)} " +
-                "and store it in a local variable"
+                $"load {nameof(BatchOctreesStreamer)}.{nameof(BatchOctreesStreamer.octreeBounds)}"
             )
-            .Insert([
-                new(OpCodes.Ldarg_0),
-                CodeInstruction.CallClosure((Int3.Bounds currBounds, BatchOctrees self) =>
-                    !TerrainPatching.PatchTerrain.GetPatchedBatchBlocking(self.id, out _) &&
-                    (self.id.z == 25 || self.id.x == 25)
-                        ? VANILLA_OCTREE_BOUNDS
-                        : currBounds
-                ),
-            ])
+            .Repeat(matcher => matcher
+                .Advance(1)
+                .InsertAndAdvance([
+                    new(OpCodes.Ldarg_0),
+                    CodeInstruction.CallClosure((Int3.Bounds currBounds, BatchOctrees self) =>
+                        !TerrainPatching.PatchTerrain.GetPatchedBatchBlocking(self.id, out _) &&
+                        (self.id.z == 25 || self.id.x == 25)
+                            ? VANILLA_OCTREE_BOUNDS
+                            : currBounds
+                    ),
+                ])
+            )
             .InstructionEnumeration();
     }
 }

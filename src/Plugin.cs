@@ -22,7 +22,7 @@ internal sealed class Plugin : BaseUnityPlugin {
         LogDebug("Initializing Terrain Patcher");
 
         LogDebug("Applying Harmony patches");
-        new Harmony("Esper89.TerrainPatcher").PatchAll();
+        ApplyHarmonyPatches();
 
         LogDebug("Dispatching patcher thread");
         MainThreadDispatcher.Start(this);
@@ -32,6 +32,17 @@ internal sealed class Plugin : BaseUnityPlugin {
 
         if (Chainloader.PluginInfos.ContainsKey("com.snmodding.nautilus")) {
             TerrainPatching.PatchingThread.RegisterNautilusWaitScreen();
+        }
+    }
+
+    private static void ApplyHarmonyPatches() {
+        Harmony harmony = new("Esper89.TerrainPatcher");
+        foreach (var ty in AccessTools.GetTypesFromAssembly(Assembly.GetExecutingAssembly())) {
+            try {
+                harmony.CreateClassProcessor(ty).Patch();
+            } catch (Exception ex) {
+                LogError($"Failed to apply a Harmony patch: {ex}");
+            }
         }
     }
 
