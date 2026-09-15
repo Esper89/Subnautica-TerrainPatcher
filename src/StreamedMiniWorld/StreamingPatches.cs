@@ -41,22 +41,25 @@ internal static class StreamingPatches {
         float currentRadius = 0;
         while (miniWorld != null) {
             float minRadius = CellUtils.MinDistanceToEdge(
-                miniWorld.transform.position,
-                MeshBuilding.CELL_SIZE,
-                miniWorld.mapWorldRadius,
-                miniWorld.loadedChunks
+                streamingCenter: miniWorld.transform.position,
+                chunkSize: MeshBuilding.CELL_SIZE,
+                mapRadius: miniWorld.mapWorldRadius,
+                loadedChunks: miniWorld.loadedChunks
             );
-            if(minRadius < currentRadius) currentRadius = minRadius;
-            currentRadius = Mathf.Lerp(currentRadius, minRadius, (miniWorld.hologramRadius * Time.deltaTime)/4 );
-            
+
+            if (minRadius < currentRadius) currentRadius = minRadius;
+            else currentRadius = Mathf.Lerp(
+                currentRadius, minRadius,
+                (miniWorld.hologramRadius * Time.deltaTime) / 4
+            );
+
             float fadeRadius = WorldRadiusToFadeRadius(currentRadius, miniWorld.hologramRadius);
             miniWorld.materialInstance.SetFloat(ShaderPropertyID._FadeRadius, fadeRadius);
-            
+
             yield return null;
         }
 
-        static float WorldRadiusToFadeRadius(float worldRadius, float hologramRadius )
-        {
+        static float WorldRadiusToFadeRadius(float worldRadius, float hologramRadius) {
             return worldRadius * (hologramRadius * (1.0f / 750.0f) - (1.0f / 100.0f));
         }
     }
