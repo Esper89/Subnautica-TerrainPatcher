@@ -40,11 +40,11 @@ internal static class StreamingPatches {
     private static IEnumerator Fading(MiniWorld miniWorld) {
         float currentRadius = 0;
         while (miniWorld != null) {
-            Transform streamingOrigin = LargeWorldStreamer.main.land.transform;
-            Vector3 origin = streamingOrigin.InverseTransformPoint(miniWorld.transform.position);
-            
+            Transform origin = LargeWorldStreamer.main.land.transform;
+            Vector3 chunkSpaceCenter = origin.InverseTransformPoint(miniWorld.transform.position);
+
             float minRadius = CellUtils.MinDistanceToEdge(
-                chunkSpaceCenter: origin,
+                chunkSpaceCenter,
                 chunkSize: MeshBuilding.CELL_SIZE,
                 mapRadius: miniWorld.mapWorldRadius,
                 loadedChunks: miniWorld.loadedChunks
