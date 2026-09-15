@@ -41,7 +41,7 @@ internal sealed class Plugin : BaseUnityPlugin {
             try {
                 harmony.CreateClassProcessor(ty).Patch();
             } catch (Exception ex) {
-                LogError($"Failed to apply a Harmony patch: {ex}");
+                LogError($"Failed to apply Harmony patch {ty.FullName} with: {ex}");
             }
         }
     }
