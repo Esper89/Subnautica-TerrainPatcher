@@ -22,7 +22,8 @@ be loaded.
 You can specify a custom load order for `.optoctreepatch` files by writing the file names (without
 the extensions) into the `load-order.txt` file. If you have multiple terrain patches that conflict
 with each other, changing the load order usually won't fix broken terrain—the terrain patches are
-likely just incompatible.
+likely just incompatible. Mod authors should avoid relying on `load-order.txt` to make their mods
+work.
 
 Terrain Patcher interoperates with [Nautilus] if it's installed, but does not require Nautilus to
 function.
