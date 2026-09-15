@@ -47,10 +47,10 @@ internal static class CellUtils {
     }
 
     internal static float MinDistanceToEdge(
-        Vector3 streamingCenter, int chunkSize, int mapRadius,
+        Vector3 chunkSpaceCenter, int chunkSize, int mapRadius,
         Dictionary<Int3, MiniWorld.Chunk> loadedChunks
     ) {
-        Int3 mapCenterBlock = LargeWorldStreamer.main.GetBlock(streamingCenter);
+        Int3 mapCenterBlock =  Int3.Floor(chunkSpaceCenter);
         Int3 centerChunk = Int3.FloorDiv(mapCenterBlock, chunkSize);
         float bestMinSqdist = mapRadius * mapRadius;
 
@@ -62,7 +62,7 @@ internal static class CellUtils {
             void checkRelativeChunk(int dx, int dy, int dz) {
                 Int3 chunk = centerChunk + new Int3(dx, dy, dz);
                 if (!loadedChunks.ContainsKey(chunk)) {
-                    float sqdist = PointToChunkSqdist(streamingCenter, chunkSize, chunk);
+                    float sqdist = PointToChunkSqdist(chunkSpaceCenter, chunkSize, chunk);
                     if (sqdist < bestMinSqdist) bestMinSqdist = sqdist;
                 }
             }
@@ -97,12 +97,8 @@ internal static class CellUtils {
         return Mathf.Sqrt(bestMinSqdist);
 
         static float PointToChunkSqdist(Vector3 point, int chunkSize, Int3 chunk) {
-            Transform origin = LargeWorldStreamer.main.land.transform;
-            Vector3 chunkMin = origin.TransformPoint((chunk * chunkSize).ToVector3());
-            Vector3 chunkMax = origin.TransformPoint(((chunk + 1) * chunkSize).ToVector3());
-
-            Vector3 lo = chunkMin - point;
-            Vector3 hi = point - chunkMax;
+            Vector3 lo = (chunk * chunkSize).ToVector3() - point;
+            Vector3 hi = point - ((chunk + 1) * chunkSize).ToVector3();
             Vector3 dist = new Vector3(Max(lo.x, 0, hi.x), Max(lo.y, 0, hi.y), Max(lo.z, 0, hi.z));
 
             return dist.sqrMagnitude;
