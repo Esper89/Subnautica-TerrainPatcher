@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Runtime.CompilerServices;
 using HarmonyLib;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
@@ -47,14 +46,9 @@ internal static class StreamingPatches {
 
     private static readonly ConditionalWeakTable<MiniWorld, FadeState> cwt = new();
     private class FadeState {
-        internal FadeState(MiniWorld miniWorld) {
-            scannerRoom = miniWorld.GetComponentInParent<MapRoomFunctionality>();
-        }
         internal bool isValid;
         internal float currentWorldRadius;
         internal float maxWorldRadius;
-        
-        internal readonly MapRoomFunctionality? scannerRoom;
     };
         
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.Update))]
@@ -71,13 +65,18 @@ internal static class StreamingPatches {
 
     private static void UpdateDesiredRadius(MiniWorld miniWorld) {
         if (!cwt.TryGetValue(miniWorld, out FadeState state)) {
-            state = new FadeState(miniWorld);
+            state = new FadeState();
             cwt.Add(miniWorld, state);
         }
+
+        ScannerRoomPatches.MINI_WORLD_MAP_ROOMS.TryGetValue(
+            miniWorld,
+            out MapRoomFunctionality scannerRoom
+        );
         
-        int maxRadius;
-        if (state.scannerRoom != null) maxRadius = (int) state.scannerRoom.scanRange;
-        else maxRadius = miniWorld.mapWorldRadius;
+        int mapMaxRadius;
+        if (scannerRoom != null) mapMaxRadius = (int) scannerRoom.scanRange;
+        else mapMaxRadius = miniWorld.mapWorldRadius;
         
         Transform origin = LargeWorldStreamer.main.land.transform;
         Vector3 chunkSpaceCenter = origin.InverseTransformPoint(miniWorld.transform.position);
@@ -85,17 +84,19 @@ internal static class StreamingPatches {
         state.maxWorldRadius = CellUtils.MinDistanceToEdge(
             chunkSpaceCenter,
             chunkSize: MeshBuilding.CELL_SIZE,
-            mapRadius: maxRadius,
+            mapRadius: mapMaxRadius,
             loadedChunks: miniWorld.loadedChunks
         );
+        
+        if (state.maxWorldRadius < mapMaxRadius && state.maxWorldRadius < state.currentWorldRadius) {
+            state.currentWorldRadius = state.maxWorldRadius;
+        }
+        
         state.isValid = false;
     }
     
     private static void LerpFading(MiniWorld miniWorld, FadeState state) {
-        if (state.maxWorldRadius < state.currentWorldRadius) {
-            state.currentWorldRadius = state.maxWorldRadius;
-        }
-        else state.currentWorldRadius = Mathf.Lerp(
+        state.currentWorldRadius = Mathf.Lerp(
             state.currentWorldRadius, state.maxWorldRadius,
             (miniWorld.hologramRadius * Time.deltaTime) / 4
         );
