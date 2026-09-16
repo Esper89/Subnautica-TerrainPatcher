@@ -52,6 +52,7 @@ internal static class CellUtils {
     ) {
         Int3 mapCenterBlock =  Int3.Floor(chunkSpaceCenter);
         Int3 centerChunk = Int3.FloorDiv(mapCenterBlock, chunkSize);
+        bool hit = false;
         float bestMinSqdist = mapRadius * mapRadius;
 
         for (int chebDist = 0;; chebDist++) { // chebyshev distance
@@ -63,7 +64,10 @@ internal static class CellUtils {
                 Int3 chunk = centerChunk + new Int3(dx, dy, dz);
                 if (!loadedChunks.ContainsKey(chunk)) {
                     float sqdist = PointToChunkSqdist(chunkSpaceCenter, chunkSize, chunk);
-                    if (sqdist < bestMinSqdist) bestMinSqdist = sqdist;
+                    if (sqdist < bestMinSqdist) {
+                        bestMinSqdist = sqdist;
+                        hit = true;
+                    }
                 }
             }
 
@@ -93,8 +97,8 @@ internal static class CellUtils {
                 }
             }
         }
-
-        return Mathf.Sqrt(bestMinSqdist);
+        
+        return hit ? Mathf.Sqrt(bestMinSqdist) : mapRadius;
 
         static float PointToChunkSqdist(Vector3 point, int chunkSize, Int3 chunk) {
             Vector3 lo = (chunk * chunkSize).ToVector3() - point;
