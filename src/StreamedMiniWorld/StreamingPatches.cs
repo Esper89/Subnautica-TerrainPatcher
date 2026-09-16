@@ -1,9 +1,9 @@
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.ResourceManagement.AsyncOperations;
-using UWE;
 
 namespace TerrainPatcher.StreamedMiniWorld;
 
@@ -25,48 +25,94 @@ internal static class StreamingPatches {
             UpdateIndividualChunkPosition(
                 miniWorldStreamingOriginOffset, __instance, chunkId, chunk
             );
+            
+            if(!__instance.updatePosition) UpdateDesiredRadius(__instance);
         }
     }
 
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.RebuildHologram))]
     private static class RebuildHologramWithWorldStreamer {
         private static bool Prefix(MiniWorld __instance, ref IEnumerator? __result) {
-            CoroutineHost.StartCoroutine(Fading(__instance));
             __result = RebuildHologramWithStreamingAsync(__instance);
             return false;
         }
     }
 
-    private static IEnumerator Fading(MiniWorld miniWorld) {
-        float currentRadius = 0;
-        while (miniWorld != null) {
-            Transform origin = LargeWorldStreamer.main.land.transform;
-            Vector3 chunkSpaceCenter = origin.InverseTransformPoint(miniWorld.transform.position);
-
-            float minRadius = CellUtils.MinDistanceToEdge(
-                chunkSpaceCenter,
-                chunkSize: MeshBuilding.CELL_SIZE,
-                mapRadius: miniWorld.mapWorldRadius,
-                loadedChunks: miniWorld.loadedChunks
-            );
-
-            if (minRadius < currentRadius) currentRadius = minRadius;
-            else currentRadius = Mathf.Lerp(
-                currentRadius, minRadius,
-                (miniWorld.hologramRadius * Time.deltaTime) / 4
-            );
-
-            float fadeRadius = WorldRadiusToFadeRadius(currentRadius, miniWorld.hologramRadius);
-            miniWorld.materialInstance.SetFloat(ShaderPropertyID._FadeRadius, fadeRadius);
-
-            yield return null;
+    [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.ClearUnusedChunks))]
+    private static class UpdateFadingOnChunkRemoval {
+        private static void Postfix(MiniWorld __instance) {
+            if(!__instance.updatePosition) UpdateDesiredRadius(__instance);
         }
+    }
 
+    private static readonly ConditionalWeakTable<MiniWorld, FadeState> cwt = new();
+    private class FadeState {
+        internal FadeState(MiniWorld miniWorld) {
+            scannerRoom = miniWorld.GetComponentInParent<MapRoomFunctionality>();
+        }
+        internal bool isValid;
+        internal float currentWorldRadius;
+        internal float maxWorldRadius;
+        
+        internal readonly MapRoomFunctionality? scannerRoom;
+    };
+        
+    [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.Update))]
+    private static class CheckIfFadingNeedsToUpdate {
+        private static void Postfix(MiniWorld __instance)
+        {
+            if (!cwt.TryGetValue(__instance, out FadeState state)) return;
+            
+            if (__instance.updatePosition || !state.isValid) {
+                LerpFading(__instance, state);
+            }
+        }
+    }
+
+    private static void UpdateDesiredRadius(MiniWorld miniWorld) {
+        if (!cwt.TryGetValue(miniWorld, out FadeState state)) {
+            state = new FadeState(miniWorld);
+            cwt.Add(miniWorld, state);
+        }
+        
+        int maxRadius;
+        if (state.scannerRoom != null) maxRadius = (int) state.scannerRoom.scanRange;
+        else maxRadius = miniWorld.mapWorldRadius;
+        
+        Transform origin = LargeWorldStreamer.main.land.transform;
+        Vector3 chunkSpaceCenter = origin.InverseTransformPoint(miniWorld.transform.position);
+        
+        state.maxWorldRadius = CellUtils.MinDistanceToEdge(
+            chunkSpaceCenter,
+            chunkSize: MeshBuilding.CELL_SIZE,
+            mapRadius: maxRadius,
+            loadedChunks: miniWorld.loadedChunks
+        );
+        state.isValid = false;
+    }
+    
+    private static void LerpFading(MiniWorld miniWorld, FadeState state) {
+        if (state.maxWorldRadius < state.currentWorldRadius) {
+            state.currentWorldRadius = state.maxWorldRadius;
+        }
+        else state.currentWorldRadius = Mathf.Lerp(
+            state.currentWorldRadius, state.maxWorldRadius,
+            (miniWorld.hologramRadius * Time.deltaTime) / 4
+        );
+
+        if (Mathf.Abs(state.currentWorldRadius - state.maxWorldRadius) < 0.5f) {
+            state.currentWorldRadius = state.maxWorldRadius;
+            state.isValid = true;
+        }
+        
+        float fadeRadius = WorldRadiusToFadeRadius(state.currentWorldRadius, miniWorld.hologramRadius);
+        miniWorld.materialInstance.SetFloat(ShaderPropertyID._FadeRadius, fadeRadius);
+        
         static float WorldRadiusToFadeRadius(float worldRadius, float hologramRadius) {
             return worldRadius * (hologramRadius * (1.0f / 750.0f) - (1.0f / 100.0f));
         }
     }
-
+    
     private static IEnumerator RebuildHologramWithStreamingAsync(MiniWorld miniWorld) {
         yield return new WaitUntil(()
             => LargeWorldStreamer.main.streamerV2.clipmapStreamer != null
@@ -146,6 +192,7 @@ internal static class StreamingPatches {
                     miniWorldStreamingOriginOffset, __instance, keyValuePair.Key, chunk
                 );
             }
+            UpdateDesiredRadius(__instance);
             return false;
         }
     }
