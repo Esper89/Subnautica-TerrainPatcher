@@ -19,7 +19,7 @@ internal static class MeshBuilding {
         }
     };
 
-    internal const int CELL_SIZE = 160;
+    internal const int CELL_SIZE = 128;
 
     // on meshing thread
     internal static readonly UWE.Task.Function
