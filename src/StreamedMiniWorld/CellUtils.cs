@@ -25,18 +25,20 @@ internal static class CellUtils {
         return batches;
     }
 
-    internal static Int3[] OrderCellsAroundCenter(Int3 minCell, Int3 maxCell, Int3 centerCell) {
-        int countX = maxCell.x - minCell.x + 1;
-        int countY = maxCell.y - minCell.y + 1;
-        int countZ = maxCell.z - minCell.z + 1;
+    internal static Int3[] OrderCellsAroundCenter(
+        Vector3 chunkSpaceCenter, int chunkSize, Int3 minChunk, Int3 maxChunk
+    ) {
+        int countX = maxChunk.x - minChunk.x + 1;
+        int countY = maxChunk.y - minChunk.y + 1;
+        int countZ = maxChunk.z - minChunk.z + 1;
 
-        List<(Int3 cellID, int distanceToCenter)> batches = new(countX * countY * countZ);
+        List<(Int3 cellID, float distanceToCenter)> batches = new(countX * countY * countZ);
 
-        Int3.RangeEnumerator iter = Int3.Range(minCell, maxCell);
+        Int3.RangeEnumerator iter = Int3.Range(minChunk, maxChunk);
         while (iter.MoveNext()) {
-            Int3 cell = iter.Current;
-            int sqrDistanceToCenter = (cell - centerCell).SquareMagnitude();
-            batches.Add(new(cell, sqrDistanceToCenter));
+            Int3 chunk = iter.Current;
+            float sqrDistanceToCenter = PointToChunkSqdist(chunkSpaceCenter, chunkSize, chunk);
+            batches.Add(new(chunk, sqrDistanceToCenter));
         }
 
         batches.Sort((a, b) => a.distanceToCenter.CompareTo(b.distanceToCenter));
@@ -50,7 +52,7 @@ internal static class CellUtils {
         Vector3 chunkSpaceCenter, int chunkSize, int mapRadius,
         Dictionary<Int3, MiniWorld.Chunk> loadedChunks
     ) {
-        Int3 mapCenterBlock =  Int3.Floor(chunkSpaceCenter);
+        Int3 mapCenterBlock = Int3.Floor(chunkSpaceCenter);
         Int3 centerChunk = Int3.FloorDiv(mapCenterBlock, chunkSize);
         bool hit = false;
         float bestMinSqdist = mapRadius * mapRadius;
@@ -99,16 +101,16 @@ internal static class CellUtils {
         }
         
         return hit ? Mathf.Sqrt(bestMinSqdist) : mapRadius;
+    }
 
-        static float PointToChunkSqdist(Vector3 point, int chunkSize, Int3 chunk) {
-            Vector3 lo = (chunk * chunkSize).ToVector3() - point;
-            Vector3 hi = point - ((chunk + 1) * chunkSize).ToVector3();
-            Vector3 dist = new Vector3(Max(lo.x, 0, hi.x), Max(lo.y, 0, hi.y), Max(lo.z, 0, hi.z));
+    private static float PointToChunkSqdist(Vector3 point, int chunkSize, Int3 chunk) {
+        Vector3 lo = (chunk * chunkSize).ToVector3() - point;
+        Vector3 hi = point - ((chunk + 1) * chunkSize).ToVector3();
+        Vector3 dist = new Vector3(Max(lo.x, 0, hi.x), Max(lo.y, 0, hi.y), Max(lo.z, 0, hi.z));
 
-            return dist.sqrMagnitude;
+        return dist.sqrMagnitude;
 
-            static float Max(float val1, float val2, float val3)
-                => Mathf.Max(Mathf.Max(val1, val2), val3);
-        }
+        static float Max(float val1, float val2, float val3) 
+            => Mathf.Max(Mathf.Max(val1, val2), val3);
     }
 }

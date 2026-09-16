@@ -136,16 +136,19 @@ internal static class StreamingPatches {
                 Int3 mapCenterBlock = LargeWorldStreamer.main.GetBlock(
                     miniWorld.transform.position
                 );
-                Int3 mapCenterCell = Int3.FloorDiv(mapCenterBlock, MeshBuilding.CELL_SIZE);
 
                 Int3 minBlock = mapCenterBlock - miniWorld.mapWorldRadius;
-                Int3 minCell = Int3.FloorDiv(minBlock, MeshBuilding.CELL_SIZE);
+                Int3 minChunk = Int3.FloorDiv(minBlock, MeshBuilding.CELL_SIZE);
 
                 Int3 maxBlock = mapCenterBlock + miniWorld.mapWorldRadius;
-                Int3 maxCell = Int3.FloorDiv(maxBlock, MeshBuilding.CELL_SIZE);
-
+                Int3 maxChunk = Int3.FloorDiv(maxBlock, MeshBuilding.CELL_SIZE);
+                
+                Transform origin = LargeWorldStreamer.main.land.transform;
+                Vector3 chunkSpaceCenter = origin.InverseTransformPoint(miniWorld.transform.position);
+                
+                Int3[] batches = CellUtils.OrderCellsAroundCenter(chunkSpaceCenter, MeshBuilding.CELL_SIZE, minChunk, maxChunk);
+                
                 Vector3 startedLoadingPos = miniWorld.transform.position;
-                Int3[] batches = CellUtils.OrderCellsAroundCenter(minCell, maxCell, mapCenterCell);
                 foreach (Int3 chunkId in batches) {
                     miniWorld.requestChunks.Add(chunkId);
                     if ((startedLoadingPos - miniWorld.transform.position).sqrMagnitude > 50) {
