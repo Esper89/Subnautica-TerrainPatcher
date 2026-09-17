@@ -21,7 +21,7 @@ internal static class CellUtils {
         meshRes += PADDING;
         Int3 size = new(meshRes, meshRes, meshRes);
         
-        const int EXPECTED_BATCHES = 27; // based on the current cellSize
+        const int EXPECTED_BATCHES = 8; // based on the current cellSize
         HashSet<Int3> batches = new(EXPECTED_BATCHES);
         
         const int BATCH_SIZE = 160;
