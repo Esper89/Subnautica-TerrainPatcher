@@ -8,19 +8,25 @@ internal static class CellUtils {
         Int3 cellId, int cellSize, ClipMapManager.LevelSettings settings
     ) {
         Int3 offset = cellId * cellSize;
+        int shiftDownsample = (3 << settings.downsamples);
         Int3 minBlock = new(
-            offset.x - (3 << settings.downsamples),
-            offset.y - (3 << settings.downsamples),
-            offset.z - (3 << settings.downsamples)
+            offset.x - shiftDownsample,
+            offset.y - shiftDownsample,
+            offset.z - shiftDownsample
         );
 
         int meshRes = (cellSize >> settings.downsamples) + settings.meshOverlap * 2;
-        meshRes += 6;
+        // pads the grid to ensure octrees needed for edges are loaded.
+        const int PADDING = 6;
+        meshRes += PADDING;
         Int3 size = new(meshRes, meshRes, meshRes);
-
-        HashSet<Int3> batches = new(27);
-        Int3 minBatch = Int3.FloorDiv(minBlock, 160);
-        Int3 maxBatch = Int3.FloorDiv(minBlock + (size << settings.downsamples) - 1, 160);
+        
+        const int EXPECTED_BATCHES = 27; // based on the current cellSize
+        HashSet<Int3> batches = new(EXPECTED_BATCHES);
+        
+        const int BATCH_SIZE = 160;
+        Int3 minBatch = Int3.FloorDiv(minBlock, BATCH_SIZE);
+        Int3 maxBatch = Int3.FloorDiv(minBlock + (size << settings.downsamples) - 1, BATCH_SIZE);
         foreach (Int3 int4 in Int3.MinMax(minBatch, maxBatch)) batches.Add(int4);
         return batches;
     }
