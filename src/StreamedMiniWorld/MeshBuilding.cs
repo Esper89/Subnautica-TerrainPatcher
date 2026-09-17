@@ -30,12 +30,12 @@ internal static class MeshBuilding {
         ClipmapStreamer streamer = operation.clipMapStreamer;
 
         // redundant, does nothing for our use case of the mesh builder but must supply a number
-        const int levelID = 0;
+        const int LEVEL_ID = 0;
 
         BatchOctreesStreamer octreesStreamer = OctreeStreamer.INSTANCE!.BatchStreamer;
         MeshBuilder meshBuilder = streamer.meshBuilderPool.Get();
         meshBuilder.Reset(
-            levelID, operation.cellId, CELL_SIZE, LEVEL_SETTINGS, streamer.host.blockTypes
+            LEVEL_ID, operation.cellId, CELL_SIZE, LEVEL_SETTINGS, streamer.host.blockTypes
         );
         meshBuilder.DoThreadablePart(octreesStreamer, streamer.settings.collision);
 
