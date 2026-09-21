@@ -20,6 +20,7 @@
     <ItemGroup>
         <Content Include="LICENSE" CopyToOutputDirectory="PreserveNewest"/>
         <Content Include="dist-readme.md" Link="README.md" CopyToOutputDirectory="PreserveNewest"/>
+        <EmbeddedResource Include="Assets\**\*" />
         <PackageReference Include="PolySharp" Version="1.16.0"/>
         <PackageReference
             Include="UnityEngine.Modules"
