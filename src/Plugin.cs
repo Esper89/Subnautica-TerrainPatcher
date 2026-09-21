@@ -4,7 +4,6 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
-using Nautilus.Handlers;
 using UnityEngine;
 using UnityEngine.Bindings;
 
