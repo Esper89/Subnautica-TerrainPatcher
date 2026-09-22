@@ -24,8 +24,8 @@ internal static class StreamingPatches {
             UpdateIndividualChunkPosition(
                 miniWorldStreamingOriginOffset, __instance, chunkId, chunk
             );
-            
-            if(!__instance.updatePosition) UpdateDesiredRadius(__instance);
+
+            if (!__instance.updatePosition) UpdateDesiredRadius(__instance);
         }
     }
 
@@ -40,83 +40,84 @@ internal static class StreamingPatches {
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.ClearUnusedChunks))]
     private static class UpdateFadingOnChunkRemoval {
         private static void Postfix(MiniWorld __instance) {
-            if(!__instance.updatePosition) UpdateDesiredRadius(__instance);
+            if (!__instance.updatePosition) UpdateDesiredRadius(__instance);
         }
     }
 
-    private static readonly ConditionalWeakTable<MiniWorld, FadeState> cwt = new();
-    private class FadeState {
-        internal bool isValid;
-        internal float currentWorldRadius;
-        internal float maxWorldRadius;
-    };
-        
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.Update))]
     private static class CheckIfFadingNeedsToUpdate {
-        private static void Postfix(MiniWorld __instance)
-        {
-            if (!cwt.TryGetValue(__instance, out FadeState state)) return;
-            
-            if (__instance.updatePosition || !state.isValid) {
+        private static void Postfix(MiniWorld __instance) {
+            if (!MINI_WORLD_FADE_STATES.TryGetValue(__instance, out FadeState state)) return;
+
+            if (__instance.updatePosition || !state.DoneFading) {
                 LerpFading(__instance, state);
             }
         }
     }
 
+    private static readonly ConditionalWeakTable<MiniWorld, FadeState>
+        MINI_WORLD_FADE_STATES = new();
+
+    private sealed class FadeState {
+        internal bool DoneFading;
+        internal float CurrentWorldRadius;
+        internal float MaxWorldRadius;
+    }
+
     private static void UpdateDesiredRadius(MiniWorld miniWorld) {
-        if (!cwt.TryGetValue(miniWorld, out FadeState state)) {
+        if (!MINI_WORLD_FADE_STATES.TryGetValue(miniWorld, out FadeState state)) {
             state = new FadeState();
-            cwt.Add(miniWorld, state);
+            MINI_WORLD_FADE_STATES.Add(miniWorld, state);
         }
 
-        ScannerRoomPatches.MINI_WORLD_MAP_ROOMS.TryGetValue(
-            miniWorld,
-            out MapRoomFunctionality scannerRoom
-        );
-        
-        int mapMaxRadius;
-        if (scannerRoom != null) mapMaxRadius = (int) scannerRoom.scanRange;
-        else mapMaxRadius = miniWorld.mapWorldRadius;
-        
+        MapRoomFunctionality? scannerRoom = ScannerRoomPatches.GetScannerRoom(miniWorld);
+
+        int mapMaxRadius = scannerRoom != null
+            ? (int)scannerRoom.scanRange
+            : miniWorld.mapWorldRadius;
+
         Transform origin = LargeWorldStreamer.main.land.transform;
         Vector3 chunkSpaceCenter = origin.InverseTransformPoint(miniWorld.transform.position);
-        
-        state.maxWorldRadius = CellUtils.MinDistanceToEdge(
+
+        state.MaxWorldRadius = CellUtils.MinDistanceToEdge(
             chunkSpaceCenter,
             chunkSize: MeshBuilding.CELL_SIZE,
             mapRadius: mapMaxRadius,
             loadedChunks: miniWorld.loadedChunks
         );
-        
-        if (state.maxWorldRadius < mapMaxRadius && state.maxWorldRadius < state.currentWorldRadius) {
-            state.currentWorldRadius = state.maxWorldRadius;
-        }
-        
-        state.isValid = false;
+
+        if (
+            state.MaxWorldRadius < mapMaxRadius &&
+            state.MaxWorldRadius < state.CurrentWorldRadius
+        ) state.CurrentWorldRadius = state.MaxWorldRadius;
+
+        state.DoneFading = false;
     }
-    
+
     private static void LerpFading(MiniWorld miniWorld, FadeState state) {
-        state.currentWorldRadius = Mathf.Lerp(
-            state.currentWorldRadius, state.maxWorldRadius,
+        state.CurrentWorldRadius = Mathf.Lerp(
+            state.CurrentWorldRadius, state.MaxWorldRadius,
             (miniWorld.hologramRadius * Time.deltaTime) / 4
         );
 
-        if (Mathf.Abs(state.currentWorldRadius - state.maxWorldRadius) < 0.5f) {
-            state.currentWorldRadius = state.maxWorldRadius;
-            state.isValid = true;
+        if (Mathf.Abs(state.CurrentWorldRadius - state.MaxWorldRadius) < 0.5f) {
+            state.CurrentWorldRadius = state.MaxWorldRadius;
+            state.DoneFading = true;
         }
-        
-        float fadeRadius = WorldRadiusToFadeRadius(state.currentWorldRadius, miniWorld.hologramRadius);
+
+        float fadeRadius = WorldRadiusToFadeRadius(
+            state.CurrentWorldRadius, miniWorld.hologramRadius
+        );
         miniWorld.materialInstance.SetFloat(ShaderPropertyID._FadeRadius, fadeRadius);
-        
+
         static float WorldRadiusToFadeRadius(float worldRadius, float hologramRadius) {
             return worldRadius * (hologramRadius * (1.0f / 750.0f) - (1.0f / 100.0f));
         }
     }
-    
+
     private static IEnumerator RebuildHologramWithStreamingAsync(MiniWorld miniWorld) {
-        yield return new WaitUntil(()
-            => LargeWorldStreamer.main.streamerV2.clipmapStreamer != null
+        yield return new WaitUntil(
+            () => LargeWorldStreamer.main.streamerV2.clipmapStreamer != null
         );
 
         if (!miniWorld.updatePosition) {
@@ -143,12 +144,15 @@ internal static class StreamingPatches {
 
                 Int3 maxBlock = mapCenterBlock + miniWorld.mapWorldRadius;
                 Int3 maxChunk = Int3.FloorDiv(maxBlock, MeshBuilding.CELL_SIZE);
-                
+
                 Transform origin = LargeWorldStreamer.main.land.transform;
-                Vector3 chunkSpaceCenter = origin.InverseTransformPoint(miniWorld.transform.position);
-                
-                Int3[] batches = CellUtils.OrderCellsAroundCenter(chunkSpaceCenter, MeshBuilding.CELL_SIZE, minChunk, maxChunk);
-                
+                Vector3 chunkSpaceCenter = origin
+                    .InverseTransformPoint(miniWorld.transform.position);
+
+                Int3[] batches = CellUtils.OrderCellsAroundCenter(
+                    chunkSpaceCenter, MeshBuilding.CELL_SIZE, minChunk, maxChunk
+                );
+
                 Vector3 startedLoadingPos = miniWorld.transform.position;
                 foreach (Int3 chunkId in batches) {
                     miniWorld.requestChunks.Add(chunkId);

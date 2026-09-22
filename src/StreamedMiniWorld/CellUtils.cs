@@ -7,26 +7,27 @@ internal static class CellUtils {
         Int3 cellId, int cellSize, ClipMapManager.LevelSettings settings
     ) {
         Int3 offset = cellId * cellSize;
-        int shiftDownsample = (3 << settings.downsamples);
+        int downsampleOffset = (3 << settings.downsamples);
         Int3 minBlock = new(
-            offset.x - shiftDownsample,
-            offset.y - shiftDownsample,
-            offset.z - shiftDownsample
+            offset.x - downsampleOffset,
+            offset.y - downsampleOffset,
+            offset.z - downsampleOffset
         );
 
         int meshRes = (cellSize >> settings.downsamples) + settings.meshOverlap * 2;
-        // pads the grid to ensure octrees needed for edges are loaded.
-        const int PADDING = 6;
-        meshRes += PADDING;
+
+        // pad the grid to ensure octrees needed for edges are loaded
+        meshRes += 6;
         Int3 size = new(meshRes, meshRes, meshRes);
-        
-        const int EXPECTED_BATCHES = 8; // based on the current cellSize
-        HashSet<Int3> batches = new(EXPECTED_BATCHES);
-        
+
+        // capacity based on the current `cellSize`
+        HashSet<Int3> batches = new(8);
+
         const int BATCH_SIZE = 160;
         Int3 minBatch = Int3.FloorDiv(minBlock, BATCH_SIZE);
         Int3 maxBatch = Int3.FloorDiv(minBlock + (size << settings.downsamples) - 1, BATCH_SIZE);
-        foreach (Int3 int4 in Int3.MinMax(minBatch, maxBatch)) batches.Add(int4);
+
+        foreach (Int3 batch in Int3.MinMax(minBatch, maxBatch)) batches.Add(batch);
         return batches;
     }
 
@@ -37,20 +38,15 @@ internal static class CellUtils {
         int countY = maxChunk.y - minChunk.y + 1;
         int countZ = maxChunk.z - minChunk.z + 1;
 
-        List<(Int3 cellID, float distanceToCenter)> batches = new(countX * countY * countZ);
+        List<(Int3 chunk, float sqdist)> batches = new(countX * countY * countZ);
 
-        Int3.RangeEnumerator iter = Int3.Range(minChunk, maxChunk);
-        while (iter.MoveNext()) {
-            Int3 chunk = iter.Current;
-            float sqrDistanceToCenter = PointToChunkSqdist(chunkSpaceCenter, chunkSize, chunk);
-            batches.Add(new(chunk, sqrDistanceToCenter));
+        foreach (Int3 chunk in Int3.Range(minChunk, maxChunk)) {
+            float sqdist = PointToChunkSqdist(chunkSpaceCenter, chunkSize, chunk);
+            batches.Add(new(chunk, sqdist));
         }
 
-        batches.Sort((a, b) => a.distanceToCenter.CompareTo(b.distanceToCenter));
-
-        Int3[] sortedBatched = new Int3[batches.Count];
-        for (int i = 0; i < batches.Count; i++) sortedBatched[i] = batches[i].cellID;
-        return sortedBatched;
+        batches.Sort((a, b) => a.sqdist.CompareTo(b.sqdist));
+        return batches.Select(batch => batch.chunk).ToArray();
     }
 
     internal static float MinDistanceToEdge(
@@ -104,7 +100,7 @@ internal static class CellUtils {
                 }
             }
         }
-        
+
         return hit ? Mathf.Sqrt(bestMinSqdist) : mapRadius;
     }
 
@@ -115,7 +111,7 @@ internal static class CellUtils {
 
         return dist.sqrMagnitude;
 
-        static float Max(float val1, float val2, float val3) 
+        static float Max(float val1, float val2, float val3)
             => Mathf.Max(Mathf.Max(val1, val2), val3);
     }
 }

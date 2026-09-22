@@ -12,9 +12,9 @@ namespace TerrainPatcher.StreamedMiniWorld;
 internal sealed class FakeArrayPool : SplitNativeArrayPool<byte> {
     internal FakeArrayPool() : base(0, 0, 0, 0, 0, 0, 0, 0) {
         SolidOctree = new(Octree.BytesPerNode, Allocator.Persistent);
-        SolidOctree.CopyFrom(new byte[]{ 1, 0, 0, 0 });
+        SolidOctree.CopyFrom(new byte[] { 1, 0, 0, 0 });
     }
-    
+
     [HarmonyPatch(typeof(SplitNativeArrayPool<byte>), nameof(Get))]
     private static class FakeArrayPoolGetImpl {
         private static bool Prefix(
