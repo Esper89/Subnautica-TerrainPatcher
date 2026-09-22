@@ -19,15 +19,13 @@ internal sealed class OctreeStreamer {
     public BatchOctreesStreamer BatchStreamer { get; }
     private static readonly FakeArrayPool ALLOCATOR = new();
 
-    private const int CACHE_CAPACITY = 40;
+    private const int CACHE_CAPACITY = 128;
     private readonly LruCache<Int3, BatchOctrees> Lru;
     private readonly BlockingCollection<BatchOctrees> batchPool = new();
 
-    private readonly ConcurrentDictionary<Guid, BuildMeshOperation>
-        activeBuildRequests = new();
-
-    private readonly ConcurrentDictionary<Int3, BatchOctrees>
-        batchOctreesToUnload = new();
+    //lock in this order: lock(batchOctreesToUnload) { lock(activeBuildRequests) {...} }
+    private readonly Dictionary<Int3, BatchOctrees> batchOctreesToUnload = new();
+    private readonly Dictionary<Guid, BuildMeshOperation> activeBuildRequests = new();
 
     private OctreeStreamer(WorldStreamer ws, LargeWorldStreamer.Settings settings) {
         BatchStreamer = new BatchOctreesStreamer(
@@ -48,16 +46,20 @@ internal sealed class OctreeStreamer {
     private static class OverrideGetBatch {
         private static bool Prefix(
             BatchOctreesStreamer __instance, Int3 id, ref BatchOctrees? __result
-        ) {
+        )
+        {
             if (INSTANCE == null || __instance != INSTANCE.BatchStreamer) return true;
 
-            lock (INSTANCE.Lru) {
+            lock (INSTANCE.Lru)
+            {
                 if (INSTANCE.Lru.TryGet(id, out __result)) return false;
             }
 
             // this is a fallback, normally the preload should cover this but in the case of
             // multiple maps building, the cache may be full and this is required
-            INSTANCE.batchOctreesToUnload.TryGetValue(id, out __result);
+            lock (INSTANCE.batchOctreesToUnload) {
+                INSTANCE.batchOctreesToUnload.TryGetValue(id, out __result);
+            }
             return false;
         }
     }
@@ -76,7 +78,11 @@ internal sealed class OctreeStreamer {
         operation.batchIdsNeeded = CellUtils.BatchesToLoadForGivenCell(
             operation.cellId, MeshBuilding.CELL_SIZE, MeshBuilding.LEVEL_SETTINGS
         );
-        streamer.activeBuildRequests.TryAdd(operation.guid, operation);
+        lock (streamer.activeBuildRequests)
+        {
+            streamer.activeBuildRequests.Add(operation.guid, operation);
+        }
+        
 
         foreach (Int3 batchId in operation.batchIdsNeeded) {
             BatchOctrees? batch;
@@ -115,28 +121,43 @@ internal sealed class OctreeStreamer {
     }
 
     private void ReturnOctreesToPool(BatchOctrees batchOctrees) {
-        foreach (BuildMeshOperation operation in activeBuildRequests.Values) {
-            if (operation.batchIdsNeeded == null) continue;
-            if (operation.batchIdsNeeded.Contains(batchOctrees.id)) {
-                batchOctreesToUnload.TryAdd(batchOctrees.id, batchOctrees);
+        lock (batchOctreesToUnload) {
+            if (BatchInUse(batchOctrees.id) && !batchOctreesToUnload.ContainsKey(batchOctrees.id)){
+                batchOctreesToUnload.Add(batchOctrees.id, batchOctrees);
                 return;
             }
         }
+        
         batchOctrees.ClearOctrees();
         batchOctrees.state = BatchOctrees.State.Unloaded;
         batchPool.Add(batchOctrees);
     }
 
     internal void CleanupHangingBatches(BuildMeshOperation operation) {
-        activeBuildRequests.TryRemove(operation.guid, out _);
+        lock(activeBuildRequests) activeBuildRequests.Remove(operation.guid);
 
         foreach (Int3 batchId in operation.batchIdsNeeded!) {
-            if (!batchOctreesToUnload.TryRemove(batchId, out BatchOctrees batch)) continue;
-
+            BatchOctrees batch;
+            lock (batchOctreesToUnload) {
+                if (BatchInUse(batchId)) return;
+                if (!batchOctreesToUnload.TryGetValue(batchId, out batch)) continue;
+                batchOctreesToUnload.Remove(batchId);
+            }
+            
             batch.ClearOctrees();
             batch.state = BatchOctrees.State.Unloaded;
             batchPool.Add(batch);
         }
+    }
+
+    private bool BatchInUse(Int3 id) {
+        lock (activeBuildRequests) {
+            foreach (BuildMeshOperation operation in activeBuildRequests.Values) {
+                if (!operation.batchIdsNeeded!.Contains(id)) continue;
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void DestroyOctreeStreamer() {
@@ -146,7 +167,9 @@ internal sealed class OctreeStreamer {
         lock (INSTANCE.Lru) {
             INSTANCE.Lru.ForEach(INSTANCE.ReturnOctreesToPool);
         }
-        INSTANCE.batchOctreesToUnload.ForEach(batch => batch.Value.Clear());
+        lock (INSTANCE.batchOctreesToUnload) {
+            INSTANCE.batchOctreesToUnload.ForEach(batch => batch.Value.Clear());
+        }
         INSTANCE.BatchStreamer.Stop();
         INSTANCE = null;
     }
