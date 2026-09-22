@@ -139,7 +139,7 @@ internal sealed class OctreeStreamer {
         foreach (Int3 batchId in operation.batchIdsNeeded!) {
             BatchOctrees batch;
             lock (batchOctreesToUnload) {
-                if (BatchInUse(batchId)) return;
+                if (BatchInUse(batchId)) continue;
                 if (!batchOctreesToUnload.TryGetValue(batchId, out batch)) continue;
                 batchOctreesToUnload.Remove(batchId);
             }
