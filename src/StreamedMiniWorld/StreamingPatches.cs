@@ -25,7 +25,7 @@ internal static class StreamingPatches {
                 miniWorldStreamingOriginOffset, __instance, chunkId, chunk
             );
 
-            if (!__instance.updatePosition) UpdateDesiredRadius(__instance);
+            if (!__instance.updatePosition) UpdateFadeState(__instance, forceUpdate: true);
         }
     }
 
@@ -40,15 +40,14 @@ internal static class StreamingPatches {
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.ClearUnusedChunks))]
     private static class UpdateFadingOnChunkRemoval {
         private static void Postfix(MiniWorld __instance) {
-            if (!__instance.updatePosition) UpdateDesiredRadius(__instance);
+            if (!__instance.updatePosition) UpdateFadeState(__instance, forceUpdate: true);
         }
     }
 
     [HarmonyPatch(typeof(MiniWorld), nameof(MiniWorld.Update))]
     private static class CheckIfFadingNeedsToUpdate {
         private static void Postfix(MiniWorld __instance) {
-            if (!MINI_WORLD_FADE_STATES.TryGetValue(__instance, out FadeState state)) return;
-
+            FadeState state = UpdateFadeState(__instance);
             if (__instance.updatePosition || !state.DoneFading) {
                 LerpFading(__instance, state);
             }
@@ -60,21 +59,28 @@ internal static class StreamingPatches {
 
     private sealed class FadeState {
         internal bool DoneFading;
+        internal int LastMapMaxRadius;
         internal float CurrentWorldRadius;
         internal float MaxWorldRadius;
     }
 
-    private static void UpdateDesiredRadius(MiniWorld miniWorld) {
+    private static FadeState UpdateFadeState(MiniWorld miniWorld, bool forceUpdate = false) {
         if (!MINI_WORLD_FADE_STATES.TryGetValue(miniWorld, out FadeState state)) {
             state = new FadeState();
             MINI_WORLD_FADE_STATES.Add(miniWorld, state);
         }
 
         MapRoomFunctionality? scannerRoom = ScannerRoomPatches.GetScannerRoom(miniWorld);
-
         int mapMaxRadius = scannerRoom != null
             ? (int)scannerRoom.scanRange
             : miniWorld.mapWorldRadius;
+
+        if (state.LastMapMaxRadius != mapMaxRadius) {
+            state.LastMapMaxRadius = mapMaxRadius;
+            forceUpdate = true;
+        }
+
+        if (!forceUpdate) return state;
 
         Transform origin = LargeWorldStreamer.main.land.transform;
         Vector3 chunkSpaceCenter = origin.InverseTransformPoint(miniWorld.transform.position);
@@ -92,6 +98,7 @@ internal static class StreamingPatches {
         ) state.CurrentWorldRadius = state.MaxWorldRadius;
 
         state.DoneFading = false;
+        return state;
     }
 
     private static void LerpFading(MiniWorld miniWorld, FadeState state) {
@@ -200,7 +207,7 @@ internal static class StreamingPatches {
                     miniWorldStreamingOriginOffset, __instance, keyValuePair.Key, chunk
                 );
             }
-            UpdateDesiredRadius(__instance);
+            UpdateFadeState(__instance, forceUpdate: true);
             return false;
         }
     }
