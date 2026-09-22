@@ -41,7 +41,7 @@ internal sealed class OctreeStreamer {
         BatchStreamer.batches.Clear();
     }
 
-    // called from streaming thread
+    // called from meshing thread
     [HarmonyPatch(typeof(BatchOctreesStreamer), nameof(BatchOctreesStreamer.GetBatch))]
     private static class OverrideGetBatch {
         private static bool Prefix(

@@ -82,7 +82,8 @@ internal static class MeshBuilding {
 /// the regular world streamer is doing work, though, since these threads are separate they
 /// do not block operations that require the world to be "settled"</summary>
 /// <remarks>The same MeshBuilders are shared with the world streamer to save memory. Given
-/// these are not checked to see if the world is "settled" this is safe</remarks>
+/// these are not checked to see if the world is "settled", this is safe for not blocking saves
+/// and teleports</remarks>
 internal sealed class MeshStreamer {
     internal static MeshStreamer? INSTANCE { get; private set; }
     private const int THREAD_INITIAL_CAPACITY = 128;
