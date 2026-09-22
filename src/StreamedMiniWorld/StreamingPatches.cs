@@ -166,6 +166,7 @@ internal static class StreamingPatches {
                     if ((startedLoadingPos - miniWorld.transform.position).sqrMagnitude > 50) {
                         continue;
                     }
+                    if (!miniWorld.gameObject.activeInHierarchy) break;
 
                     if (miniWorld.GetChunkExists(chunkId)) continue;
                     AsyncOperationHandle<Mesh> request =
