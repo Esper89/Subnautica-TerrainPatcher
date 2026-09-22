@@ -114,9 +114,13 @@ internal sealed class MeshStreamer {
             () => WorldStreamer.CalculateNumPerFrame(THREAD_INITIAL_CAPACITY, false)));
     }
 
-    private void DestroyMeshStreamer() {
-        foreach (MeshBuilder item in sharedBuilderPool) item.Dispose();
-        buildLayersThread.Stop();
+    private static void DestroyMeshStreamer() {
+        if (INSTANCE == null) {
+            throw new InvalidOperationException("Cannot destroy nonexistant mesh streamer");
+        }
+        INSTANCE.buildLayersThread.Stop();
+        INSTANCE.meshingThreads.Stop();
+        INSTANCE = null;
     }
     
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]
@@ -126,7 +130,7 @@ internal sealed class MeshStreamer {
     
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.DestroyStreamers))]
     private static class DestroyStreamerEvent {
-        private static void Postfix() => INSTANCE?.DestroyMeshStreamer();
+        private static void Postfix() => DestroyMeshStreamer();
     }
 }
 
