@@ -33,7 +33,7 @@ internal sealed class OctreeStreamer {
         BatchStreamer = new BatchOctreesStreamer(
             null,
             TerrainExtender.EXTENDED_BATCH_BOUNDS,
-            minLod: 0, maxLod: 3,
+            minLod: 0, maxLod: 0, //The maxLOD is ignored for our use case
             ws.batchSize, ws.settings.numOctreesPerBatch,
             Path.Combine(ws.settings.worldPath, "CompiledOctreesCache"),
             OCTREE_SETTINGS
