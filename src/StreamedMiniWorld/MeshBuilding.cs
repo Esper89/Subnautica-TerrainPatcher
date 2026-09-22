@@ -33,7 +33,7 @@ internal static class MeshBuilding {
         // redundant, does nothing for our use case of the mesh builder but must supply a number
         const int LEVEL_ID = 0;
 
-        BatchOctreesStreamer octreesStreamer = OctreeStreamer.INSTANCE!.BatchStreamer;
+        BatchOctreesStreamer octreesStreamer = operation.octreeStreamer.BatchStreamer;
         MeshBuilder meshBuilder = streamer.sharedBuilderPool.Get();
         meshBuilder.Reset(
             LEVEL_ID, operation.cellId, CELL_SIZE, LEVEL_SETTINGS, streamer.blockTypes
@@ -56,7 +56,7 @@ internal static class MeshBuilding {
         Mesh mesh = GetMeshOut(meshBuilder);
         operation.meshStreamer.sharedBuilderPool.Return(meshBuilder);
         operation.Complete(mesh, true, null);
-        OctreeStreamer.INSTANCE!.CleanupHangingBatches(operation);
+        operation.octreeStreamer.CleanupHangingBatches(operation);
     }
 
     private static Mesh GetMeshOut(MeshBuilder meshBuilder) {
@@ -86,6 +86,14 @@ internal static class MeshBuilding {
 /// and teleports</remarks>
 internal sealed class MeshStreamer {
     internal static MeshStreamer? INSTANCE { get; private set; }
+    
+    private static void CreateMeshStreamer(WorldStreamer worldStreamer) {
+        if (INSTANCE != null) {
+            throw new InvalidOperationException("MiniWorld-MeshStreamer already initialized");
+        }
+        INSTANCE = new MeshStreamer(worldStreamer);
+    }
+    
     private const int THREAD_INITIAL_CAPACITY = 128;
     private const int THREAD_COUNT = 3;
     
@@ -111,11 +119,9 @@ internal sealed class MeshStreamer {
         buildLayersThread.Stop();
     }
     
-    [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.Start),
-        typeof(VoxelandBlockType[]), typeof(WorldStreamer.Settings))]
+    [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]
     private static class CreateStreamerEvent {
-        private static void Postfix(WorldStreamer __instance)
-            => INSTANCE = new MeshStreamer(__instance);
+        private static void Postfix(WorldStreamer __instance) => CreateMeshStreamer(__instance);
     }
     
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.DestroyStreamers))]
@@ -130,12 +136,14 @@ internal sealed class BuildMeshOperation : AsyncOperationBase<Mesh> {
     internal readonly Guid guid;
     internal readonly Int3 cellId;
     internal readonly MeshStreamer meshStreamer;
+    internal readonly OctreeStreamer octreeStreamer;
     internal HashSet<Int3>? batchIdsNeeded;
 
     private BuildMeshOperation(Int3 cellId) {
         this.cellId = cellId;
         guid = Guid.NewGuid();
         meshStreamer = MeshStreamer.INSTANCE!;
+        octreeStreamer = OctreeStreamer.INSTANCE!;
     }
 
     internal static AsyncOperationHandle<Mesh> Start(Int3 cellId) {
@@ -144,7 +152,7 @@ internal sealed class BuildMeshOperation : AsyncOperationBase<Mesh> {
     }
 
     protected override void Execute() {
-        OctreeStreamer.INSTANCE!.EnsureStreamerHasBatchesLoadedForCell(this);
+        octreeStreamer.EnsureStreamerHasBatchesLoadedForCell(this);
     }
 
     protected override void Destroy() {

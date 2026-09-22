@@ -7,14 +7,16 @@ namespace TerrainPatcher.StreamedMiniWorld;
 internal sealed class OctreeStreamer {
     internal static OctreeStreamer? INSTANCE { get; private set; }
 
-    private static void CreateOctreeStreamer(
-        WorldStreamer worldStreamer, LargeWorldStreamer.Settings settings
-    ) {
+    private static void CreateOctreeStreamer(WorldStreamer worldStreamer) {
         if (INSTANCE != null) {
             throw new InvalidOperationException("Octree streamer already initialized");
         }
-        INSTANCE = new OctreeStreamer(worldStreamer, settings);
+        INSTANCE = new OctreeStreamer(worldStreamer);
     }
+
+    // We need to pass settings to create a BatchOctreesStreamer,
+    // but the values are not used for our use
+    private static readonly BatchOctreesStreamer.Settings OCTREE_SETTINGS = new();
 
     public BatchOctreesStreamer BatchStreamer { get; }
     private static readonly FakeArrayPool ALLOCATOR = new();
@@ -27,14 +29,14 @@ internal sealed class OctreeStreamer {
     private readonly Dictionary<Int3, BatchOctrees> batchOctreesToUnload = new();
     private readonly Dictionary<Guid, BuildMeshOperation> activeBuildRequests = new();
 
-    private OctreeStreamer(WorldStreamer ws, LargeWorldStreamer.Settings settings) {
+    private OctreeStreamer(WorldStreamer ws) {
         BatchStreamer = new BatchOctreesStreamer(
-            ws.streamingThread,
+            null,
             TerrainExtender.EXTENDED_BATCH_BOUNDS,
             minLod: 0, maxLod: 3,
             ws.batchSize, ws.settings.numOctreesPerBatch,
             Path.Combine(ws.settings.worldPath, "CompiledOctreesCache"),
-            settings.octreesSettings
+            OCTREE_SETTINGS
         );
         Lru = new(CACHE_CAPACITY, ReturnOctreesToPool);
         // this array3 in the base class just wastes memory if not cleared
@@ -46,8 +48,7 @@ internal sealed class OctreeStreamer {
     private static class OverrideGetBatch {
         private static bool Prefix(
             BatchOctreesStreamer __instance, Int3 id, ref BatchOctrees? __result
-        )
-        {
+        ) {
             if (INSTANCE == null || __instance != INSTANCE.BatchStreamer) return true;
 
             lock (INSTANCE.Lru)
@@ -83,22 +84,12 @@ internal sealed class OctreeStreamer {
             streamer.activeBuildRequests.Add(operation.guid, operation);
         }
         
-
         foreach (Int3 batchId in operation.batchIdsNeeded) {
             BatchOctrees? batch;
             lock (streamer.Lru) { streamer.Lru.TryGet(batchId, out batch); }
             if (batch == null) streamer.LoadBatch(batchId);
         }
-        BatchOctreesStreamer batchStreamer = streamer.BatchStreamer;
-        batchStreamer.streamingThread.Enqueue(END_ENSURE_BATCHES_LOADED_DELEGATE, operation, null);
-    }
-
-    // on streaming thread
-    private static readonly UWE.Task.Function
-        END_ENSURE_BATCHES_LOADED_DELEGATE = EndEnsureBatchesLoaded;
-
-    private static void EndEnsureBatchesLoaded(object owner, object state) {
-        var operation = (BuildMeshOperation)owner;
+        
         operation.meshStreamer.meshingThreads.Enqueue(
             MeshBuilding.BEGIN_BUILD_MINI_WORLD_MESH_DELEGATE, operation, null
         );
@@ -173,26 +164,12 @@ internal sealed class OctreeStreamer {
         INSTANCE.BatchStreamer.Stop();
         INSTANCE = null;
     }
-
-    [ThreadStatic] private static WorldStreamer? WORLD_INSTANCE;
-
+    
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]
     private static class StoreWorldStreamerInstanceForCreateEvent {
-        private static void Prefix(WorldStreamer __instance)
-            => WORLD_INSTANCE = __instance;
-
-        private static void Finalizer() => WORLD_INSTANCE = null;
+        private static void Prefix(WorldStreamer __instance) => CreateOctreeStreamer(__instance);
     }
-
-    [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.ParseStreamingSettings))]
-    private static class CreateOctreeStreamerEvent {
-        private static void Postfix(LargeWorldStreamer.Settings __result) {
-            if (WORLD_INSTANCE != null) {
-                CreateOctreeStreamer(WORLD_INSTANCE, __result);
-            }
-        }
-    }
-
+    
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.DestroyStreamers))]
     private static class DestroyStreamerEvent {
         private static void Postfix() => DestroyOctreeStreamer();
