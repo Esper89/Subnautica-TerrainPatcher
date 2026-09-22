@@ -99,7 +99,7 @@ internal sealed class OctreeStreamer {
 
     private static void EndEnsureBatchesLoaded(object owner, object state) {
         var operation = (BuildMeshOperation)owner;
-        operation.clipMapStreamer.meshingThreads.Enqueue(
+        operation.meshStreamer.meshingThreads.Enqueue(
             MeshBuilding.BEGIN_BUILD_MINI_WORLD_MESH_DELEGATE, operation, null
         );
     }

@@ -1,3 +1,4 @@
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -27,33 +28,19 @@ internal static class MeshBuilding {
 
     private static void BeginBuildMiniWorldMesh(object owner, object state) {
         var operation = (BuildMeshOperation)owner;
-        ClipmapStreamer streamer = operation.clipMapStreamer;
+        MeshStreamer streamer = operation.meshStreamer;
 
         // redundant, does nothing for our use case of the mesh builder but must supply a number
         const int LEVEL_ID = 0;
 
         BatchOctreesStreamer octreesStreamer = OctreeStreamer.INSTANCE!.BatchStreamer;
-        MeshBuilder meshBuilder = streamer.meshBuilderPool.Get();
+        MeshBuilder meshBuilder = streamer.sharedBuilderPool.Get();
         meshBuilder.Reset(
-            LEVEL_ID, operation.cellId, CELL_SIZE, LEVEL_SETTINGS, streamer.host.blockTypes
+            LEVEL_ID, operation.cellId, CELL_SIZE, LEVEL_SETTINGS, streamer.blockTypes
         );
-        meshBuilder.DoThreadablePart(octreesStreamer, streamer.settings.collision);
+        meshBuilder.DoThreadablePart(octreesStreamer, null);
 
-        streamer.streamingThread.Enqueue(
-            END_BUILD_MINI_WORLD_MESH_DELEGATE, operation, meshBuilder
-        );
-    }
-
-    // on streaming thread
-    private static readonly UWE.Task.Function
-        END_BUILD_MINI_WORLD_MESH_DELEGATE = EndBuildMiniWorldMesh;
-
-    private static void EndBuildMiniWorldMesh(object owner, object state) {
-        var operation = (BuildMeshOperation)owner;
-        ClipmapStreamer streamer = operation.clipMapStreamer;
-        var meshBuilder = (MeshBuilder)state;
-
-        streamer.buildLayersThread.Enqueue(
+        operation.meshStreamer.buildLayersThread.Enqueue(
             BEGIN_BUILD_MINI_WORLD_LAYERS_DELEGATE, operation, meshBuilder
         );
     }
@@ -67,7 +54,7 @@ internal static class MeshBuilding {
         var meshBuilder = (MeshBuilder)state;
 
         Mesh mesh = GetMeshOut(meshBuilder);
-        operation.clipMapStreamer.meshBuilderPool.Return(meshBuilder);
+        operation.meshStreamer.sharedBuilderPool.Return(meshBuilder);
         operation.Complete(mesh, true, null);
         OctreeStreamer.INSTANCE!.CleanupHangingBatches(operation);
     }
@@ -91,18 +78,63 @@ internal static class MeshBuilding {
     }
 }
 
+/// <summary>Creates separate threads for MiniWorld mesh building. The game cannot save while
+/// the regular world streamer is doing work, though, since these threads are separate they
+/// do not block operations that require the world to be "settled"</summary>
+/// <remarks>The same MeshBuilders are shared with the world streamer to save memory. Given
+/// these are not checked to see if the world is "settled" this is safe</remarks>
+internal sealed class MeshStreamer {
+    internal static MeshStreamer? INSTANCE { get; private set; }
+    private const int THREAD_INITIAL_CAPACITY = 128;
+    private const int THREAD_COUNT = 3;
+    
+    internal readonly VoxelandBlockType[] blockTypes;
+    internal readonly BoundedObjectPool<MeshBuilder> sharedBuilderPool;
+    internal readonly UWE.ThreadPool meshingThreads;
+    internal readonly UnityThread buildLayersThread;
+
+    private MeshStreamer(WorldStreamer host) {
+        blockTypes = host.blockTypes;
+        sharedBuilderPool = host.clipmapStreamer.meshBuilderPool;
+        
+        meshingThreads = new UWE.ThreadPool("MeshingThreadsMiniWorld", THREAD_COUNT, 
+            System.Threading.ThreadPriority.BelowNormal, -2, THREAD_INITIAL_CAPACITY);
+        
+        buildLayersThread = new UnityThread("BuildLayersMiniWorld", THREAD_INITIAL_CAPACITY);
+        host.StartCoroutine(WorldStreamer.PumpUnityThread(buildLayersThread,
+            () => WorldStreamer.CalculateNumPerFrame(THREAD_INITIAL_CAPACITY, false)));
+    }
+
+    private void DestroyMeshStreamer() {
+        foreach (MeshBuilder item in sharedBuilderPool) item.Dispose();
+        buildLayersThread.Stop();
+    }
+    
+    [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.Start),
+        typeof(VoxelandBlockType[]), typeof(WorldStreamer.Settings))]
+    private static class CreateStreamerEvent {
+        private static void Postfix(WorldStreamer __instance)
+            => INSTANCE = new MeshStreamer(__instance);
+    }
+    
+    [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.DestroyStreamers))]
+    private static class DestroyStreamerEvent {
+        private static void Postfix() => INSTANCE?.DestroyMeshStreamer();
+    }
+}
+
 /// <summary>We use an `AsyncOperationBase` to mimic the `MiniWorld`'s requests to addressable
-/// loading. Also conveniently gives an event when the mesh is no longer needed.</summary>
+/// loading. Also, conveniently gives an event when the mesh is no longer needed.</summary>
 internal sealed class BuildMeshOperation : AsyncOperationBase<Mesh> {
     internal readonly Guid guid;
     internal readonly Int3 cellId;
-    internal readonly ClipmapStreamer clipMapStreamer;
+    internal readonly MeshStreamer meshStreamer;
     internal HashSet<Int3>? batchIdsNeeded;
 
     private BuildMeshOperation(Int3 cellId) {
         this.cellId = cellId;
         guid = Guid.NewGuid();
-        clipMapStreamer = LargeWorldStreamer.main.streamerV2.clipmapStreamer;
+        meshStreamer = MeshStreamer.INSTANCE!;
     }
 
     internal static AsyncOperationHandle<Mesh> Start(Int3 cellId) {
