@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v1.3.0 (2026-09-23)
 
 - Terrain patches are now reflected in the seaglide and scanner room hologram maps.
 - Visuals for the seaglide and scanner room maps have been modified slightly to support this.

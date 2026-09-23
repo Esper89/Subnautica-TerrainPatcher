@@ -9,7 +9,7 @@ using UnityEngine.Bindings;
 
 namespace TerrainPatcher;
 
-[BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.2.5")]
+[BepInPlugin("Esper89.TerrainPatcher", "Terrain Patcher", "1.3.0")]
 [BepInDependency("com.snmodding.nautilus", BepInDependency.DependencyFlags.SoftDependency)]
 [BepInProcess("Subnautica.exe")]
 [BepInProcess("SubnauticaZero.exe")]
