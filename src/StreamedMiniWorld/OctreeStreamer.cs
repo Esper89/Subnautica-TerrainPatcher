@@ -111,7 +111,8 @@ internal sealed class OctreeStreamer {
     private void ReturnOctreesToPool(BatchOctrees batchOctrees) {
         lock (batchOctreesToUnload) {
             lock (activeBuildRequests) {
-                if (BatchInUse(batchOctrees.id, activeBuildRequests) && 
+                if (
+                    BatchInUse(activeBuildRequests, batchOctrees.id) &&
                     !batchOctreesToUnload.ContainsKey(batchOctrees.id)
                 ) {
                     batchOctreesToUnload.Add(batchOctrees.id, batchOctrees);
@@ -131,7 +132,7 @@ internal sealed class OctreeStreamer {
             BatchOctrees batch;
             lock (batchOctreesToUnload) {
                 lock (activeBuildRequests) {
-                    if (BatchInUse(batchId, activeBuildRequests)) continue;
+                    if (BatchInUse(activeBuildRequests, batchId)) continue;
                     if (!batchOctreesToUnload.TryGetValue(batchId, out batch)) continue;
                     batchOctreesToUnload.Remove(batchId);
                 }
@@ -141,12 +142,12 @@ internal sealed class OctreeStreamer {
             batchPool.Add(batch);
         }
     }
-    
+
     private static bool BatchInUse(
-        Int3 id, Dictionary<Guid, BuildMeshOperation> activeBuildRequests
+        Dictionary<Guid, BuildMeshOperation> activeBuildRequests, Int3 batchId
     ) {
         foreach (BuildMeshOperation operation in activeBuildRequests.Values) {
-            if (!operation.batchIdsNeeded!.Contains(id)) continue;
+            if (!operation.batchIdsNeeded!.Contains(batchId)) continue;
             return true;
         }
         return false;

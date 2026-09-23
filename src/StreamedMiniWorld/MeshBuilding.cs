@@ -138,15 +138,15 @@ internal sealed class MeshStreamer {
     private static class DestroyStreamerEvent {
         private static void Postfix() => DestroyMeshStreamer();
     }
-    
-    /// <summary>The <c>MiniWorld</c>'s <c>MeshStreamer</c> uses an empty block type list but
-    /// this function reads block type values which causes errors. The gloss value is unused
-    /// with only 1 layer</summary>
-    [HarmonyPatch(typeof(VoxelandChunk.VoxelandVert), 
-        nameof(VoxelandChunk.VoxelandVert.CacheGloss))] 
-    private static class RemoveStupidSHit___ {
-        private static bool Prefix(VoxelandBlockType[] types) 
-            => types != INSTANCE!.blockTypes;
+
+    /// <summary>The <c>MiniWorld</c>'s <c>MeshStreamer</c> uses an empty block type list, which
+    /// would cause errors in this method. The gloss value is not used when there is only one
+    /// layer.</summary>
+    [HarmonyPatch(
+        typeof(VoxelandChunk.VoxelandVert), nameof(VoxelandChunk.VoxelandVert.CacheGloss)
+    )]
+    private static class SkipBlockTypeUses {
+        private static bool Prefix(VoxelandBlockType[] types) => types != INSTANCE!.blockTypes;
     }
 }
 
