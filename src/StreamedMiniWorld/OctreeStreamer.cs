@@ -14,26 +14,25 @@ internal sealed class OctreeStreamer {
         INSTANCE = new OctreeStreamer(worldStreamer);
     }
 
-    // We need to pass settings to create a BatchOctreesStreamer,
-    // but the values are not used for our use
+    // we need to pass settings to create a `BatchOctreesStreamer`, but the values are not used
     private static readonly BatchOctreesStreamer.Settings OCTREE_SETTINGS = new();
 
-    public BatchOctreesStreamer BatchStreamer { get; }
+    internal BatchOctreesStreamer BatchStreamer { get; }
     private static readonly FakeArrayPool ALLOCATOR = new();
 
     private const int CACHE_CAPACITY = 128;
     private readonly LruCache<Int3, BatchOctrees> Lru;
     private readonly BlockingCollection<BatchOctrees> batchPool = new();
 
-    //lock in this order: lock(batchOctreesToUnload) { lock(activeBuildRequests) {...} }
+    // INVARIANT: `batchOctreesToUnload` must not be locked after locking `activeBuildRequests`.
     private readonly Dictionary<Int3, BatchOctrees> batchOctreesToUnload = new();
     private readonly Dictionary<Guid, BuildMeshOperation> activeBuildRequests = new();
 
     private OctreeStreamer(WorldStreamer ws) {
         BatchStreamer = new BatchOctreesStreamer(
-            null,
-            TerrainExtender.EXTENDED_BATCH_BOUNDS,
-            minLod: 0, maxLod: 0, //The maxLOD is ignored for our use case
+            streamingThread: null,
+            octreeBounds: TerrainExtender.EXTENDED_BATCH_BOUNDS * ws.settings.numOctreesPerBatch,
+            minLod: 0, maxLod: 0, // the `maxLod` is ignored for our use case
             ws.batchSize, ws.settings.numOctreesPerBatch,
             Path.Combine(ws.settings.worldPath, "CompiledOctreesCache"),
             OCTREE_SETTINGS
@@ -51,14 +50,13 @@ internal sealed class OctreeStreamer {
         ) {
             if (INSTANCE == null || __instance != INSTANCE.BatchStreamer) return true;
 
-            lock (INSTANCE.Lru)
-            {
+            lock (INSTANCE.Lru) {
                 if (INSTANCE.Lru.TryGet(id, out __result)) return false;
             }
 
-            // this is a fallback, normally the preload should cover this but in the case of
-            // multiple maps building, the cache may be full and this is required
             lock (INSTANCE.batchOctreesToUnload) {
+                // this is a fallback, normally the preload should cover this but in the case of
+                // multiple maps building, the cache may be full and this is required
                 INSTANCE.batchOctreesToUnload.TryGetValue(id, out __result);
             }
             return false;
@@ -79,17 +77,16 @@ internal sealed class OctreeStreamer {
         operation.batchIdsNeeded = CellUtils.BatchesToLoadForGivenCell(
             operation.cellId, MeshBuilding.CELL_SIZE, MeshBuilding.LEVEL_SETTINGS
         );
-        lock (streamer.activeBuildRequests)
-        {
+        lock (streamer.activeBuildRequests) {
             streamer.activeBuildRequests.Add(operation.guid, operation);
         }
-        
+
         foreach (Int3 batchId in operation.batchIdsNeeded) {
             BatchOctrees? batch;
             lock (streamer.Lru) { streamer.Lru.TryGet(batchId, out batch); }
             if (batch == null) streamer.LoadBatch(batchId);
         }
-        
+
         operation.meshStreamer.meshingThreads.Enqueue(
             MeshBuilding.BEGIN_BUILD_MINI_WORLD_MESH_DELEGATE, operation, null
         );
@@ -118,14 +115,14 @@ internal sealed class OctreeStreamer {
                 return;
             }
         }
-        
+
         batchOctrees.ClearOctrees();
         batchOctrees.state = BatchOctrees.State.Unloaded;
         batchPool.Add(batchOctrees);
     }
 
     internal void CleanupHangingBatches(BuildMeshOperation operation) {
-        lock(activeBuildRequests) activeBuildRequests.Remove(operation.guid);
+        lock (activeBuildRequests) activeBuildRequests.Remove(operation.guid);
 
         foreach (Int3 batchId in operation.batchIdsNeeded!) {
             BatchOctrees batch;
@@ -134,7 +131,7 @@ internal sealed class OctreeStreamer {
                 if (!batchOctreesToUnload.TryGetValue(batchId, out batch)) continue;
                 batchOctreesToUnload.Remove(batchId);
             }
-            
+
             batch.ClearOctrees();
             batch.state = BatchOctrees.State.Unloaded;
             batchPool.Add(batch);
@@ -164,12 +161,12 @@ internal sealed class OctreeStreamer {
         INSTANCE.BatchStreamer.Stop();
         INSTANCE = null;
     }
-    
+
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]
     private static class StoreWorldStreamerInstanceForCreateEvent {
         private static void Prefix(WorldStreamer __instance) => CreateOctreeStreamer(__instance);
     }
-    
+
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.DestroyStreamers))]
     private static class DestroyStreamerEvent {
         private static void Postfix() => DestroyOctreeStreamer();

@@ -78,25 +78,24 @@ internal static class MeshBuilding {
     }
 }
 
-/// <summary>Creates separate threads for MiniWorld mesh building. The game cannot save while
-/// the regular world streamer is doing work, though, since these threads are separate they
-/// do not block operations that require the world to be "settled"</summary>
-/// <remarks>The same MeshBuilders are shared with the world streamer to save memory. Given
-/// these are not checked to see if the world is "settled", this is safe for not blocking saves
-/// and teleports</remarks>
+/// <summary>Creates separate threads for miniworld mesh building. The game cannot save while the
+/// regular world streamer is doing work. Separate threads do not block operations that require the
+/// world to be settled.</summary>
+/// <remarks>The <c>MeshBuilder</c>s are shared with the world streamer to save memory. These are
+/// not checked to determine if the world is settled.</remarks>
 internal sealed class MeshStreamer {
     internal static MeshStreamer? INSTANCE { get; private set; }
-    
+
     private static void CreateMeshStreamer(WorldStreamer worldStreamer) {
         if (INSTANCE != null) {
-            throw new InvalidOperationException("MiniWorld-MeshStreamer already initialized");
+            throw new InvalidOperationException("Miniworld mesh streamer already initialized");
         }
         INSTANCE = new MeshStreamer(worldStreamer);
     }
-    
+
     private const int THREAD_INITIAL_CAPACITY = 128;
     private const int THREAD_COUNT = 3;
-    
+
     internal readonly VoxelandBlockType[] blockTypes;
     internal readonly BoundedObjectPool<MeshBuilder> sharedBuilderPool;
     internal readonly UWE.ThreadPool meshingThreads;
@@ -105,13 +104,20 @@ internal sealed class MeshStreamer {
     private MeshStreamer(WorldStreamer host) {
         blockTypes = host.blockTypes;
         sharedBuilderPool = host.clipmapStreamer.meshBuilderPool;
-        
-        meshingThreads = new UWE.ThreadPool("MeshingThreadsMiniWorld", THREAD_COUNT, 
-            System.Threading.ThreadPriority.BelowNormal, -2, THREAD_INITIAL_CAPACITY);
-        
+
+        meshingThreads = new UWE.ThreadPool(
+            name: "MeshingThreadsMiniWorld",
+            numWorkers: THREAD_COUNT,
+            System.Threading.ThreadPriority.BelowNormal,
+            coreAffinityMask: -2,
+            THREAD_INITIAL_CAPACITY
+        );
+
         buildLayersThread = new UnityThread("BuildLayersMiniWorld", THREAD_INITIAL_CAPACITY);
-        host.StartCoroutine(WorldStreamer.PumpUnityThread(buildLayersThread,
-            () => WorldStreamer.CalculateNumPerFrame(THREAD_INITIAL_CAPACITY, false)));
+        host.StartCoroutine(WorldStreamer.PumpUnityThread(
+            thread: buildLayersThread,
+            numPerFrame: () => WorldStreamer.CalculateNumPerFrame(THREAD_INITIAL_CAPACITY, false)
+        ));
     }
 
     private static void DestroyMeshStreamer() {
@@ -122,20 +128,21 @@ internal sealed class MeshStreamer {
         INSTANCE.meshingThreads.Stop();
         INSTANCE = null;
     }
-    
+
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.CreateStreamers))]
     private static class CreateStreamerEvent {
         private static void Postfix(WorldStreamer __instance) => CreateMeshStreamer(__instance);
     }
-    
+
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.DestroyStreamers))]
     private static class DestroyStreamerEvent {
         private static void Postfix() => DestroyMeshStreamer();
     }
 }
 
-/// <summary>We use an `AsyncOperationBase` to mimic the `MiniWorld`'s requests to addressable
-/// loading. Also, conveniently gives an event when the mesh is no longer needed.</summary>
+/// <summary>We use an <c>AsyncOperationBase</c> to mimic the <c>MiniWorld</c>'s requests to
+/// addressable loading. Also, conveniently gives an event when the mesh is no longer
+/// needed.</summary>
 internal sealed class BuildMeshOperation : AsyncOperationBase<Mesh> {
     internal readonly Guid guid;
     internal readonly Int3 cellId;

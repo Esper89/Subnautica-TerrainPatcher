@@ -10,7 +10,7 @@ internal static class FixMissingBatches {
     private static readonly HashSet<Int3> MISSING_BATCHES;
 
     /// <summary>Replace the random missing/empty batches throughout the world with solid terrain,
-    /// on the MiniWorld map only. This should prevent the player from seeing random cubes on the
+    /// on the miniworld map only. This should prevent the player from seeing random cubes on the
     /// map that shouldn't be there.</summary>
     [HarmonyPatch(typeof(BatchOctrees), nameof(BatchOctrees.LoadOctrees))]
     private static class ReplaceUglyEmptyBatchesWithSolidForMap {

@@ -120,7 +120,7 @@ internal static class TerrainExtender {
     /// <summary>The vanilla world is 4096 m × 3200 m × 4096 m. This leaves batches along the north
     /// and east edges of the world that are only 3 octrees wide along their Z/X dimensions rather
     /// than the usual 5 octrees wide, which is further compounded at the northeast corner of the
-    /// world. Extending the world bounds causes the game's vanilla `.optoctrees` files to be
+    /// world. Extending the world bounds causes the game's vanilla <c>.optoctrees</c> files to be
     /// improperly read, expecting 125 octrees when there are less, so swapping in the original
     /// bounds when appropriate is necessary.</summary>
     [HarmonyPatch(typeof(BatchOctrees), nameof(BatchOctrees.LoadOctrees))]
