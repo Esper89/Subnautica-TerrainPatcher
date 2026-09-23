@@ -102,7 +102,7 @@ internal sealed class MeshStreamer {
     internal readonly UnityThread buildLayersThread;
 
     private MeshStreamer(WorldStreamer host) {
-        blockTypes = host.blockTypes;
+        blockTypes = [];
         sharedBuilderPool = host.clipmapStreamer.meshBuilderPool;
 
         meshingThreads = new UWE.ThreadPool(
@@ -137,6 +137,16 @@ internal sealed class MeshStreamer {
     [HarmonyPatch(typeof(WorldStreamer), nameof(WorldStreamer.DestroyStreamers))]
     private static class DestroyStreamerEvent {
         private static void Postfix() => DestroyMeshStreamer();
+    }
+    
+    /// <summary>The <c>MiniWorld</c>'s <c>MeshStreamer</c> uses an empty block type list but
+    /// this function reads block type values which causes errors. The gloss value is unused
+    /// with only 1 layer</summary>
+    [HarmonyPatch(typeof(VoxelandChunk.VoxelandVert), 
+        nameof(VoxelandChunk.VoxelandVert.CacheGloss))] 
+    private static class RemoveStupidSHit___ {
+        private static bool Prefix(VoxelandBlockType[] types) 
+            => types != INSTANCE!.blockTypes;
     }
 }
 
