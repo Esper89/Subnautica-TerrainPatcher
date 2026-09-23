@@ -130,13 +130,10 @@ aren't removed when Terrain Patcher is uninstalled.
 ## Features
 
 - Loads terrain patch files.
-
 - Replaces the terrain that loads in-game.
-
-- Replaces the terrain that appears on the in-game seaglide and scanner room maps.
-
+- Replaces the terrain that appears on the in-game seaglide and scanner room hologram maps.
+  - Modifies the visuals slightly to support this.
 - Extends the edges of the world to allow for more terrain and entities.
-
 - Supports both Subnautica and Below Zero.
 
 ### Planned Features
@@ -162,16 +159,13 @@ To build Terrain Patcher in release mode, run `dotnet build -c Release`. This wi
 ### Contributors
 
 - Esper Thomson ([`@Esper89`](https://github.com/Esper89))
-
 - Jbeast ([`@jbeast291`](https://github.com/jbeast291))
-
 - Metious ([`@Metious`](https://github.com/Metious))
-
 - Aerith Butler ([`@jonahnm`](https://github.com/jonahnm))
 
 ## License
 
-Copyright © 2021, 2023–2026 Esper Thomson, Jbeast291
+Copyright © 2021–2026 Esper Thomson, Jbeast291
 
 This program is free software: you can redistribute it and/or modify it under the terms of version
 3 of the GNU Affero General Public License as published by the Free Software Foundation.

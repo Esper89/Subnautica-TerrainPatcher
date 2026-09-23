@@ -26,16 +26,13 @@ Terrain Patcher's source code and documentation can be found in its [GitHub repo
 ## Contributors
 
 - Esper Thomson ([`@Esper89`](https://github.com/Esper89))
-
 - Jbeast ([`@jbeast291`](https://github.com/jbeast291))
-
 - Metious ([`@Metious`](https://github.com/Metious))
-
 - Aerith Butler ([`@jonahnm`](https://github.com/jonahnm))
 
 ## License
 
-Copyright © 2021, 2023–2026 Esper Thomson, Jbeast291
+Copyright © 2021–2026 Esper Thomson, Jbeast291
 
 This program is free software: you can redistribute it and/or modify it under the terms of version
 3 of the GNU Affero General Public License as published by the Free Software Foundation.
