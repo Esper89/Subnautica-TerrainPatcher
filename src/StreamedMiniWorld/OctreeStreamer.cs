@@ -58,8 +58,8 @@ internal sealed class OctreeStreamer {
                 // this is a fallback, normally the preload should cover this but in the case of
                 // multiple maps building, the cache may be full and this is required
                 INSTANCE.batchOctreesToUnload.TryGetValue(id, out __result);
+                return false;
             }
-            return false;
         }
     }
 
@@ -110,12 +110,15 @@ internal sealed class OctreeStreamer {
 
     private void ReturnOctreesToPool(BatchOctrees batchOctrees) {
         lock (batchOctreesToUnload) {
-            if (BatchInUse(batchOctrees.id) && !batchOctreesToUnload.ContainsKey(batchOctrees.id)){
-                batchOctreesToUnload.Add(batchOctrees.id, batchOctrees);
-                return;
+            lock (activeBuildRequests) {
+                if (BatchInUse(batchOctrees.id, activeBuildRequests) && 
+                    !batchOctreesToUnload.ContainsKey(batchOctrees.id)
+                ) {
+                    batchOctreesToUnload.Add(batchOctrees.id, batchOctrees);
+                    return;
+                }
             }
         }
-
         batchOctrees.ClearOctrees();
         batchOctrees.state = BatchOctrees.State.Unloaded;
         batchPool.Add(batchOctrees);
@@ -127,23 +130,24 @@ internal sealed class OctreeStreamer {
         foreach (Int3 batchId in operation.batchIdsNeeded!) {
             BatchOctrees batch;
             lock (batchOctreesToUnload) {
-                if (BatchInUse(batchId)) continue;
-                if (!batchOctreesToUnload.TryGetValue(batchId, out batch)) continue;
-                batchOctreesToUnload.Remove(batchId);
+                lock (activeBuildRequests) {
+                    if (BatchInUse(batchId, activeBuildRequests)) continue;
+                    if (!batchOctreesToUnload.TryGetValue(batchId, out batch)) continue;
+                    batchOctreesToUnload.Remove(batchId);
+                }
             }
-
             batch.ClearOctrees();
             batch.state = BatchOctrees.State.Unloaded;
             batchPool.Add(batch);
         }
     }
-
-    private bool BatchInUse(Int3 id) {
-        lock (activeBuildRequests) {
-            foreach (BuildMeshOperation operation in activeBuildRequests.Values) {
-                if (!operation.batchIdsNeeded!.Contains(id)) continue;
-                return true;
-            }
+    
+    private static bool BatchInUse(
+        Int3 id, Dictionary<Guid, BuildMeshOperation> activeBuildRequests
+    ) {
+        foreach (BuildMeshOperation operation in activeBuildRequests.Values) {
+            if (!operation.batchIdsNeeded!.Contains(id)) continue;
+            return true;
         }
         return false;
     }
