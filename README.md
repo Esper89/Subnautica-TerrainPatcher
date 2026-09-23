@@ -8,10 +8,9 @@ game's terrain with the terrain in those patches.
 
 ## Installation
 
-This mod requires [BepInEx](https://github.com/toebeann/BepInEx.Subnautica).
+This mod requires [BepInEx].
 
-You can download Terrain Patcher from the [releases
-page](https://github.com/Esper89/Subnautica-TerrainPatcher/releases/latest), below the changelog.
+You can download Terrain Patcher from the [releases] page, below the changelog.
 
 To install Terrain Patcher, just extract the zip file and place the `TerrainPatcher` folder into
 your `BepInEx/plugins` folder.
@@ -23,7 +22,11 @@ be loaded.
 You can specify a custom load order for `.optoctreepatch` files by writing the file names (without
 the extensions) into the `load-order.txt` file. If you have multiple terrain patches that conflict
 with each other, changing the load order usually won't fix broken terrain—the terrain patches are
-likely just incompatible.
+likely just incompatible. Mod authors should avoid relying on `load-order.txt` to make their mods
+work.
+
+Terrain Patcher interoperates with [Nautilus] if it's installed, but does not require Nautilus to
+function.
 
 ### Game Version
 
@@ -91,10 +94,15 @@ sealed class Mod : BaseUnityPlugin { /* ... */ }
 Terrain Patcher is licensed under the GNU AGPL, which says that derivative works must also be
 licensed under the GNU AGPL. If your mod directly interacts with Terrain Patcher (e.g. by
 referencing `TerrainPatcher.dll`), it might be considered a derivative work. To avoid any possible
-copyright issues, if your mod isn't licensed under the GNU AGPL, you should avoid referencing
-`TerrainPatcher.dll` or otherwise interacting with Terrain Patcher directly. Terrain patches are
+copyright issues, if your mod isn't licensed under the GNU AGPL, you may want to avoid referencing
+`TerrainPatcher.dll` or otherwise interacting with Terrain Patcher directly. Terrain patches may be
 loaded without referencing Terrain Patcher by distributing them alongside your mod as separate
 `.optoctreepatch` files.
+
+It is not the intent of Terrain Patcher's copyright holders to enforce GPL compliance against other
+free and open-source mods made in good faith by the Subnautica modding community.
+
+This section is not part of Terrain Patcher's license, nor is it legal advice.
 
 ## Patch Format
 
@@ -110,15 +118,14 @@ materials in-game can be found for Subnautica and Below Zero at
 [`material-preview-sn.optoctreepatch`](./examples/material-preview-sn.optoctreepatch) and
 [`material-preview-bz.optoctreepatch`](./examples/material-preview-bz.optoctreepatch).
 
-Patch files can be created using [Abyss Editor](https://github.com/BeneathTheWaves/AbyssEditor) or
-[Reef Editor](https://github.com/eternaight/sn-terrain-edit). Any files conforming to the
+Patch files can be created using [Abyss Editor] or [Reef Editor]. Any files conforming to the
 specification will work. An example Rust script that generates the material preview terrain patches
 is included at [`generate_material_preview.rs`](./examples/generate_material_preview.rs).
 
 Terrain Patcher places patched batches in `CompiledOctreesCache/patches`, using the same naming
 system as the game. These patched batches can be loaded by external tools or other mods, if they
 wish to support terrain patches. Anything using this feature should make it optional, as those files
-aren't removed when Terrain Patcher is disabled or uninstalled.
+aren't removed when Terrain Patcher is uninstalled.
 
 ## Features
 
@@ -126,20 +133,20 @@ aren't removed when Terrain Patcher is disabled or uninstalled.
 
 - Replaces the terrain that loads in-game.
 
-- Supports both Subnautica and Below Zero.
+- Replaces the terrain that appears on the in-game seaglide and scanner room maps.
 
 - Extends the edges of the world to allow for more terrain and entities.
 
+- Supports both Subnautica and Below Zero.
+
 ### Planned Features
 
-- Patching the in-game seaglide and scanner room maps.
+- Custom terrain materials.
 
 ## Contributing
 
 Contributions of any kind—issues, pull requests, feature requests—are all welcome. You can submit
-suggestions and bug reports [as
-issues](https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose), or code
-contributions [as pull requests](https://github.com/Esper89/Subnautica-TerrainPatcher/compare).
+suggestions and bug reports as [issues], or code contributions as [pull requests].
 
 ### Building
 
@@ -156,15 +163,15 @@ To build Terrain Patcher in release mode, run `dotnet build -c Release`. This wi
 
 - Esper Thomson ([`@Esper89`](https://github.com/Esper89))
 
-- Metious ([`@Metious`](https://github.com/Metious))
-
 - Jbeast ([`@jbeast291`](https://github.com/jbeast291))
+
+- Metious ([`@Metious`](https://github.com/Metious))
 
 - Aerith Butler ([`@jonahnm`](https://github.com/jonahnm))
 
 ## License
 
-Copyright © 2021, 2023–2026 Esper Thomson
+Copyright © 2021, 2023–2026 Esper Thomson, Jbeast291
 
 This program is free software: you can redistribute it and/or modify it under the terms of version
 3 of the GNU Affero General Public License as published by the Free Software Foundation.
@@ -181,3 +188,11 @@ Additional permission under GNU AGPL version 3 section 7
 If you modify this Program, or any covered work, by linking or combining it with Subnautica (or a
 modified version of that program), containing parts covered by the terms of its license, the
 licensors of this Program grant you additional permission to convey the resulting work.
+
+[BepInEx]: https://github.com/toebeann/BepInEx.Subnautica
+[releases]: https://github.com/Esper89/Subnautica-TerrainPatcher/releases
+[Nautilus]: https://github.com/SubnauticaModding/Nautilus
+[Abyss Editor]: https://github.com/BeneathTheWaves/AbyssEditor
+[Reef Editor]: https://github.com/eternaight/sn-terrain-edit
+[issues]: https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose
+[pull requests]: https://github.com/Esper89/Subnautica-TerrainPatcher/compare

@@ -21,22 +21,21 @@ usually won't fix broken terrain—the terrain patches are likely just incompati
 
 ## Repository
 
-Terrain Patcher's source code and documentation can be found in its [GitHub
-repository](https://github.com/Esper89/Subnautica-TerrainPatcher).
+Terrain Patcher's source code and documentation can be found in its [GitHub repository][repo].
 
 ## Contributors
 
 - Esper Thomson ([`@Esper89`](https://github.com/Esper89))
 
-- Metious ([`@Metious`](https://github.com/Metious))
-
 - Jbeast ([`@jbeast291`](https://github.com/jbeast291))
+
+- Metious ([`@Metious`](https://github.com/Metious))
 
 - Aerith Butler ([`@jonahnm`](https://github.com/jonahnm))
 
 ## License
 
-Copyright © 2021, 2023–2026 Esper Thomson
+Copyright © 2021, 2023–2026 Esper Thomson, Jbeast291
 
 This program is free software: you can redistribute it and/or modify it under the terms of version
 3 of the GNU Affero General Public License as published by the Free Software Foundation.
@@ -53,3 +52,5 @@ Additional permission under GNU AGPL version 3 section 7
 If you modify this Program, or any covered work, by linking or combining it with Subnautica (or a
 modified version of that program), containing parts covered by the terms of its license, the
 licensors of this Program grant you additional permission to convey the resulting work.
+
+[repo]: https://github.com/Esper89/Subnautica-TerrainPatcher
