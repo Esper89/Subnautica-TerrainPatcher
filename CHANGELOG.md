@@ -1,9 +1,10 @@
 # Changelog
 
-## vUnreleased
+## Unreleased
 
-- Fix incorrect floor division for some uses of negative batches
-  - For example: octree streaming center, debug "Camera Batch", and batch level entities were offset by +1
+- Fixed incorrect handling for some uses of negative batch numbers.
+  - The terrain streaming center, debugging info, and batch object streaming are no longer off by
+    one batch in negative batches.
 
 ## v1.3.0 (2026-09-23)
 
