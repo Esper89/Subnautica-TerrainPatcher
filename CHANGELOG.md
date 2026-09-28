@@ -4,6 +4,7 @@
 
 - Fixed incorrect handling for some uses of negative batch numbers. The terrain streaming center,
   debugging info, and batch object streaming are no longer off by one batch in negative batches.
+- Fixed potential runtime issue with Nautilus integration when Nautilus isn't installed.
 
 ## v1.3.0 (2026-09-23)
 
