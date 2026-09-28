@@ -1,5 +1,6 @@
 ﻿using System.Reflection.Emit;
 using HarmonyLib;
+using UnityEngine;
 using UWE;
 using WorldStreaming;
 
@@ -58,6 +59,18 @@ internal static class TerrainExtender {
         private static bool Prefix(ref bool __result) { __result = true; return false; }
     }
 
+    [HarmonyPatch(typeof(LargeWorldStreamer), nameof(LargeWorldStreamer.GetContainingBatch))]
+    private static class FixNegativeBatchRounding {
+        private static bool Prefix(LargeWorldStreamer __instance, Vector3 wsPos, ref Int3 __result) {
+            if (!__instance.inited) {
+                __result = new Int3((int)short.MinValue - 1);
+            } else {
+                __result = Int3.FloorDiv(__instance.GetBlock(wsPos), __instance.blocksPerBatch);
+            }
+            return false;
+        }
+    }
+    
     /// <summary>Replace truncating division and truncating remainder (which round towards zero)
     /// with floor division and floor remainder (which round towards negative infinity) to fix the
     /// game's handling of entities in negative cells. Truncating division and remainder operations
