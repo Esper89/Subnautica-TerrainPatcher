@@ -1,5 +1,10 @@
 # Changelog
 
+## vUnreleased
+
+- Fix incorrect floor division for some uses of negative batches
+  - For example: octree streaming center, debug "Camera Batch", and batch level entities were offset by +1
+
 ## v1.3.0 (2026-09-23)
 
 - Terrain patches are now reflected in the seaglide and scanner room hologram maps.
