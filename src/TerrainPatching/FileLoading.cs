@@ -12,6 +12,8 @@ internal static class FileLoading {
     private static string[] GetOrderedPatchFiles() {
         string? searchDir = Paths.BepInExRootPath;
         string[] paths = FindPatchFiles(searchDir).ToArray();
+        Array.Sort(paths, StringComparer.Ordinal);
+
         return SortFiles(paths, GetLoadOrder());
     }
 
@@ -31,12 +33,17 @@ internal static class FileLoading {
         List<string> sorted = new();
 
         foreach (string entry in loadOrder) {
+            bool hit = false;
             for (int i = 0; i < names.Length; i++) {
                 if (entry != names[i]) continue;
+
                 sorted.Add(paths[i]);
                 Plugin.LogInfo($"- '{names[i]}' at: {paths[i]}");
                 names[i] = null;
+                hit = true;
             }
+
+            if (!hit) Plugin.LogWarning($"- No patches with name '{entry}' are to be loaded");
         }
 
         for (int i = 0; i < names.Length; i++) {
@@ -51,27 +58,35 @@ internal static class FileLoading {
     private static string[] GetLoadOrder() {
         string path = Path.Combine(Plugin.AssemblyDir, LOAD_ORDER_FILE);
 
+        if (!File.Exists(path)) {
+            Plugin.LogDebug("Did not find load order file");
+            return [];
+        }
+
         HashSet<string> seen = new();
         List<string> loadOrder = new();
 
-        if (File.Exists(path)) {
-            try {
-                Plugin.LogDebug("Found load order file");
+        try {
+            Plugin.LogDebug("Found load order file");
 
-                using FileStream file = File.OpenRead(path);
-                StreamReader reader = new(file);
+            using FileStream file = File.OpenRead(path);
+            StreamReader reader = new(file);
 
-                while (!reader.EndOfStream) {
-                    string? line = reader.ReadLine();
+            while (!reader.EndOfStream) {
+                string? line = reader.ReadLine();
 
-                    if (!string.IsNullOrEmpty(line) && !seen.Contains(line)) {
-                        loadOrder.Add(line);
-                    }
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                if (seen.Contains(line)) {
+                    Plugin.LogWarning($"Load order file contains duplicate entry '{line}'");
+                    continue;
                 }
-            } catch (IOException ex) {
-                Plugin.LogWarning($"Could not open load order file: {ex}");
+
+                seen.Add(line);
+                loadOrder.Add(line);
             }
-        } else Plugin.LogDebug("Did not find load order file");
+        } catch (IOException ex) {
+            Plugin.LogWarning($"Could not open load order file: {ex}");
+        }
 
         return loadOrder.ToArray();
     }
