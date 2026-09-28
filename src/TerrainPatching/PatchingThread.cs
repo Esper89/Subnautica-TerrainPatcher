@@ -1,5 +1,3 @@
-﻿using System.Collections;
-
 namespace TerrainPatcher.TerrainPatching;
 
 internal static class PatchingThread {
@@ -20,20 +18,8 @@ internal static class PatchingThread {
 
     internal static bool IsDone => PATCHING?.IsCompleted ?? false;
 
-    internal static void WaitUntilDone() => PATCHING!.Wait();
+    internal static void BlockUntilDone() => PATCHING!.Wait();
 
     // wait for 1 ms instead of checking if it's done to avoid possible priority inversion
-    private static bool PollDone() => PATCHING?.Wait(1) ?? false;
-
-    internal static void RegisterNautilusWaitScreen() {
-        static IEnumerator EnsurePatchingFinished() {
-            while (!PollDone()) yield return null;
-        }
-
-        Nautilus.Handlers.WaitScreenHandler.RegisterAsyncLoadTask(
-            modName: "Terrain Patcher",
-            loadingFunction: _ => EnsurePatchingFinished(),
-            description: "Patching Terrain"
-        );
-    }
+    internal static bool PollDone() => PATCHING?.Wait(1) ?? false;
 }

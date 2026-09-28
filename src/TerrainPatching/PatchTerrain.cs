@@ -11,7 +11,7 @@ internal static class PatchTerrain {
         Int3 batchId, [NotNullWhen(true)] out string? path
     ) {
         try {
-            PatchingThread.WaitUntilDone();
+            PatchingThread.BlockUntilDone();
         } catch (Exception ex) {
             // may be on a world streaming thread where an uncaught exception will cause havoc
             Plugin.LogError($"Unable to load world: {ex}");

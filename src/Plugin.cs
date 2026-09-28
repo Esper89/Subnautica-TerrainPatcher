@@ -30,7 +30,7 @@ internal sealed class Plugin : BaseUnityPlugin {
         LogDebug("Terrain Patcher initialized");
 
         if (Chainloader.PluginInfos.ContainsKey("com.snmodding.nautilus")) {
-            TerrainPatching.PatchingThread.RegisterNautilusWaitScreen();
+            Integrations.Nautilus.RegisterWaitScreenHandler();
         }
     }
 
