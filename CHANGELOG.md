@@ -2,9 +2,8 @@
 
 ## Unreleased
 
-- Fixed incorrect handling for some uses of negative batch numbers.
-  - The terrain streaming center, debugging info, and batch object streaming are no longer off by
-    one batch in negative batches.
+- Fixed incorrect handling for some uses of negative batch numbers. The terrain streaming center,
+  debugging info, and batch object streaming are no longer off by one batch in negative batches.
 
 ## v1.3.0 (2026-09-23)
 
