@@ -22,7 +22,11 @@ internal static class OptoctreesDirs {
     internal static void ClearPatchesDir() {
         foreach (string? path in Directory.EnumerateFiles(PATCHED_PATH)) {
             if (Path.GetExtension(path) != ".optoctrees") continue;
-            File.Delete(path);
+            try {
+                File.Delete(path);
+            } catch (Exception ex) {
+                Plugin.LogError($"Error clearing patches directory: {ex}");
+            }
         }
     }
 

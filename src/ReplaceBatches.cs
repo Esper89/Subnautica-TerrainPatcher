@@ -23,12 +23,14 @@ internal static class ReplaceBatches {
             Int3 batchId;
             try {
                 var match = BATCH_NAME_PATTERN.Match(Path.GetFileName(filename));
+                if (!match.Success) throw new FormatException();
+
                 batchId = new Int3(
                     int.Parse(match.Groups[1].Value),
                     int.Parse(match.Groups[2].Value),
                     int.Parse(match.Groups[3].Value)
                 );
-            } catch (FormatException) {
+            } catch (Exception ex) when (ex is FormatException or OverflowException) {
                 Plugin.LogWarning($"Game accessed batch file with invalid filename: {filename}");
                 return true;
             }

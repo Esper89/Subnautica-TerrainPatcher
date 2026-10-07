@@ -117,9 +117,16 @@ internal static class FileLoading {
 
     private static bool IsPatchFile(string file) {
         try {
-            uint version = new BinaryReader(File.OpenRead(file)).ReadUInt32();
+            using FileStream stream = File.OpenRead(file);
+            uint version = new BinaryReader(stream).ReadUInt32();
             if (version == uint.MaxValue) return false;
-        } catch (Exception ex) when (ex is IOException or EndOfStreamException) { }
+        } catch (EndOfStreamException) {
+            return true;
+        } catch (Exception ex) {
+            Plugin.LogError($"Unable to determine if file '{file}' is a terrain patch: {ex}");
+            return false;
+        }
+
         return true;
     }
 
@@ -128,18 +135,22 @@ internal static class FileLoading {
         patchFiles.ForEach(LoadPatch);
     }
 
-    private static void LoadPatch(string filepath) {
-        string? patchName = Path.GetFileNameWithoutExtension(filepath);
+    private static void LoadPatch(string filePath) {
+        string? patchName = Path.GetFileNameWithoutExtension(filePath);
 
         FileStream file;
-        try { file = File.OpenRead(filepath); }
-        catch (IOException ex) {
-            Plugin.LogError($"Could not open patch file '{patchName}': {ex.Message}");
+        try {
+            file = File.OpenRead(filePath);
+        } catch (Exception ex) {
+            Plugin.LogError($"Could not open patch file '{patchName}': {ex}");
             Plugin.DisplayError($"Error opening terrain patch '{patchName}'");
             return;
         }
 
-        PatchTerrain.ApplyTerrainPatch(patchName, file, forceOriginal: false);
-        file.Close();
+        try {
+            PatchTerrain.ApplyTerrainPatch(patchName, file, forceOriginal: false);
+        } finally {
+            file.Dispose();
+        }
     }
 }

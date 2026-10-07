@@ -36,13 +36,16 @@ internal sealed class Plugin : BaseUnityPlugin {
 
     private static void ApplyHarmonyPatches() {
         Harmony harmony = new("Esper89.TerrainPatcher");
+        bool error = false;
         foreach (var ty in AccessTools.GetTypesFromAssembly(Assembly.GetExecutingAssembly())) {
             try {
                 harmony.CreateClassProcessor(ty).Patch();
             } catch (Exception ex) {
                 LogError($"Failed to apply Harmony patch {ty.FullName} with: {ex}");
+                error = true;
             }
         }
+        if (error) DisplayError("Terrain patching may not work correctly!");
     }
 
     internal static void LogDebug(string message) => LOGGER?.LogDebug(message);
@@ -76,7 +79,7 @@ internal sealed class Plugin : BaseUnityPlugin {
     )!;
 }
 
-[BepInPlugin("TerrainExtender", "Terrain Extender (Provided by Terrain Patcher)", "2.0.0")]
+[BepInPlugin("TerrainExtender", "Terrain Extender (provided by Terrain Patcher)", "2.0.0")]
 [BepInDependency("Esper89.TerrainPatcher")]
 [BepInProcess("Subnautica.exe")]
 [BepInProcess("SubnauticaZero.exe")]

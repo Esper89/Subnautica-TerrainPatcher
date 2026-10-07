@@ -67,7 +67,7 @@ internal static class FixMissingBatches {
         while (reader.ReadLine() is string line) {
             string[] coords = line.Split([' ']);
             if (coords.Length != 3) throw new InvalidDataException(
-                $"Expected 3 coordinates, got {coords.Length}: {coords}"
+                $"Expected 3 coordinates, got {coords.Length}: [{string.Join(", ", coords)}]"
             );
             Int3 batch = new(int.Parse(coords[0]), int.Parse(coords[1]), int.Parse(coords[2]));
             missingBatches.Add(batch);

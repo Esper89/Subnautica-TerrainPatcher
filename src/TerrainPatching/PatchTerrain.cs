@@ -28,14 +28,16 @@ internal static class PatchTerrain {
 
     private static readonly Dictionary<Int3, PatchedBatch> PATCHED_BATCHES = new();
 
-    private readonly struct PatchedBatch {
+    private struct PatchedBatch {
         internal PatchedBatch(string path) {
             this.path = path;
             octreePatchNames = new List<string>?[OCTREES_PER_BATCH];
+            this.patched = false;
         }
 
         internal readonly string path;
         internal readonly List<string>?[] octreePatchNames;
+        internal bool patched;
     }
 
     internal static void ApplyTerrainPatch(string patchName, Stream patchFile, bool forceOriginal) {
@@ -61,12 +63,7 @@ internal static class PatchTerrain {
             if (
                 ex is IOException &&
                 ex.Message.IndexOf("sharing violation", StringComparison.OrdinalIgnoreCase) >= 0
-            ) {
-                Plugin.LogInfo("Your antivirus may be preventing Terrain Patcher from working");
-                Plugin.DisplayError(
-                    "Your antivirus may be preventing Terrain Patcher from working"
-                );
-            }
+            ) Plugin.LogInfo("Your antivirus may be preventing Terrain Patcher from working");
         }
     }
 
@@ -85,31 +82,17 @@ internal static class PatchTerrain {
             return;
         }
 
-        if (version != 0) throw new InvalidDataException($"unknown patch version {version}");
+        if (version != 0u) throw new InvalidDataException($"unknown patch version {version}");
 
-        while (TryReadBatchId(out Int3 id)) {
-            try {
-                Plugin.LogDebug($"Patching batch [{id.x}, {id.y}, {id.z}] for patch '{patchName}'");
-                ApplyBatchPatch(patchName, reader, id, forceOriginal);
-            } catch (EndOfStreamException ex) {
-                throw new InvalidDataException("patch ends too early", ex);
-            }
+        while (TryReadBatchId() is Int3 id) {
+            Plugin.LogDebug($"Patching batch [{id.x}, {id.y}, {id.z}] for patch '{patchName}'");
+            ApplyBatchPatch(patchName, reader, id, forceOriginal);
         }
 
-        bool TryReadBatchId(out Int3 id) {
-            byte xLeast;
+        Int3? TryReadBatchId() {
             try {
-                xLeast = reader.ReadByte();
-            } catch (EndOfStreamException) {
-                id = default;
-                return false;
-            }
-
-            try {
-                byte xMost = reader.ReadByte();
-                short x = (short)(xMost << 8 | xLeast);
-                id = new Int3(x, reader.ReadInt16(), reader.ReadInt16());
-                return true;
+                if (reader.TryReadInt16() is not short x) return null;
+                return new(x, reader.ReadInt16(), reader.ReadInt16());
             } catch (EndOfStreamException ex) {
                 throw new InvalidDataException("patch ends too early", ex);
             }
@@ -136,14 +119,28 @@ internal static class PatchTerrain {
         string newPath = Path.Combine(OptoctreesDirs.PATCHED_PATH, fileName);
         string origPath = Path.Combine(OptoctreesDirs.ORIG_PATH, fileName);
 
-        if (!CopyBaseGame()) WriteEmpty();
+        if (!CopyVanilla()) WriteEmpty();
 
-        bool CopyBaseGame() {
+        bool CopyVanilla() {
             if (!File.Exists(origPath)) return false;
-            using FileStream origfile = File.OpenRead(origPath);
+            using FileStream origFile = File.OpenRead(origPath);
+            BinaryReader reader = new(origFile);
 
-            BinaryReader reader = new(origfile);
-            if (reader.ReadUInt32() != 4u) return false;
+            if (!VanillaIsValid(reader)) {
+                Plugin.LogError(
+                    $"vanilla batch [{batchId.x}, {batchId.y}, {batchId.z}] is not valid terrain"
+                );
+                return false;
+            }
+
+            bool VanillaIsValid(BinaryReader file) {
+                try {
+                    if (file.ReadUInt32() == 4u) return true;
+                    else return false;
+                } catch (EndOfStreamException) {
+                    return false;
+                }
+            }
 
             File.Copy(origPath, newPath, overwrite: true);
             PATCHED_BATCHES[batchId] = new PatchedBatch(newPath);
@@ -163,23 +160,34 @@ internal static class PatchTerrain {
     }
 
     private static void PatchBatch(string patchName, Int3 batchId, BinaryReader patch) {
-        string path = PATCHED_BATCHES[batchId].path;
+        string targetPath = PATCHED_BATCHES[batchId].path;
 
-        byte[] origBytes = File.ReadAllBytes(path);
+        byte[] origBytes = File.ReadAllBytes(targetPath);
         var original = new BinaryReader(new MemoryStream(buffer: origBytes, writable: false));
         original.ReadUInt32();
 
-        using var targetFile = File.Open(path, FileMode.Create);
+        using var targetFile = File.Open(targetPath, FileMode.Create);
         BinaryWriter target = new(targetFile);
         target.Write(4u);
 
         BitArray patchedOctrees;
-        try { patchedOctrees = PatchOctrees(target, original, patch); }
-        catch (Exception) {
-            targetFile.Seek(0, SeekOrigin.Begin);
-            targetFile.Write(origBytes, 0, origBytes.Length);
+        try {
+            patchedOctrees = PatchOctrees(target, original, patch);
+        } catch (Exception) {
+            if (PATCHED_BATCHES[batchId].patched) {
+                targetFile.Seek(0, SeekOrigin.Begin);
+                targetFile.Write(origBytes, 0, origBytes.Length);
+            } else {
+                targetFile.Dispose();
+                PATCHED_BATCHES.Remove(batchId);
+                File.Delete(targetPath);
+            }
             throw;
         }
+
+        var patchedBatch = PATCHED_BATCHES[batchId];
+        patchedBatch.patched = true;
+        PATCHED_BATCHES[batchId] = patchedBatch;
 
         List<string>?[] octreePatchNames = PATCHED_BATCHES[batchId].octreePatchNames;
         for (int i = 0; i < OCTREES_PER_BATCH; i++) {
@@ -204,7 +212,12 @@ internal static class PatchTerrain {
         BinaryWriter target, BinaryReader original, BinaryReader patch
     ) {
         BitArray patchedOctrees = new(OCTREES_PER_BATCH);
-        byte patchedOctreeCount = patch.ReadByte();
+        byte patchedOctreeCount;
+        try {
+            patchedOctreeCount = patch.ReadByte();
+        } catch (EndOfStreamException ex) {
+            throw new InvalidDataException("patch ends too early", ex);
+        }
 
         if (patchedOctreeCount > OCTREES_PER_BATCH) {
             throw new InvalidDataException(
@@ -217,21 +230,27 @@ internal static class PatchTerrain {
         const int OCTREE_NODE_SIZE = 4;
 
         for (int i = 0; i < OCTREES_PER_BATCH; i++) {
-            try { octrees[i] = original.ReadBytes(original.ReadUInt16() * OCTREE_NODE_SIZE); }
-            catch (EndOfStreamException) { break; }
+            try {
+                if (original.TryReadUInt16() is not ushort nodes) break;
+                octrees[i] = original.ReadExactBytes(nodes * OCTREE_NODE_SIZE);
+            } catch (EndOfStreamException) {
+                Plugin.LogError("vanilla batch ends too early");
+                break;
+            }
         }
 
         for (int i = 0; i < patchedOctreeCount; i++) {
             try {
                 byte octree = patch.ReadByte();
-                byte[] bytes = patch.ReadBytes(patch.ReadUInt16() * OCTREE_NODE_SIZE);
+                byte[] bytes = patch.ReadExactBytes(patch.ReadUInt16() * OCTREE_NODE_SIZE);
 
                 patchedOctrees[octree] = true;
                 octrees[octree] = bytes;
             } catch (EndOfStreamException ex) {
                 throw new InvalidDataException("patch ends too early", ex);
-            } catch (Exception ex)
-                when (ex is IndexOutOfRangeException or ArgumentOutOfRangeException) {
+            } catch (Exception ex) when (
+                ex is IndexOutOfRangeException or ArgumentOutOfRangeException
+            ) {
                 throw new InvalidDataException(
                     "patch contains an octree outside the bounds of the batch it applies to", ex
                 );
@@ -249,5 +268,24 @@ internal static class PatchTerrain {
         }
 
         return patchedOctrees;
+    }
+
+    extension(BinaryReader reader) {
+        private short? TryReadInt16() => (short?)reader.TryReadUInt16();
+
+        private ushort? TryReadUInt16() {
+            byte least;
+            try { least = reader.ReadByte(); }
+            catch (EndOfStreamException) { return null; }
+
+            byte most = reader.ReadByte();
+            return (ushort)(most << 8 | least);
+        }
+
+        private byte[] ReadExactBytes(int len) {
+            byte[] bytes = reader.ReadBytes(len);
+            if (bytes.Length != len) throw new EndOfStreamException();
+            else return bytes;
+        }
     }
 }
