@@ -46,9 +46,8 @@
 ## v1.2.2 (2025-02-10)
 
 - Deprecated `TerrainRegistry.PatchTerrain` in anticipation of possible changes to the patching
-  system.
-  - Removed documentation explaining how to use this method. If you need that, check an older
-    version of the repository.
+  system. If you need documentation explaining how to use this method, check an older version of the
+  repository.
 - Fixed Terrain Patcher accidentally loading an example mod with small terrain changes.
 
 ## v1.2.1 (2025-02-06)
@@ -60,9 +59,9 @@
 
 ## v1.2.0 (2025-02-02)
 
-- Added the features of Terrain Extender. Specifically,
-  - The edge of the world is now extended to allow for more terrain.
-  - The edge of the world where entities can spawn and save is now extended.
+- Added the features of Terrain Extender. Specifically: the edge of the world is now extended to
+  allow for more terrain, and the edge of the world where entities can spawn and save is now
+  extended.
 - Improved logging and error handling.
 
 ## v1.1.0 (2024-03-15)
