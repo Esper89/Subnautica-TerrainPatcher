@@ -164,4 +164,8 @@ internal static class TerrainExtender {
             )
             .InstructionEnumeration();
     }
+
+    // hours spent fixing negative batches: 11
+    // hours spent fixing north-edge and east-edge batches: 13
+    // keep tally
 }

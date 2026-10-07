@@ -5,6 +5,7 @@
 - Fixed incorrect handling for some uses of negative batch numbers. The terrain streaming center,
   debugging info, and batch object streaming are no longer off by one batch in negative batches.
 - Improved logging and handling for custom load orders.
+- Fixed incorrect handling of vanilla batches at the north edge of the world.
 - Fixed terrain patches truncated in the middle of an octree possibly patching without errors.
 - Fixed potential runtime issue with Nautilus integration when Nautilus isn't installed.
 - Fixed some cases of misleading error messages or un-reported errors.

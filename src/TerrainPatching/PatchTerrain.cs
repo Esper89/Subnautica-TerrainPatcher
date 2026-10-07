@@ -172,7 +172,8 @@ internal static class PatchTerrain {
 
         BitArray patchedOctrees;
         try {
-            patchedOctrees = PatchOctrees(target, original, patch);
+            bool rearrangeNorthEdge = batchId.z == 25 && !PATCHED_BATCHES[batchId].patched;
+            patchedOctrees = PatchOctrees(target, original, patch, rearrangeNorthEdge);
         } catch (Exception) {
             if (PATCHED_BATCHES[batchId].patched) {
                 targetFile.Seek(0, SeekOrigin.Begin);
@@ -209,7 +210,7 @@ internal static class PatchTerrain {
     }
 
     private static BitArray PatchOctrees(
-        BinaryWriter target, BinaryReader original, BinaryReader patch
+        BinaryWriter target, BinaryReader original, BinaryReader patch, bool rearrangeNorthEdge
     ) {
         BitArray patchedOctrees = new(OCTREES_PER_BATCH);
         byte patchedOctreeCount;
@@ -227,12 +228,16 @@ internal static class PatchTerrain {
 
         byte[]?[] octrees = new byte[OCTREES_PER_BATCH][];
 
+        const int OCTREES_PER_NORTH_EDGE_BATCH = 75;
         const int OCTREE_NODE_SIZE = 4;
 
-        for (int i = 0; i < OCTREES_PER_BATCH; i++) {
+        int maxOrigOctrees = rearrangeNorthEdge ? OCTREES_PER_NORTH_EDGE_BATCH : OCTREES_PER_BATCH;
+        for (int i = 0; i < maxOrigOctrees; i++) {
             try {
                 if (original.TryReadUInt16() is not ushort nodes) break;
-                octrees[i] = original.ReadExactBytes(nodes * OCTREE_NODE_SIZE);
+                int idx = i;
+                if (rearrangeNorthEdge) idx = idx / 3 * 5 + i % 3;
+                octrees[idx] = original.ReadExactBytes(nodes * OCTREE_NODE_SIZE);
             } catch (EndOfStreamException) {
                 Plugin.LogError("vanilla batch ends too early");
                 break;
