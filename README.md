@@ -107,7 +107,7 @@ This section is not part of Terrain Patcher's license, nor is it legal advice.
 ## Patch Format
 
 The Subnautica Terrain Patch Format (the `optoctreepatch` format) is documented in [`Subnautica
-Terrain Patch Format.pdf`](./doc/Subnautica%20Terrain%20Patch%20Format.pdf). The format
+Terrain Patch Format.pdf`](./docs/Subnautica%20Terrain%20Patch%20Format.pdf). The format
 is designed to be as similar to the game's native terrain format as possible, while still allowing
 for proper patching of terrain. The patch format also allows as much data as necessary to be stored
 in one file, for easier distribution.
