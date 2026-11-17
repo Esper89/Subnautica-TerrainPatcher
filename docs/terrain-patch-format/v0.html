@@ -59,7 +59,8 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p>Each patch file starts with an unsigned 32-bit integer that encodes <span class="field version">the format version</span>; this specification is for version 0. After this, the patch contains an array of any number of batches, which can be either modified batches that need to be patched or new batches that need to be created. The number of batches is determined by the size of the file.</p>
+                    <p>Each patch file starts with an unsigned 32-bit integer that encodes <span class="field version">the format version</span>; this specification is for version 0. After this, the patch contains an array of any number of batches, which can be either modified batches that need to be patched or new batches that need to be created. The number of batches is determined by the size of the file, and the file should contain at least one batch.</p>
+                    <p>The same batch should not appear multiple times in the same terrain patch.</p>
                 </section>
                 <section>
                     <h4 id="format-batch" class="struct">Batch</h4>
@@ -102,7 +103,8 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p>Batches start with three signed 16-bit integers indicating <span class="field batch-id">the X, Y, and Z coordinates</span> of the batch. In the game's terrain format, these fields are the three numbers in the name of the batch, <code>compiled-batch-X-Y-Z.optoctrees</code>. The coordinates of the batch are followed by a single unsigned 8-bit integer representing <span class="field batch-octs">the number of octrees</span> in the batch that need to be replaced or created. The rest of the batch is an array of that many octrees.</p>
+                    <p>Batches start with three signed 16-bit integers indicating <span class="field batch-id">the X, Y, and Z coordinates</span> of the batch. In the game's terrain format, these fields are the three numbers in the name of the batch, <code>compiled-batch-X-Y-Z.optoctrees</code>. The coordinates of the batch are followed by a single unsigned 8-bit integer representing <span class="field batch-octs">the number of octrees</span> in the batch that need to be replaced or created, which should be at least one octree. The rest of the batch is an array of that many octrees.</p>
+                    <p>The same octree should not appear multiple times in the same batch.</p>
                 </section>
                 <section>
                     <h4 id="format-octree" class="struct">Octree</h4>
