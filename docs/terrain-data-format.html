@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="color-scheme" content="light dark"/>
+        <title>Subnautica Terrain Data Format</title>
+        <link rel="stylesheet" href="./style.css"/>
+    </head>
+    <body>
+        <header>
+            <hgroup>
+                <h1 id="top">Subnautica Terrain Patcher Documentation</h1>
+                <p>Terrain Patcher v1.3.1</p>
+            </hgroup>
+            <nav>
+                <ol>
+                    <li>
+                        <p>Terrain Data Format</p>
+                    </li>
+                    <li>
+                        <p><a href="./terrain-patch-format.html">Terrain Patch Format</a></p>
+                        <ol>
+                            <li>
+                                <p><a href="./terrain-patch-format/v0.html">v0</a></p>
+                            </li>
+                        </ol>
+                    </li>
+                </ol>
+            </nav>
+        </header>
+        <main>
+            <header class="meta">
+                <p>Archived copy of the original terrain data specification by Jonas Bötel at Unknown Worlds, published on <time datetime="2017-07-25">7 July 2017</time> at <a href="https://unknownworlds.com/en/news/terrain-data-format">https://unknownworlds.com/en/news/terrain-data-format</a>. Preserved here for accessibility.</p>
+            </header>
+            <h2 id="title">Terrain data format</h2>
+            <section>
+                <h3 id="modding">Modding</h3>
+                <p>We are starting to see some really cool mods for Subnautica, which is impressive, because we did not create Subnautica with mod support in mind. We do not have the manpower to improve mod support, but we can save you some time reverse engineering our files. So here is how our terrain data works under the hood. Definitely <a href="https://twitter.com/CodeLumpN">ping me on Twitter</a> or <a href="https://forums.unknownworlds.com/categories/subnautica-general-discussion">post on our forums</a>, if you managed to build something cool with this information!</p>
+            </section>
+            <section>
+                <h3 id="terrain-data">Terrain Data</h3>
+                <p>Subnautica uses an <a href="https://en.wikipedia.org/wiki/Isosurface">isosurface polygonization</a> algorithm called Dual Contouring to create terrain surface meshes from voxel data. The voxel data is stored in batches, each covering a cubic volume measuring 160 m on a side. Each batch is subdivided into 125 <a href="https://en.wikipedia.org/wiki/Octree">octrees</a>, 5 in each dimension. Each octree covers a cubic volume of 32 m length. The voxel resolution is 1 m<sup>3</sup>. Each voxel contains information about its material type and its <a href="https://en.wikipedia.org/wiki/Signed_distance_function">signed distance</a> from the isosurface. Material types are sand, rock, and coral for example. The isosurface is found between neighboring voxels where the distance value changes sign.</p>
+            </section>
+            <section>
+                <h3 id="world-batches">World Batches</h3>
+                <p>The world size is 4096 × 3200 × 4096 m<sup>3</sup>, horizontally centered around the origin. It covers the space between (-2048, -3040, -2048) and (2048, 160, 2048). The world is subdivided into batches. The naming pattern for batches is simply (x, y, z) starting from the minimum corner in the world. Therefore e.g. batch (12, 18, 12) covers the voxels from (-128, -160, -128) to (32, 0, 32). The batch files can be found in the <code>Subnautica\SNUnmanagedData\Build18\CompiledOctreesCache\</code> folder. They are easily replaceable and therefore ideal for modding. For example replace <code>compiled-batch-12-18-12.optoctrees</code> with <code>compiled-batch-9-9-12.optoctrees</code>, start the game, and warp to (0, 10, 0) to find an entire area of the terrain replaced by solid a cube of rock.</p>
+                <img alt="File explorer in the CompiledOctreesCache directory containing files named compiled-batch-8-18-6.optoctrees, etc." src="./terrain-data-format/explorer.png"/>
+            </section>
+            <section>
+                <h3 id="batch-format">Batch format</h3>
+                <section>
+                    <h4 id="format-batch">Batch</h4>
+                    <table class="struct">
+                        <colgroup>
+                            <col/>
+                            <col class="field version" span="4"/>
+                            <col/>
+                        </colgroup>
+                        <tbody>
+                            <tr class="byte">
+                                <th>Byte</th>
+                                <td>0</td>
+                                <td>1</td>
+                                <td>2</td>
+                                <td>3</td>
+                                <td>…</td>
+                            </tr>
+                            <tr class="field">
+                                <th>Field</th>
+                                <td colspan="4">Version</td>
+                                <td>Octrees</td>
+                            </tr>
+                            <tr class="type">
+                                <th>Type</th>
+                                <td colspan="4">int32</td>
+                                <td>Octree[]</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>The binary data inside an <code>optoctrees</code> file starts with a <span class="field version">four byte version field</span> followed by an array of 125 octrees. The version field is a little endian encoded 32 bit integer. The current version is 4.</p>
+                </section>
+                <section>
+                    <h4 id="format-octree" class="struct">Octree</h4>
+                    <table class="struct">
+                        <colgroup>
+                            <col/>
+                            <col class="field octlen" span="2"/>
+                            <col/>
+                        </colgroup>
+                        <tbody>
+                            <tr class="byte">
+                                <th>Byte</th>
+                                <td>0</td>
+                                <td>1</td>
+                                <td>…</td>
+                            </tr>
+                            <tr class="field">
+                                <th>Field</th>
+                                <td colspan="2">Node Count</td>
+                                <td>Nodes</td>
+                            </tr>
+                            <tr class="type">
+                                <th>Type</th>
+                                <td colspan="2">ushort</td>
+                                <td>Node[]</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>Each octree starts with a <span class="field octlen">two byte node count field</span> followed by an array of the nodes. The node count field is a little endian encoded 16 bit unsigned integer. The minimum octree has one node.</p>
+                </section>
+                <section>
+                    <h4 id="format-node" class="struct">Node</h4>
+                    <table class="struct">
+                        <tbody>
+                            <tr class="byte">
+                                <th>Byte</th>
+                                <td>0</td>
+                                <td>1</td>
+                                <td>2</td>
+                                <td>3</td>
+                            </tr>
+                            <tr class="field">
+                                <th>Field</th>
+                                <td>Material type</td>
+                                <td>Signed distance</td>
+                                <td colspan="2">Child Index</td>
+                            </tr>
+                            <tr class="type">
+                                <th>Type</th>
+                                <td>byte</td>
+                                <td>byte</td>
+                                <td colspan="2">ushort</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>Each node is exactly four bytes. One byte for the material type, one byte for the signed distance to the isosurface, two bytes for the little endian 16 bit unsigned integer array index of the first child node. If the child node index is zero, then the node is a leaf node. If the child node index is non-zero, then the eight nodes starting at that array index are its children. The eight children of an octree node subdivide its volume. The coordinates of the children of an octree node of size two are:</p>
+                    <table>
+                        <tr>
+                            <th>Index</th>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td>4</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td>7</td>
+                        </tr>
+                        <tr>
+                            <th>x</th>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <th>y</th>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <th>z</th>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>1</td>
+                        </tr>
+                    </table>
+                    <p>The material type is simply an 8 bit unsigned integer index into an array of 254 materials. Material 0 represents the absence of matter, i.e. an empty voxel. Material 255 is reserved. Some useful materials are 37 for sand covered rock and 5 – 14 for corals. Note that depending on the quality settings only a limited number of materials can be rendered for each octree. If the nodes in an octree reference too many different materials, then the least frequent materials are dropped. The signed distance byte b is encoded using <code>b = d × 126 + 126</code> where <code>d ∈ [-1.0, 1.0]</code> is the signed distance to the isosurface in meters. Solid voxels below the surface have positive distance, empty voxels above the surface have negative distance. Therefore voxels with byte values 1–125 are above surface, those with 127–252 are below surface. Byte value 0 is reserved to represent fully solid voxels, if the material type is non-zero.</p>
+                </section>
+            </section>
+            <section>
+                <h3 id="data">Data</h3>
+                <div class="bytes">
+                    <span class="field version"><b>04</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>01</b><b>00</b></span>
+                    <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                    <span class="field octlen"><b>E1</b><b>08</b></span>
+                    <span><b>23</b><b>C9</b><b ptr="1">01</b><b ptr="1">00</b></span>
+                    <span addr="1">
+                        <span><b><sup class="addr">0001</sup>23</b><b>00</b><b>00</b><b>00</b></span>
+                        <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                        <span><b>23</b><b>C4</b><b ptr="2">09</b><b ptr="2">00</b></span>
+                        <span><b>23</b><b>00</b><b>29</b><b>03</b></span>
+                        <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                        <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                        <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                        <span><b>23</b><b>CF</b><b>39</b><b>05</b></span>
+                    </span>
+                    <span addr="2">
+                        <span><b><sup class="addr">0009</sup>23</b><b>00</b><b>A1</b><b>07</b></span>
+                        <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                        <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                        <span><b>23</b><b>C4</b><b ptr="3">11</b><b ptr="3">00</b></span>
+                        <span><b>23</b><b>00</b><b>01</b><b>01</b></span>
+                        <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                        <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
+                        <span><b>23</b><b>C4</b><b>A9</b><b>01</b></span>
+                    </span>
+                    <span addr="3">
+                        <span><b><sup class="addr">0011</sup>23</b><b>00</b><b>19</b><b>00</b></span>
+                        <span><b>23</b><b>00</b><b>41</b><b>00</b></span>
+                        <span><b>01</b><b>C8</b><b>69</b><b>00</b></span>
+                        <b>..</b>
+                    </span>
+                </div>
+                <p>Let's look at some real data in hexadecimal form. In this case the <code>optoctrees</code> file starts with our <span class="field version">four byte version field</span>, followed by a fifteen single node octrees of material type 23. Each of these nodes represent 32 × 32 × 32 solid voxels. The 16th octree contains <span class="field octlen">2273 (0x08E1) nodes</span>. The first node has material 23, signed distance 32 × 0.595 (C9), and its first child is located at index 1. The material for non-leaf nodes is the most frequent material of its children. The signed distance is the average of the distances of its children. Starting at index 1 are the eight child nodes. The first two are completely solid and have no children. Next are two nodes that have children, followed by another two solid, and another two with child nodes. At index 9 we find the first child of node 3. Etc. The positions of the octrees in a batch follow a z, y, x pattern:</p>
+                <table>
+                    <tr>
+                        <th>Octree</th>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>5</td>
+                        <td>6</td>
+                        <td>7</td>
+                        <td>8</td>
+                        <td>9</td>
+                        <td>10</td>
+                        <td>11</td>
+                        <td>…</td>
+                        <td>124</td>
+                    </tr>
+                    <tr>
+                        <th>x</th>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>…</td>
+                        <td>128</td>
+                    </tr>
+                    <tr>
+                        <th>y</th>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>32</td>
+                        <td>32</td>
+                        <td>32</td>
+                        <td>32</td>
+                        <td>32</td>
+                        <td>64</td>
+                        <td>64</td>
+                        <td>…</td>
+                        <td>128</td>
+                    </tr>
+                    <tr>
+                        <th>z</th>
+                        <td>0</td>
+                        <td>32</td>
+                        <td>64</td>
+                        <td>96</td>
+                        <td>128</td>
+                        <td>0</td>
+                        <td>32</td>
+                        <td>64</td>
+                        <td>96</td>
+                        <td>128</td>
+                        <td>0</td>
+                        <td>32</td>
+                        <td>…</td>
+                        <td>128</td>
+                    </tr>
+                </table>
+            </section>
+            <section>
+                <h3 id="remarks">Remarks</h3>
+                <p>Please note that the data format is subject to change. We are at version 4 already. If the format changes, the version number will be incremented too. Also note that the file location may change. For now the optoctrees files are in raw binary format on disk. We might compress them, pack them, or convert them into Unity's asset bundles in the future.</p>
+            </section>
+        </main>
+    </body>
+</html>
