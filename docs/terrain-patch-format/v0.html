@@ -141,7 +141,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <p>Each octree begins with a single unsigned 8-bit integer indicating <span class="field octidx">the index of this octree</span> in the final batch, from 0 to 124, as specified in the game's terrain format. Next is an unsigned 16-bit integer representing <span class="field octlen">the number of nodes in this octree</span>, followed by an array of that many nodes; this part is identical to the game's terrain format.</p>
+                    <p>Each octree begins with a single unsigned 8-bit integer indicating <span class="field octidx">the index of this octree</span> in the final batch, from 0 to 124, as specified in the game's terrain format. Next is an unsigned 16-bit integer representing <span class="field octlen">the number of nodes</span> in this octree, followed by an array of that many nodes; this part is identical to the game's terrain format.</p>
                 </section>
                 <section>
                     <h4 id="format-node" class="struct">Node</h4>
@@ -173,6 +173,7 @@
             </section>
             <section>
                 <h3 id="example-data">Example Data</h3>
+                <p>The following example terrain patch replaces the first three octrees in the batch at (12, 18, 12) with single-node empty octrees, replaces the last octree in batch (0, 0, 0) with a single-node octree of material #23, creates a new batch at (−2, 19, −4) with two single-node octrees of material #1, and creates a new batch at (28, 19, 28) with two single-node octrees of material #23.</p>
                 <div class="bytes">
                     <span class="field version"><b>00</b><b>00</b><b>00</b><b>00</b></span>
                     <span class="field batch-id"><b>0C</b><b>00</b></span>
@@ -216,7 +217,7 @@
                     <span class="field octlen"><b>01</b><b>00</b></span>
                     <span><b>23</b><b>00</b><b>00</b><b>00</b></span>
                 </div>
-                <p>This example terrain patch replaces the first three octrees in the batch at (12, 18, 12) with single-node empty octrees, replaces the last octree in batch (0, 0, 0) with a single-node octree of material #23, creates a new batch at (−2, 19, −4) with two single-node octrees of material #1, and creates a new batch at (28, 19, 28) with two single-node octrees of material #23.</p>
+                <p class="meta">A binary copy of this file is at <a href="../../examples/example-v0.optoctreepatch"><code>examples/example-v0.optoctreepatch</code></a>.</p>
                 <section>
                     <h4 id="example-explanation">Explanation</h4>
                     <p>The format version number is <code class="field version">00 00 00 00</code>.</p>
