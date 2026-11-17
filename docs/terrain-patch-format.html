@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="color-scheme" content="light dark"/>
+        <title>Subnautica Terrain Patch Format</title>
+        <link rel="stylesheet" href="./style.css"/>
+    </head>
+    <body>
+        <header>
+            <hgroup>
+                <h1 id="top">Subnautica Terrain Patcher Documentation</h1>
+                <p>Terrain Patcher v1.3.1</p>
+            </hgroup>
+            <nav>
+                <ol>
+                    <li>
+                        <p>Terrain Patch Format</p>
+                        <ol>
+                            <li>
+                                <p><a href="./terrain-patch-format/v0.html">v0</a></p>
+                            </li>
+                        </ol>
+                    </li>
+                </ol>
+            </nav>
+        </header>
+        <main>
+            <h2 id="title">Terrain Patch Format</h2>
+            <p>This is the format specification for Subnautica terrain patches, also known as the <code>optoctreepatch</code> format. This format is based on the <a href="https://unknownworlds.com/en/news/terrain-data-format">Subnautica terrain data format (version 4)</a>, and understanding that is recommended to use this format.</p>
+            <p>Primitive types are written using conventions from C#. For example, <code>uint</code> is an unsigned 32-bit integer, <code>short</code> is a signed 16-bit integer, and <code>byte[]</code> is a variable-sized array of unsigned 8-bit integers. All primitive types used in the terrain patch format are little-endian, and signed integer types use two's complement.</p>
+            <section>
+                <h3 id="format">Format</h3>
+                <table class="struct">
+                    <colgroup>
+                        <col/>
+                        <col class="field version" span="4"/>
+                        <col/>
+                    </colgroup>
+                    <tbody>
+                        <tr class="byte">
+                            <th>Byte</th>
+                            <td>0</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>3</td>
+                            <td>…</td>
+                        </tr>
+                        <tr class="field">
+                            <th>Field</th>
+                            <td colspan="4">Version</td>
+                            <td>Terrain Patch</td>
+                        </tr>
+                        <tr class="type">
+                            <th>Type</th>
+                            <td colspan="4">uint</td>
+                            <td/>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>The first four bytes of each <code>optoctreepatch</code> file are an unsigned 32-bit integer that encodes <span class="field version">the format version</span>. The current version is 0. If the version is 4&#8239;294&#8239;967&#8239;295 (the maximum value of an unsigned 32-bit integer) then the patch is guaranteed to be invalid and will be ignored. The remaining bytes of the file are specified at <a href="./terrain-patch-format/v0.html">v0</a>.</p>
+            </section>
+            <section>
+                <h3 id="naming">Naming</h3>
+                <p>Patch files must use the <code>.optoctreepatch</code> file extension. The file name should be the name of the mod that includes the terrain patch, or (if the mod contains multiple terrain patches) a short description of the contents of the patch.</p>
+                <p>Patch names should prefer to use lowercase letters, numbers, and hyphens. For example, <code>void-bottom.optoctreepatch</code> and <code>distant-islands-3.optoctreepatch</code> are good names for terrain patches.</p>
+                <p>There is no need for patch files to contain words like “terrain” or “patch” unless they're part of your mod's name.</p>
+            </section>
+        </main>
+    </body>
+</html>

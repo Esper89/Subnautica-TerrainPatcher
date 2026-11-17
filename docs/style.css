@@ -1,0 +1,165 @@
+body {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1em;
+    overflow-x: hidden;
+    color: light-dark(black, white);
+    background: light-dark(white, black);
+    font-family: sans-serif;
+    line-height: 1.5;
+    font-size: 16px;
+}
+
+body > header {
+    padding: 1em;
+}
+
+hgroup:has(h1) {
+    margin-bottom: 1em;
+}
+
+h1 {
+    margin: 0;
+    font-size: xx-large;
+}
+
+hgroup:has(h1) p {
+    margin: 0;
+    font-style: italic;
+    font-size: small;
+}
+
+nav ol {
+    list-style: none;
+    padding: 0;
+    display: inline;
+}
+
+nav ol > li {
+    display: inline;
+}
+
+nav p {
+    display: inline-block;
+    margin: .25em;
+    font-weight: bold;
+}
+
+nav::before {
+    content: "docs";
+    display: inline-block;
+    margin: .25em;
+    font-family: monospace;
+}
+
+nav ol::before {
+    content: "/";
+    display: inline-block;
+    margin: .25em;
+    font-family: monospace;
+}
+
+nav li:has(ol)::before {
+    content: "{";
+    display: inline-block;
+    margin: .25em;
+    font-family: monospace;
+}
+
+nav li:has(ol)::after {
+    content: "}";
+    display: inline-block;
+    margin: .25em;
+    font-family: monospace;
+}
+
+main {
+    margin-bottom: 180px;
+    padding-bottom: 1em;
+    border-top: thin solid;
+    border-bottom: thin solid;
+}
+
+code {
+    padding: .1em;
+    border-radius: 4px;
+}
+
+code:not(.field) {
+    background-color: light-dark(#DDD, #222);
+}
+
+h4.struct {
+    font-family: monospace;
+}
+
+table {
+    display: block;
+    border-collapse: collapse;
+    overflow-x: auto;
+}
+
+table :is(th, td) {
+    padding: .5em 1em;
+    border: 1px solid;
+    text-align: center;
+}
+
+table th {
+    background-color: light-dark(#DDD, #222);
+}
+
+table.struct tr.type td {
+    font-family: monospace;
+}
+
+.bytes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2.5em, 1fr));
+    font-family: monospace;
+}
+
+.bytes span {
+    display: contents;
+}
+
+.bytes b {
+    position: relative;
+    margin: -1px 0 0 -1px;
+    padding: .5em;
+    border: 1px solid;
+    font-weight: normal;
+    text-align: center;
+}
+
+.bytes b:has(+ b) {
+    border-right-color: light-dark(#BBB, #444);
+}
+
+.bytes b + b {
+    border-left-color: light-dark(#BBB, #444);
+}
+
+.field.version {
+    --bg: #07F4;
+}
+
+.field.batch-id {
+    --bg: #F004;
+}
+
+.field.batch-octs {
+    --bg: #F704;
+}
+
+.field.octidx {
+    --bg: #FF04;
+}
+
+.field.octlen {
+    --bg: #0F74;
+}
+
+* {
+    background: var(--bg, none);
+}

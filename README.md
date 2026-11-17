@@ -106,11 +106,10 @@ This section is not part of Terrain Patcher's license, nor is it legal advice.
 
 ## Patch Format
 
-The Subnautica Terrain Patch Format (the `optoctreepatch` format) is documented in [`Subnautica
-Terrain Patch Format.pdf`](./docs/Subnautica%20Terrain%20Patch%20Format.pdf). The format
-is designed to be as similar to the game's native terrain format as possible, while still allowing
-for proper patching of terrain. The patch format also allows as much data as necessary to be stored
-in one file, for easier distribution.
+The Subnautica Terrain Patch Format (the `optoctreepatch` format) is documented by the [patch format
+specification][format spec]. The format is designed to be as similar to the game's native terrain
+format as possible, while still allowing for proper patching of terrain. The patch format also
+allows as much data as necessary to be stored in one file, for easier distribution.
 
 An example `optoctreepatch` file is included at
 [`example.optoctreepatch`](./examples/example.optoctreepatch). Patches that demonstrate all valid
@@ -186,6 +185,7 @@ licensors of this Program grant you additional permission to convey the resultin
 [BepInEx]: https://github.com/toebeann/BepInEx.Subnautica
 [releases]: https://github.com/Esper89/Subnautica-TerrainPatcher/releases
 [Nautilus]: https://github.com/SubnauticaModding/Nautilus
+[format spec]: https://esper89.github.io/Subnautica-TerrainPatcher/docs/terrain-patch-format.html
 [Abyss Editor]: https://github.com/BeneathTheWaves/AbyssEditor
 [Reef Editor]: https://github.com/eternaight/sn-terrain-edit
 [issues]: https://github.com/Esper89/Subnautica-TerrainPatcher/issues/new/choose
