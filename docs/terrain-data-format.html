@@ -247,6 +247,7 @@
                         <b>..</b>
                     </span>
                 </div>
+                <p class="meta">Hover or tap the highlighted cells to show the bytes they point to.</p>
                 <p>Let's look at some real data in hexadecimal form. In this case the <code>optoctrees</code> file starts with our <span class="field version">four byte version field</span>, followed by a fifteen single node octrees of material type 23. Each of these nodes represent 32 × 32 × 32 solid voxels. The 16th octree contains <span class="field octlen">2273 (0x08E1) nodes</span>. The first node has material 23, signed distance 32 × 0.595 (C9), and its first child is located at index 1. The material for non-leaf nodes is the most frequent material of its children. The signed distance is the average of the distances of its children. Starting at index 1 are the eight child nodes. The first two are completely solid and have no children. Next are two nodes that have children, followed by another two solid, and another two with child nodes. At index 9 we find the first child of node 3. Etc. The positions of the octrees in a batch follow a z, y, x pattern:</p>
                 <table>
                     <tr>
